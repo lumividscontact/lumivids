@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Text to Video OG Image</title>
+  <desc id="desc">Lumivids text to video generator preview image.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#050816"/>
+      <stop offset="48%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1072" height="502" rx="28" fill="#0b1120" opacity="0.34" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="96" y="146" fill="#d1d5db" font-family="Inter, Arial, sans-serif" font-size="28">Lumivids</text>
+  <text x="96" y="236" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="800">Text to Video</text>
+  <text x="96" y="310" fill="#bfdbfe" font-family="Inter, Arial, sans-serif" font-size="32">Turn prompts into cinematic AI videos.</text>
+  <rect x="96" y="360" width="510" height="118" rx="24" fill="#111827" stroke="#ffffff" stroke-opacity="0.14"/>
+  <text x="126" y="410" fill="#93c5fd" font-family="Inter, Arial, sans-serif" font-size="22">Prompt</text>
+  <text x="126" y="450" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="28">Aerial shot over a neon city at night...</text>
+  <g transform="translate(760 150)">
+    <rect width="260" height="260" rx="28" fill="#111827" opacity="0.9" stroke="#ffffff" stroke-opacity="0.14"/>
+    <polygon points="104,84 192,130 104,176" fill="#ffffff"/>
+    <rect x="40" y="198" width="180" height="16" rx="8" fill="#60a5fa"/>
+    <rect x="40" y="228" width="142" height="12" rx="6" fill="#ffffff" opacity="0.32"/>
+  </g>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Lumivids Landing OG Image</title>
+  <desc id="desc">Lumivids AI video and image generator preview image.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#09090f"/>
+      <stop offset="55%" stop-color="#1d1447"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" rx="32"/>
+  <circle cx="996" cy="120" r="180" fill="#8b5cf6" opacity="0.16"/>
+  <circle cx="210" cy="520" r="220" fill="#22d3ee" opacity="0.12"/>
+  <rect x="72" y="72" width="1056" height="486" rx="28" fill="#0b1120" opacity="0.38" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="96" y="148" fill="#d1d5db" font-family="Inter, Arial, sans-serif" font-size="28">Lumivids</text>
+  <text x="96" y="250" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="800">AI Video and Image</text>
+  <text x="96" y="325" fill="url(#accent)" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="800">Generation Platform</text>
+  <text x="96" y="392" fill="#d1d5db" font-family="Inter, Arial, sans-serif" font-size="30">Create videos and images from prompts or source media.</text>
+  <g transform="translate(96 450)">
+    <rect width="212" height="54" rx="27" fill="#8b5cf6"/>
+    <text x="106" y="35" text-anchor="middle" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Text to Video</text>
+  </g>
+  <g transform="translate(328 450)">
+    <rect width="224" height="54" rx="27" fill="#111827" stroke="#ffffff" stroke-opacity="0.18"/>
+    <text x="112" y="35" text-anchor="middle" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Image to Video</text>
+  </g>
+  <g transform="translate(768 152)">
+    <rect width="256" height="256" rx="28" fill="#111827" opacity="0.86" stroke="#ffffff" stroke-opacity="0.16"/>
+    <polygon points="102,82 186,128 102,174" fill="#ffffff" opacity="0.94"/>
+    <rect x="40" y="192" width="176" height="18" rx="9" fill="#22d3ee" opacity="0.9"/>
+    <rect x="40" y="224" width="128" height="14" rx="7" fill="#ffffff" opacity="0.35"/>
+  </g>
+</svg>

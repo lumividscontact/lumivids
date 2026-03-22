@@ -1,0 +1,35 @@
+Site: Lumivids
+URL: https://lumivids.com
+Title: Lumivids - AI Video & Image Generator
+Description: Lumivids is an AI creation platform for generating videos and images from text prompts or reference images.
+Default-Language: en
+Supported-Languages: pt-BR, en, es
+
+Key Features:
+- Text to video generation
+- Image to video generation
+- Text to image generation
+- Image to image generation
+- Multiple AI model support
+- Credit-based pricing plans
+- Public pricing, privacy, and terms pages
+
+Public URLs:
+- Home: https://lumivids.com/
+- Pricing: https://lumivids.com/plans
+- Privacy Policy: https://lumivids.com/privacy
+- Terms of Service: https://lumivids.com/terms
+
+Recommended Pages:
+- https://lumivids.com/
+- https://lumivids.com/plans
+
+Policies:
+- https://lumivids.com/privacy
+- https://lumivids.com/terms
+
+Contact:
+- Email: contact@lumivids.com
+
+LLMS-Full:
+- https://lumivids.com/llms-full.txt

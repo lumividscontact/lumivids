@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      (function () {
+        try {
+          var supportedLanguages = { pt: true, en: true, es: true }
+          var portugueseLocales = ['pt', 'pt-br', 'pt-pt', 'pt-ao', 'pt-mz', 'pt-cv', 'pt-gw', 'pt-st', 'pt-tl']
+          var spanishLocales = [
+            'es', 'es-es', 'es-mx', 'es-ar', 'es-co', 'es-cl', 'es-pe', 'es-ve', 'es-ec',
+            'es-gt', 'es-cu', 'es-bo', 'es-do', 'es-hn', 'es-py', 'es-sv', 'es-ni',
+            'es-cr', 'es-pa', 'es-uy', 'es-pr', 'es-gq'
+          ]
+
+          function normalizeStoredLanguage(value) {
+            return supportedLanguages[value] ? value : null
+          }
+
+          function detectLanguageFromLocales(locales) {
+            for (var index = 0; index < locales.length; index += 1) {
+              var normalizedLocale = String(locales[index] || '').toLowerCase()
+
+              for (var ptIndex = 0; ptIndex < portugueseLocales.length; ptIndex += 1) {
+                if (normalizedLocale.indexOf(portugueseLocales[ptIndex]) === 0) {
+                  return 'pt'
+                }
+              }
+
+              for (var esIndex = 0; esIndex < spanishLocales.length; esIndex += 1) {
+                if (normalizedLocale.indexOf(spanishLocales[esIndex]) === 0) {
+                  return 'es'
+                }
+              }
+            }
+
+            return 'en'
+          }
+
+          var params = new URLSearchParams(window.location.search)
+          var queryLang = normalizeStoredLanguage(params.get('lang'))
+          var storedLang = normalizeStoredLanguage(localStorage.getItem('lumivids_language'))
+          var browserLangs = Array.isArray(navigator.languages) && navigator.languages.length
+            ? navigator.languages
+            : [navigator.language || 'en']
+
+          var normalized = queryLang || storedLang || detectLanguageFromLocales(browserLangs)
+          var htmlLang = normalized === 'pt' ? 'pt-BR' : normalized === 'es' ? 'es' : 'en'
+          document.documentElement.setAttribute('lang', htmlLang)
+        } catch {
+          document.documentElement.setAttribute('lang', 'en')
+        }
+      })()
+    </script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="cosmic-gateway-node" content="cg-n0EKli3wtGDe5K6r" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Lumivids - AI Video & Image Generator</title>
+    <meta name="title" content="Lumivids - AI Video & Image Generator" />
+    <meta name="description" content="Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more with next-generation AI models." />
+    <meta name="keywords" content="AI video generator, text to video, image to video, AI image generator, artificial intelligence, video generator, Lumivids" />
+    <meta name="author" content="Lumivids" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#7c3aed" />
+    <link rel="canonical" href="https://lumivids.com/" />
+    <link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/?lang=pt" />
+    <link rel="alternate" hreflang="en" href="https://lumivids.com/?lang=en" />
+    <link rel="alternate" hreflang="es" href="https://lumivids.com/?lang=es" />
+    <link rel="alternate" hreflang="x-default" href="https://lumivids.com/" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://lumivids.com/" />
+    <meta property="og:title" content="Lumivids - AI Video & Image Generator" />
+    <meta property="og:description" content="Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more." />
+    <meta property="og:image" content="https://lumivids.com/og/landing.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Lumivids" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="pt_BR" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://lumivids.com/" />
+    <meta name="twitter:title" content="Lumivids - AI Video & Image Generator" />
+    <meta name="twitter:description" content="Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more." />
+    <meta name="twitter:image" content="https://lumivids.com/og/landing.svg" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Lumivids" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KBJ4LNVJEX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-KBJ4LNVJEX');
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Lumivids",
+        "url": "https://lumivids.com",
+        "description": "Create stunning videos and images with artificial intelligence.",
+        "inLanguage": ["pt-BR", "en", "es"]
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <main style="max-width: 860px; margin: 2rem auto; font-family: Inter, Arial, sans-serif; color: #111827; line-height: 1.6; padding: 0 1rem;">
+        <h1>Lumivids - AI Video & Image Generator</h1>
+        <p>Create videos and images with artificial intelligence using advanced generation models.</p>
+        <p>Lumivids supports text to video, image to video, text to image, and image to image workflows in English, Portuguese, and Spanish.</p>
+        <h2>Public Pages</h2>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/plans">Pricing Plans</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Service</a></li>
+        </ul>
+        <h2>Product Routes</h2>
+        <ul>
+          <li><a href="/text-to-video">Text to Video</a></li>
+          <li><a href="/image-to-video">Image to Video</a></li>
+          <li><a href="/text-to-image">Text to Image</a></li>
+          <li><a href="/image-to-image">Image to Image</a></li>
+        </ul>
+        <p><a href="/auth">Create an account</a> to start generating content.</p>
+      </main>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

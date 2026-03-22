@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Image to Image OG Image</title>
+  <desc id="desc">Lumivids image to image transformation preview image.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="52%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1072" height="502" rx="28" fill="#0b1120" opacity="0.34" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="96" y="146" fill="#d1fae5" font-family="Inter, Arial, sans-serif" font-size="28">Lumivids</text>
+  <text x="96" y="236" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="800">Image to Image</text>
+  <text x="96" y="310" fill="#ccfbf1" font-family="Inter, Arial, sans-serif" font-size="32">Transform uploaded images with style, edits, and AI variations.</text>
+  <g transform="translate(700 170)">
+    <rect width="120" height="180" rx="24" fill="#111827" stroke="#ffffff" stroke-opacity="0.14"/>
+    <rect x="24" y="28" width="72" height="72" rx="18" fill="#22d3ee"/>
+    <rect x="20" y="124" width="80" height="14" rx="7" fill="#ffffff" opacity="0.35"/>
+  </g>
+  <g transform="translate(850 250)">
+    <path d="M0 16 H120" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+    <path d="M90 0 L120 16 L90 32" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(1010 130)">
+    <rect width="120" height="220" rx="24" fill="#ffffff" opacity="0.95"/>
+    <rect x="24" y="36" width="72" height="72" rx="18" fill="#0f766e"/>
+    <rect x="18" y="140" width="84" height="14" rx="7" fill="#0f172a" opacity="0.7"/>
+    <rect x="18" y="168" width="84" height="14" rx="7" fill="#0f172a" opacity="0.35"/>
+  </g>
+</svg>

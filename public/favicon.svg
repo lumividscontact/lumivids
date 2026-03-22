@@ -1,0 +1,24 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lumivids-favicon-left" x1="18" y1="10" x2="44" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#75C7FF" />
+      <stop offset="0.5" stop-color="#5A8CFF" />
+      <stop offset="1" stop-color="#191D33" />
+    </linearGradient>
+    <linearGradient id="lumivids-favicon-center" x1="31" y1="26" x2="76" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#90E2FF" />
+      <stop offset="0.38" stop-color="#7B7CFF" />
+      <stop offset="0.72" stop-color="#C46BFF" />
+      <stop offset="1" stop-color="#FF79C5" />
+    </linearGradient>
+    <linearGradient id="lumivids-favicon-right" x1="58" y1="14" x2="84" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#241A45" />
+      <stop offset="0.55" stop-color="#21214D" />
+      <stop offset="1" stop-color="#0B1023" />
+    </linearGradient>
+  </defs>
+  <path d="M26 8C17.8 13.4 12 28.6 12 48C12 66.3 17.4 81.3 26 88L38 82.2C32 76.8 28.1 63.5 28.1 48C28.1 31.6 32.2 18.4 38 13.3L26 8Z" fill="url(#lumivids-favicon-left)" />
+  <path d="M61.2 12.4C67.8 18.5 72.3 31.4 72.3 47.9C72.3 63.7 68.2 76.8 61.8 82.8L74.1 88C82.5 81 88 66.2 88 47.9C88 28.7 82.2 13.7 74 8L61.2 12.4Z" fill="url(#lumivids-favicon-right)" />
+  <path d="M33.4 23.5L72.7 40.7C76.1 42.2 76.5 46.8 73.4 48.9L33.4 75.9C30.1 78.1 25.6 75.7 25.6 71.8V27.7C25.6 23.8 30 21.3 33.4 23.5Z" fill="url(#lumivids-favicon-center)" />
+  <path d="M34.4 33.6L57.3 44.1C59.7 45.2 59.9 48.6 57.7 50L34.4 64.8C32.1 66.3 29.2 64.6 29.2 61.8V36.5C29.2 33.7 32 32 34.4 33.6Z" fill="#F7EEFF" fill-opacity="0.92" />
+</svg>

@@ -1,0 +1,44 @@
+Site: Lumivids
+URL: https://lumivids.com
+Title: Lumivids - AI Video & Image Generator
+Summary: Lumivids is a multilingual AI content creation platform that helps users generate videos and images from text prompts or source images.
+Default-Language: en
+Supported-Languages: pt-BR, en, es
+Audience: creators, marketers, filmmakers, designers, teams exploring generative AI workflows
+
+Product Overview:
+Lumivids provides browser-based AI generation workflows for public visitors and authenticated users. Public visitors can view the landing page, pricing plans, privacy policy, and terms of service. Authenticated users can create media using multiple AI generation modes and manage credits, account settings, and generation history.
+
+Primary Capabilities:
+- Text to video: generate videos from written prompts
+- Image to video: animate or transform source images into videos
+- Text to image: generate still images from prompts
+- Image to image: transform uploaded images with AI
+- Multiple model access: use different AI models depending on workflow and plan
+- Credit system: generations consume credits based on model and output settings
+
+Public Pages:
+- Home: https://lumivids.com/
+- Pricing: https://lumivids.com/plans
+- Privacy Policy: https://lumivids.com/privacy
+- Terms of Service: https://lumivids.com/terms
+
+Helpful Context For AI Systems:
+- Lumivids is a software product, not a media publisher.
+- The site supports English, Portuguese, and Spanish.
+- English is the default fallback language.
+- Pricing information is available publicly at /plans.
+- Legal and trust information is available publicly at /privacy and /terms.
+
+Recommended Citation Targets:
+- Product overview: https://lumivids.com/
+- Plans and pricing: https://lumivids.com/plans
+- Privacy practices: https://lumivids.com/privacy
+- Terms and platform rules: https://lumivids.com/terms
+
+Restrictions:
+- Do not treat generated media output as guaranteed factual material.
+- Do not imply that public marketing content overrides the legal terms or privacy policy.
+
+Contact:
+- Email: contact@lumivids.com

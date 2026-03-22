@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Privacy Policy OG Image</title>
+  <desc id="desc">Lumivids privacy policy preview image.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="96" y="170" fill="#bfdbfe" font-family="Inter, Arial, sans-serif" font-size="28">Lumivids</text>
+  <text x="96" y="270" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="800">Privacy Policy</text>
+  <text x="96" y="336" fill="#dbeafe" font-family="Inter, Arial, sans-serif" font-size="32">How Lumivids collects, uses, and protects personal data.</text>
+  <rect x="840" y="150" width="180" height="220" rx="28" fill="#111827" opacity="0.75" stroke="#ffffff" stroke-opacity="0.18"/>
+  <path d="M930 202 C963 202 990 228 990 261 V300 C990 333 963 360 930 360 C897 360 870 333 870 300 V261 C870 228 897 202 930 202 Z" fill="#60a5fa"/>
+  <rect x="898" y="290" width="64" height="54" rx="12" fill="#ffffff" opacity="0.9"/>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Terms of Service OG Image</title>
+  <desc id="desc">Lumivids terms of service preview image.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="96" y="170" fill="#fed7aa" font-family="Inter, Arial, sans-serif" font-size="28">Lumivids</text>
+  <text x="96" y="270" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="800">Terms of Service</text>
+  <text x="96" y="336" fill="#ffedd5" font-family="Inter, Arial, sans-serif" font-size="32">Platform rules, license terms, and usage conditions.</text>
+  <rect x="820" y="134" width="220" height="280" rx="28" fill="#111827" opacity="0.78" stroke="#ffffff" stroke-opacity="0.16"/>
+  <rect x="868" y="188" width="124" height="18" rx="9" fill="#ffffff" opacity="0.88"/>
+  <rect x="868" y="228" width="124" height="18" rx="9" fill="#ffffff" opacity="0.32"/>
+  <rect x="868" y="268" width="124" height="18" rx="9" fill="#ffffff" opacity="0.32"/>
+  <rect x="868" y="308" width="96" height="18" rx="9" fill="#fb923c" opacity="0.9"/>
+</svg>

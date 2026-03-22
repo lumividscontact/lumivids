@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Text to Image OG Image</title>
+  <desc id="desc">Lumivids text to image generator preview image.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#140c1f"/>
+      <stop offset="52%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#be185d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1072" height="502" rx="28" fill="#0b1120" opacity="0.34" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="96" y="146" fill="#fbcfe8" font-family="Inter, Arial, sans-serif" font-size="28">Lumivids</text>
+  <text x="96" y="236" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="800">Text to Image</text>
+  <text x="96" y="310" fill="#fde68a" font-family="Inter, Arial, sans-serif" font-size="32">Generate images from prompts with leading AI models.</text>
+  <rect x="760" y="150" width="260" height="260" rx="28" fill="#111827" stroke="#ffffff" stroke-opacity="0.14"/>
+  <circle cx="890" cy="240" r="36" fill="#f59e0b"/>
+  <path d="M810 350 L880 280 L940 330 L1010 250 L1010 380 L810 380 Z" fill="#ec4899" opacity="0.92"/>
+</svg>

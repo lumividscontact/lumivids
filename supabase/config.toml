@@ -1,0 +1,41 @@
+[functions.create-checkout-session]
+verify_jwt = true
+
+[functions.create-portal-session]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.text-to-video]
+verify_jwt = true
+
+[functions.text-to-image]
+verify_jwt = true
+
+[functions.image-to-video]
+verify_jwt = true
+
+[functions.image-to-image]
+verify_jwt = true
+
+[functions.check-prediction]
+verify_jwt = true
+
+[functions.cancel-prediction]
+verify_jwt = true
+
+[functions.admin-rpc]
+verify_jwt = true
+
+[functions.admin-create-coupon]
+verify_jwt = true
+
+[functions.admin-create-refund]
+verify_jwt = true
+
+[functions.cleanup-stale-generations]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = true
