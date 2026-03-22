@@ -46,6 +46,26 @@
           var normalized = queryLang || storedLang || detectLanguageFromLocales(browserLangs)
           var htmlLang = normalized === 'pt' ? 'pt-BR' : normalized === 'es' ? 'es' : 'en'
           document.documentElement.setAttribute('lang', htmlLang)
+
+          // Persist ?lang= query param so the preference survives SPA navigation
+          if (queryLang && queryLang !== storedLang) {
+            localStorage.setItem('lumivids_language', queryLang)
+          }
+
+          // Update static meta tags to match the detected language
+          var titles = { pt: 'Lumivids - Gerador de Vídeo e Imagem com IA', en: 'Lumivids - AI Video & Image Generator', es: 'Lumivids - Generador de Video e Imágenes con IA' }
+          var descs = { pt: 'Crie vídeos e imagens incríveis com inteligência artificial. Transforme texto em vídeo, anime imagens e muito mais.', en: 'Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more with next-generation AI models.', es: 'Crea videos e imágenes increíbles con inteligencia artificial. Convierte texto en video, anima imágenes y mucho más.' }
+          var ogLocales = { pt: 'pt_BR', en: 'en_US', es: 'es_ES' }
+
+          document.title = titles[normalized] || titles.en
+          var setContent = function (sel, val) { var el = document.querySelector(sel); if (el) el.setAttribute('content', val) }
+          setContent('meta[name="title"]', titles[normalized] || titles.en)
+          setContent('meta[name="description"]', descs[normalized] || descs.en)
+          setContent('meta[property="og:title"]', titles[normalized] || titles.en)
+          setContent('meta[property="og:description"]', descs[normalized] || descs.en)
+          setContent('meta[name="twitter:title"]', titles[normalized] || titles.en)
+          setContent('meta[name="twitter:description"]', descs[normalized] || descs.en)
+          setContent('meta[property="og:locale"]', ogLocales[normalized] || ogLocales.en)
         } catch {
           document.documentElement.setAttribute('lang', 'en')
         }

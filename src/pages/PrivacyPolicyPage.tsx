@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Shield } from 'lucide-react'
 import BrandLogo from '@/components/BrandLogo'
 import { useLanguage } from '@/i18n'
-import { useSEO, SEO_PAGES } from '@/hooks'
+import { useSEO, getSeoPages } from '@/hooks'
 
 const SITE_URL = 'https://lumivids.com'
 
@@ -32,8 +32,8 @@ export default function PrivacyPolicyPage() {
     title: privacySeo.title,
     description: privacySeo.description,
     keywords: privacySeo.keywords,
-    canonical: SEO_PAGES.privacy.canonical,
-    image: SEO_PAGES.privacy.image,
+    canonical: getSeoPages(t).privacy.canonical,
+    image: getSeoPages(t).privacy.image,
     hreflang: {
       'pt-BR': '/privacy?lang=pt',
       en: '/privacy?lang=en',

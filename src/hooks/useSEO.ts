@@ -243,87 +243,107 @@ export function useSEO(config: SEOConfig = {}) {
 }
 
 /**
- * SEO configurations for each page
+ * Build SEO configurations for each page from the active translations.
+ * Static props (canonical, image, noindex) stay fixed; text comes from i18n.
  */
-export const SEO_PAGES = {
-  home: {
-    title: 'Dashboard',
-    description: 'Seu painel de criação de vídeos e imagens com IA. Acesse seus projetos, veja suas gerações recentes e comece a criar.',
-  },
-  landing: {
-    title: 'Lumivids - AI Video & Image Generator',
-    description: 'Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more with next-generation AI models.',
-    keywords: ['AI video generator', 'text to video', 'image to video', 'AI image generator', 'inteligência artificial', 'gerador de vídeo'],
-    canonical: '/',
-    image: '/og/landing.svg',
-  },
-  textToVideo: {
-    title: 'Text to Video - Criar Vídeo com IA',
-    description: 'Transforme suas ideias em vídeos impressionantes. Escreva um prompt e deixe a IA criar vídeos de alta qualidade com MiniMax, Kling, Sora e mais.',
-    keywords: ['text to video', 'AI video', 'gerador de vídeo', 'criar vídeo com IA', 'prompt to video'],
-    image: '/og/text-to-video.svg',
-  },
-  imageToVideo: {
-    title: 'Image to Video - Animar Imagem com IA',
-    description: 'Dê vida às suas imagens! Use IA para transformar fotos estáticas em vídeos animados impressionantes.',
-    keywords: ['image to video', 'animar imagem', 'foto para vídeo', 'AI animation', 'animate image'],
-    image: '/og/image-to-video.svg',
-  },
-  textToImage: {
-    title: 'Text to Image - Criar Imagem com IA',
-    description: 'Gere imagens únicas a partir de descrições de texto. Use Flux, Stable Diffusion, DALL-E e outros modelos de IA.',
-    keywords: ['text to image', 'AI image', 'gerador de imagem', 'criar imagem com IA', 'prompt to image'],
-    image: '/og/text-to-image.svg',
-  },
-  imageToImage: {
-    title: 'Image to Image - Transformar Imagem com IA',
-    description: 'Transforme e aprimore suas imagens com IA. Edite estilos, melhore qualidade e crie variações.',
-    keywords: ['image to image', 'editar imagem com IA', 'transformar imagem', 'AI image editing'],
-    image: '/og/image-to-image.svg',
-  },
-  myVideos: {
-    title: 'Minhas Criações',
-    description: 'Veja todos os seus vídeos e imagens gerados. Baixe, compartilhe e gerencie suas criações.',
-  },
-  favorites: {
-    title: 'Favoritos',
-    description: 'Seus vídeos e imagens favoritos em um só lugar. Acesse rapidamente suas melhores criações.',
-  },
-  pricing: {
-    title: 'Planos e Preços',
-    description: 'Escolha o plano ideal para você. Créditos mensais para gerar vídeos e imagens com os melhores modelos de IA.',
-    keywords: ['preços lumivids', 'planos IA', 'créditos vídeo IA', 'assinatura'],
-  },
-  publicPricing: {
-    title: 'Lumivids Pricing Plans',
-    description: 'Compare Lumivids plans and pricing for AI video and image generation.',
-    keywords: ['lumivids pricing', 'AI plans', 'AI video credits', 'lumivids subscription'],
-    canonical: '/plans',
-    image: '/og/plans.svg',
-  },
-  account: {
-    title: 'Minha Conta',
-    description: 'Gerencie sua conta, veja seus créditos e configure suas preferências.',
-    noindex: true,
-  },
-  privacy: {
-    title: 'Privacy Policy',
-    description: 'Learn how Lumivids collects, uses, and protects your personal data.',
-    canonical: '/privacy',
-    image: '/og/privacy.svg',
-  },
-  terms: {
-    title: 'Terms of Service',
-    description: 'Read the terms and conditions for using the Lumivids platform.',
-    canonical: '/terms',
-    image: '/og/terms.svg',
-  },
-  auth: {
-    title: 'Login',
-    description: 'Entre na sua conta Lumivids ou crie uma nova para começar a gerar vídeos e imagens com IA.',
-    noindex: true,
-    canonical: '/auth',
-  },
-} as const
+export function getSeoPages(t: {
+  home: { seo: { title: string; description: string } };
+  landing: { seo: { title: string; description: string; keywords: string[] } };
+  textToVideo: { seo: { title: string; description: string; keywords: string[] } };
+  imageToVideo: { seo: { title: string; description: string; keywords: string[] } };
+  textToImage: { seo: { title: string; description: string; keywords: string[] } };
+  imageToImage: { seo: { title: string; description: string; keywords: string[] } };
+  myVideos: { seo: { title: string; description: string } };
+  myFavorites: { seo: { title: string; description: string } };
+  pricing: { seo: { title: string; description: string; keywords: string[] } };
+  myAccount: { seo: { title: string; description: string } };
+  auth: { seo: { title: string; description: string } };
+  legal: {
+    privacy: { seo: { title: string; description: string; keywords: string[] } };
+    terms: { seo: { title: string; description: string; keywords: string[] } };
+  };
+}) {
+  return {
+    home: {
+      title: t.home.seo.title,
+      description: t.home.seo.description,
+    },
+    landing: {
+      title: t.landing.seo.title,
+      description: t.landing.seo.description,
+      keywords: t.landing.seo.keywords,
+      canonical: '/',
+      image: '/og/landing.svg',
+    },
+    textToVideo: {
+      title: t.textToVideo.seo.title,
+      description: t.textToVideo.seo.description,
+      keywords: t.textToVideo.seo.keywords,
+      image: '/og/text-to-video.svg',
+    },
+    imageToVideo: {
+      title: t.imageToVideo.seo.title,
+      description: t.imageToVideo.seo.description,
+      keywords: t.imageToVideo.seo.keywords,
+      image: '/og/image-to-video.svg',
+    },
+    textToImage: {
+      title: t.textToImage.seo.title,
+      description: t.textToImage.seo.description,
+      keywords: t.textToImage.seo.keywords,
+      image: '/og/text-to-image.svg',
+    },
+    imageToImage: {
+      title: t.imageToImage.seo.title,
+      description: t.imageToImage.seo.description,
+      keywords: t.imageToImage.seo.keywords,
+      image: '/og/image-to-image.svg',
+    },
+    myVideos: {
+      title: t.myVideos.seo.title,
+      description: t.myVideos.seo.description,
+    },
+    favorites: {
+      title: t.myFavorites.seo.title,
+      description: t.myFavorites.seo.description,
+    },
+    pricing: {
+      title: t.pricing.seo.title,
+      description: t.pricing.seo.description,
+      keywords: t.pricing.seo.keywords,
+    },
+    publicPricing: {
+      title: t.pricing.seo.title,
+      description: t.pricing.seo.description,
+      keywords: t.pricing.seo.keywords,
+      canonical: '/plans',
+      image: '/og/plans.svg',
+    },
+    account: {
+      title: t.myAccount.seo.title,
+      description: t.myAccount.seo.description,
+      noindex: true,
+    },
+    privacy: {
+      title: t.legal.privacy.seo.title,
+      description: t.legal.privacy.seo.description,
+      canonical: '/privacy',
+      image: '/og/privacy.svg',
+    },
+    terms: {
+      title: t.legal.terms.seo.title,
+      description: t.legal.terms.seo.description,
+      canonical: '/terms',
+      image: '/og/terms.svg',
+    },
+    auth: {
+      title: t.auth.seo.title,
+      description: t.auth.seo.description,
+      noindex: true,
+      canonical: '/auth',
+    },
+  } as const
+}
 
-export type SEOPageKey = keyof typeof SEO_PAGES
+export type SeoPages = ReturnType<typeof getSeoPages>
+export type SEOPageKey = keyof SeoPages

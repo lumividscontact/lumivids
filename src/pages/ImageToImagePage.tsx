@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Wand2, ChevronDown, X, Image as ImageIcon, Download, AlertCircle, Zap, ZoomIn, RotateCcw, ArrowRight, Heart } from 'lucide-react'
-import { useImageToImage, useSEO, SEO_PAGES } from '@/hooks'
+import { useImageToImage, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCredits } from '@/contexts/CreditsContext'
@@ -27,7 +27,7 @@ export default function ImageToImagePage() {
   const toast = useToast()
   
   // SEO meta tags
-  useSEO(SEO_PAGES.imageToImage)
+  useSEO(getSeoPages(t).imageToImage)
   
   const STYLE_PRESETS = useMemo(
     () => [

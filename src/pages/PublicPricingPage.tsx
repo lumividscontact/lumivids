@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import BrandLogo from '@/components/BrandLogo'
 import { useLanguage } from '@/i18n'
-import { useSEO, SEO_PAGES } from '@/hooks'
+import { useSEO, getSeoPages } from '@/hooks'
 import { PLANS } from '@/contexts/CreditsContext'
 
 const planIcons: Record<string, typeof Zap> = {
@@ -43,8 +43,8 @@ export default function PublicPricingPage() {
     title: pricingSeo.title,
     description: pricingSeo.description,
     keywords: pricingSeo.keywords,
-    canonical: SEO_PAGES.publicPricing.canonical,
-    image: SEO_PAGES.publicPricing.image,
+    canonical: getSeoPages(t).publicPricing.canonical,
+    image: getSeoPages(t).publicPricing.image,
     hreflang: {
       'pt-BR': '/plans?lang=pt',
       en: '/plans?lang=en',

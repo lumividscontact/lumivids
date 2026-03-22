@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { History, AlertCircle, Video, Image as ImageIcon, Camera } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/i18n'
+import { formatDate } from '@/i18n/runtime'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { LoadingSpinner, SkeletonList } from '@/components/Loading'
 import type { UsageStats } from '@/lib/database.types'
@@ -20,8 +21,6 @@ export default function UsageHistoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [usage, setUsage] = useState<UsageStats[]>([])
-
-  const locale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : 'en-US'
 
   useEffect(() => {
     const loadUsage = async () => {
@@ -105,7 +104,7 @@ export default function UsageHistoryPage() {
             {usage.map((item) => {
               const Icon = typeIcons[item.generation_type]
               const formattedDate = item.date
-                ? new Date(item.date).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
+                ? formatDate(item.date, language, { day: '2-digit', month: 'short', year: 'numeric' })
                 : '—'
               return (
                 <div key={item.id} className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-dark-800/50 border border-dark-700">

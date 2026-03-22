@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Layers, ChevronDown, X, Monitor, Smartphone, Square } from 'lucide-react'
-import { useImageToVideo, useSEO, SEO_PAGES } from '@/hooks'
+import { useImageToVideo, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/AuthModal'
@@ -29,7 +29,7 @@ export default function ImageToVideoPage() {
   const examplePrompts = t.imageToVideo.examplePrompts
   
   // SEO meta tags
-  useSEO(SEO_PAGES.imageToVideo)
+  useSEO(getSeoPages(t).imageToVideo)
 
   // Compute initial values from URL once (lazy initializer pattern)
   const initialValuesRef = useRef<{

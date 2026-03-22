@@ -98,6 +98,10 @@ export const pt = {
 
   // Home Page
   home: {
+    seo: {
+      title: 'Dashboard',
+      description: 'Seu painel de criação de vídeos e imagens com IA. Acesse seus projetos, veja suas gerações recentes e comece a criar.',
+    },
     title: 'Crie Vídeos Incríveis com IA',
     subtitle: 'Transforme suas ideias em vídeos impressionantes usando inteligência artificial de última geração',
     getStarted: 'Começar Agora',
@@ -149,6 +153,11 @@ export const pt = {
 
   // Text to Video Page
   textToVideo: {
+    seo: {
+      title: 'Texto para Vídeo - Criar Vídeo com IA',
+      description: 'Transforme suas ideias em vídeos impressionantes. Escreva um prompt e deixe a IA criar vídeos de alta qualidade com MiniMax, Kling, Sora e mais.',
+      keywords: ['texto para vídeo', 'vídeo com IA', 'gerador de vídeo', 'criar vídeo com IA', 'prompt para vídeo'],
+    },
     title: 'Texto para Vídeo',
     subtitle: 'Transforme suas ideias em vídeos cinematográficos impressionantes',
     promptLabel: 'Descreva seu vídeo',
@@ -202,6 +211,11 @@ export const pt = {
 
   // Image to Video Page
   imageToVideo: {
+    seo: {
+      title: 'Imagem para Vídeo - Animar Imagem com IA',
+      description: 'Dê vida às suas imagens! Use IA para transformar fotos estáticas em vídeos animados impressionantes.',
+      keywords: ['imagem para vídeo', 'animar imagem', 'foto para vídeo', 'animação com IA', 'animar imagem com IA'],
+    },
     title: 'Imagem para Vídeo',
     subtitle: 'Anime suas imagens estáticas com movimentos fluidos e realistas',
     uploadLabel: 'Upload de Imagem',
@@ -250,6 +264,11 @@ export const pt = {
 
   // Text to Image Page
   textToImage: {
+    seo: {
+      title: 'Texto para Imagem - Criar Imagem com IA',
+      description: 'Gere imagens únicas a partir de descrições de texto. Use Flux, Stable Diffusion, DALL-E e outros modelos de IA.',
+      keywords: ['texto para imagem', 'imagem com IA', 'gerador de imagem', 'criar imagem com IA', 'prompt para imagem'],
+    },
     title: 'Texto para Imagem',
     subtitle: 'Crie imagens únicas e impressionantes a partir de descrições de texto',
     promptLabel: 'Descreva sua imagem',
@@ -278,6 +297,11 @@ export const pt = {
 
   // Image to Image Page
   imageToImage: {
+    seo: {
+      title: 'Imagem para Imagem - Transformar Imagem com IA',
+      description: 'Transforme e aprimore suas imagens com IA. Edite estilos, melhore qualidade e crie variações.',
+      keywords: ['imagem para imagem', 'editar imagem com IA', 'transformar imagem', 'edição de imagem com IA'],
+    },
     title: 'Imagem para Imagem',
     subtitle: 'Transforme, melhore e reimagine suas imagens com IA',
     uploadLabel: 'Imagem Original',
@@ -333,6 +357,10 @@ export const pt = {
   },
 
   myVideos: {
+    seo: {
+      title: 'Minhas Criações',
+      description: 'Veja todos os seus vídeos e imagens gerados. Baixe, compartilhe e gerencie suas criações.',
+    },
     title: 'Minhas Criações',
     countSummary: '{total} itens • {videos} vídeos • {images} imagens',
     searchPlaceholder: 'Buscar por título ou prompt...',
@@ -398,6 +426,10 @@ export const pt = {
 
   // My Favorites Page
   myFavorites: {
+    seo: {
+      title: 'Favoritos',
+      description: 'Seus vídeos e imagens favoritos em um só lugar. Acesse rapidamente suas melhores criações.',
+    },
     title: 'Meus Favoritos',
     subtitle: 'Seus vídeos e imagens favoritos em um só lugar',
     countSummary: '{total} itens salvos',
@@ -427,6 +459,10 @@ export const pt = {
 
   // My Account Page
   myAccount: {
+    seo: {
+      title: 'Minha Conta',
+      description: 'Gerencie sua conta, veja seus créditos e configure suas preferências.',
+    },
     title: 'Minha Conta',
     subtitle: 'Gerencie suas configurações e informações pessoais',
     memberSince: 'Membro desde',
@@ -700,6 +736,10 @@ export const pt = {
 
   // Auth Page
   auth: {
+    seo: {
+      title: 'Login',
+      description: 'Entre na sua conta Lumivids ou crie uma nova para começar a gerar vídeos e imagens com IA.',
+    },
     login: 'Entrar',
     register: 'Criar Conta',
     googleLoginButton: 'Entrar com Google',

@@ -5,7 +5,7 @@ import { useToast } from '@/components/Toast'
 import { LOW_CREDITS_THRESHOLD_PERCENT } from '@/config/constants'
 import { FREE_PLAN, PLANS } from '@/contexts/CreditsContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSubscription, useSEO, SEO_PAGES } from '@/hooks'
+import { useSubscription, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { redirectToPortal } from '@/services/billing'
 import { BillingCard } from './MyAccount/BillingCard'
@@ -21,7 +21,7 @@ export default function MyAccountPage() {
   const { t, language } = useLanguage()
   const toast = useToast()
 
-  useSEO(SEO_PAGES.account)
+  useSEO(getSeoPages(t).account)
 
   const [loadingCancel, setLoadingCancel] = useState(false)
   const [isEditingProfile, setIsEditingProfile] = useState(false)

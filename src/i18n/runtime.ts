@@ -47,7 +47,19 @@ export function detectRuntimeLanguage(): RuntimeLanguage {
 }
 
 export function getRuntimeLanguage(): RuntimeLanguage {
-  return getStoredRuntimeLanguage() ?? detectRuntimeLanguage()
+  return getQueryParamLanguage() ?? getStoredRuntimeLanguage() ?? detectRuntimeLanguage()
+}
+
+export function getQueryParamLanguage(): RuntimeLanguage | null {
+  if (typeof window === 'undefined') return null
+
+  const params = new URLSearchParams(window.location.search)
+  const lang = params.get('lang')
+  if (isRuntimeLanguage(lang)) {
+    setStoredRuntimeLanguage(lang)
+    return lang
+  }
+  return null
 }
 
 export function setStoredRuntimeLanguage(language: RuntimeLanguage): void {
@@ -59,4 +71,26 @@ export function setStoredRuntimeLanguage(language: RuntimeLanguage): void {
 export function getRuntimeMessage(messages: Record<RuntimeLanguage, string>): string {
   const lang = getRuntimeLanguage()
   return messages[lang] ?? messages.en
+}
+
+const INTL_LOCALE_MAP: Record<RuntimeLanguage, string> = {
+  pt: 'pt-BR',
+  en: 'en-US',
+  es: 'es-ES',
+}
+
+export function getIntlLocale(language: RuntimeLanguage): string {
+  return INTL_LOCALE_MAP[language]
+}
+
+export function formatDate(date: Date | string | number, language: RuntimeLanguage, options?: Intl.DateTimeFormatOptions): string {
+  return new Intl.DateTimeFormat(INTL_LOCALE_MAP[language], options).format(new Date(date))
+}
+
+export function formatNumber(value: number, language: RuntimeLanguage, options?: Intl.NumberFormatOptions): string {
+  return new Intl.NumberFormat(INTL_LOCALE_MAP[language], options).format(value)
+}
+
+export function formatCurrency(amount: number, language: RuntimeLanguage, currency = 'BRL'): string {
+  return new Intl.NumberFormat(INTL_LOCALE_MAP[language], { style: 'currency', currency }).format(amount)
 }

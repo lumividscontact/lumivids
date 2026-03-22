@@ -3,7 +3,7 @@ import { Video, ImagePlus, Layers, Image, ArrowRight, Zap, Clock, Star, Sparkles
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/i18n'
-import { useSEO, SEO_PAGES } from '@/hooks'
+import { useSEO, getSeoPages } from '@/hooks'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
 interface RecentActivityItem {
@@ -61,7 +61,7 @@ export default function HomePage() {
   const [isRecentActivityLoading, setIsRecentActivityLoading] = useState(true)
   
   // SEO meta tags
-  useSEO(SEO_PAGES.home)
+  useSEO(getSeoPages(t).home)
 
   // Auto-advance carousel every 8 seconds
   useEffect(() => {

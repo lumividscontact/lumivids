@@ -4,7 +4,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import BrandLogo from '@/components/BrandLogo'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/i18n'
-import { useSEO, SEO_PAGES } from '@/hooks'
+import { useSEO, getSeoPages } from '@/hooks'
 import { supabase } from '@/lib/supabase'
 
 type AuthMode = 'login' | 'register' | 'recovery'
@@ -98,8 +98,9 @@ export default function AuthPage() {
   }, [location.search, location.hash, t.auth.loginMethodHintPassword])
 
   // SEO meta tags
+  const seoPages = getSeoPages(t)
   useSEO({
-    ...SEO_PAGES.auth,
+    ...seoPages.auth,
     hreflang: {
       'pt-BR': '/auth?lang=pt',
       en: '/auth?lang=en',
@@ -109,8 +110,8 @@ export default function AuthPage() {
     structuredData: {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
-      name: SEO_PAGES.auth.title,
-      description: SEO_PAGES.auth.description,
+      name: seoPages.auth.title,
+      description: seoPages.auth.description,
       url: `${window.location.origin}/auth`,
       isPartOf: {
         '@type': 'WebSite',

@@ -145,15 +145,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       }
 
       if (profileLanguage) {
-        if (profileLanguage === 'en' && detectedLanguage !== 'en') {
-          setStoredRuntimeLanguage(detectedLanguage)
-          if (!cancelled) {
-            setLanguageState(detectedLanguage)
-          }
-          void persistProfileLanguage(userId, detectedLanguage)
-          return
-        }
-
         setStoredRuntimeLanguage(profileLanguage)
         if (!cancelled) {
           setLanguageState(profileLanguage)

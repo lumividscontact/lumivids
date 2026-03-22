@@ -6,7 +6,7 @@ import { useLanguage } from '@/i18n'
 import { redirectToCheckout, redirectToPortal } from '@/services/billing'
 import { useSearchParams } from 'react-router-dom'
 import { LoadingSpinner } from '@/components/Loading'
-import { useSEO, SEO_PAGES } from '@/hooks'
+import { useSEO, getSeoPages } from '@/hooks'
 import { trackEvent } from '@/services/analytics'
 
 const planIcons: Record<string, typeof Zap> = {
@@ -24,7 +24,7 @@ export default function PricingPage() {
   const [loadingPortal, setLoadingPortal] = useState(false)
   
   // SEO meta tags
-  useSEO(SEO_PAGES.pricing)
+  useSEO(getSeoPages(t).pricing)
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const isInitialLoading = authLoading || plans.length === 0

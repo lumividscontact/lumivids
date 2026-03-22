@@ -98,6 +98,10 @@ export const es = {
 
   // Home Page
   home: {
+    seo: {
+      title: 'Panel de Control',
+      description: 'Tu panel de creación de videos e imágenes con IA. Accede a tus proyectos, mira tus generaciones recientes y comienza a crear.',
+    },
     title: 'Crea Videos Increíbles con IA',
     subtitle: 'Transforma tus ideas en videos impresionantes usando inteligencia artificial de última generación',
     getStarted: 'Comenzar Ahora',
@@ -149,6 +153,11 @@ export const es = {
 
   // Text to Video Page
   textToVideo: {
+    seo: {
+      title: 'Texto a Video - Crear Video con IA',
+      description: 'Transforma tus ideas en videos impresionantes. Escribe un prompt y deja que la IA cree videos de alta calidad con MiniMax, Kling, Sora y más.',
+      keywords: ['texto a video', 'video con IA', 'generador de video', 'crear video con IA', 'prompt a video'],
+    },
     title: 'Texto a Video',
     subtitle: 'Transforma tus ideas en videos cinematográficos impresionantes',
     promptLabel: 'Describe tu video',
@@ -202,6 +211,11 @@ export const es = {
 
   // Image to Video Page
   imageToVideo: {
+    seo: {
+      title: 'Imagen a Video - Animar Imagen con IA',
+      description: '¡Da vida a tus imágenes! Usa IA para transformar fotos estáticas en videos animados impresionantes.',
+      keywords: ['imagen a video', 'animar imagen', 'foto a video', 'animación con IA', 'animar imagen con IA'],
+    },
     title: 'Imagen a Video',
     subtitle: 'Anima tus imágenes estáticas con movimientos fluidos y realistas',
     uploadLabel: 'Subir Imagen',
@@ -250,6 +264,11 @@ export const es = {
 
   // Text to Image Page
   textToImage: {
+    seo: {
+      title: 'Texto a Imagen - Crear Imagen con IA',
+      description: 'Genera imágenes únicas a partir de descripciones de texto. Usa Flux, Stable Diffusion, DALL-E y otros modelos de IA.',
+      keywords: ['texto a imagen', 'imagen con IA', 'generador de imágenes', 'crear imagen con IA', 'prompt a imagen'],
+    },
     title: 'Texto a Imagen',
     subtitle: 'Crea imágenes únicas e impresionantes a partir de descripciones de texto',
     promptLabel: 'Describe tu imagen',
@@ -278,6 +297,11 @@ export const es = {
 
   // Image to Image Page
   imageToImage: {
+    seo: {
+      title: 'Imagen a Imagen - Transformar Imagen con IA',
+      description: 'Transforma y mejora tus imágenes con IA. Edita estilos, mejora la calidad y crea variaciones.',
+      keywords: ['imagen a imagen', 'editar imagen con IA', 'transformar imagen', 'edición de imagen con IA'],
+    },
     title: 'Imagen a Imagen',
     subtitle: 'Transforma, mejora y reimagina tus imágenes con IA',
     uploadLabel: 'Imagen Original',
@@ -333,6 +357,10 @@ export const es = {
   },
 
   myVideos: {
+    seo: {
+      title: 'Mis Creaciones',
+      description: 'Mira todos tus videos e imágenes generados. Descarga, comparte y gestiona tus creaciones.',
+    },
     title: 'Mis Videos',
     countSummary: '{total} elementos • {videos} videos • {images} imágenes',
     searchPlaceholder: 'Buscar por título o prompt...',
@@ -398,6 +426,10 @@ export const es = {
 
   // My Favorites Page
   myFavorites: {
+    seo: {
+      title: 'Favoritos',
+      description: 'Tus videos e imágenes favoritos en un solo lugar. Accede rápidamente a tus mejores creaciones.',
+    },
     title: 'Mis Favoritos',
     subtitle: 'Tus videos e imágenes favoritos en un solo lugar',
     countSummary: '{total} elementos guardados',
@@ -427,6 +459,10 @@ export const es = {
 
   // My Account Page
   myAccount: {
+    seo: {
+      title: 'Mi Cuenta',
+      description: 'Gestiona tu cuenta, consulta tus créditos y configura tus preferencias.',
+    },
     title: 'Mi Cuenta',
     subtitle: 'Gestiona tu configuración e información personal',
     memberSince: 'Miembro desde',
@@ -698,6 +734,10 @@ export const es = {
 
   // Auth Page
   auth: {
+    seo: {
+      title: 'Iniciar Sesión',
+      description: 'Inicia sesión en tu cuenta Lumivids o crea una nueva para comenzar a generar videos e imágenes con IA.',
+    },
     login: 'Iniciar Sesión',
     register: 'Crear Cuenta',
     googleLoginButton: 'Continuar con Google',

@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/i18n'
+import { formatCurrency } from '@/i18n/runtime'
 import {
   fetchAdminStats,
   fetchAdminUsers,
@@ -587,7 +588,7 @@ function GenerationRow({
 
 export default function AdminDashboard() {
   const { isAdmin, user } = useAuth()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   const [tab, setTab] = useState<AdminTab>('users')
   const [stats, setStats] = useState<AdminStats | null>(null)
@@ -1616,7 +1617,7 @@ export default function AdminDashboard() {
                     <h3 className="text-base font-semibold text-white">Analytics & Relatórios</h3>
                     <div className="flex items-center gap-2 text-xs text-dark-400">
                       <span>MRR atual:</span>
-                      <span className="text-green-400 font-semibold">R$ {reportsData.currentMrr.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      <span className="text-green-400 font-semibold">{formatCurrency(reportsData.currentMrr, language)}</span>
                       <span className="mx-1">•</span>
                       <span>Conversão free → pago:</span>
                       <span className="text-primary-300 font-semibold">{reportsData.conversionRate.toFixed(2)}%</span>

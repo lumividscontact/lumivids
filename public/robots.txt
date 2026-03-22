@@ -7,8 +7,7 @@ Disallow: /my-account
 Disallow: /my-favorites
 Disallow: /usage-history
 Disallow: /settings/
-Disallow: /pricing
-Disallow: /auth1/callback
+Disallow: /auth/callback
 
 Sitemap: https://lumivids.com/sitemap.xml
 Host: lumivids.com

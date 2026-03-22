@@ -13,7 +13,7 @@ import BrandLogo from '@/components/BrandLogo'
 import { useLanguage } from '@/i18n'
 import LanguageSelector from '@/components/LanguageSelector'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSEO, SEO_PAGES } from '@/hooks'
+import { useSEO, getSeoPages } from '@/hooks'
 import { PLANS } from '@/contexts/CreditsContext'
 import {
   RESOLUTIONS,
@@ -166,8 +166,8 @@ export default function LandingPage() {
     title: landingSeo.title,
     description: landingSeo.description,
     keywords: landingSeo.keywords,
-    canonical: SEO_PAGES.landing.canonical,
-    image: SEO_PAGES.landing.image,
+    canonical: getSeoPages(t).landing.canonical,
+    image: getSeoPages(t).landing.image,
     hreflang: {
       'pt-BR': '/?lang=pt',
       en: '/?lang=en',

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, FileText } from 'lucide-react'
 import BrandLogo from '@/components/BrandLogo'
 import { useLanguage } from '@/i18n'
-import { useSEO, SEO_PAGES } from '@/hooks'
+import { useSEO, getSeoPages } from '@/hooks'
 
 const SITE_URL = 'https://lumivids.com'
 
@@ -32,8 +32,8 @@ export default function TermsOfServicePage() {
     title: termsSeo.title,
     description: termsSeo.description,
     keywords: termsSeo.keywords,
-    canonical: SEO_PAGES.terms.canonical,
-    image: SEO_PAGES.terms.image,
+    canonical: getSeoPages(t).terms.canonical,
+    image: getSeoPages(t).terms.image,
     hreflang: {
       'pt-BR': '/terms?lang=pt',
       en: '/terms?lang=en',

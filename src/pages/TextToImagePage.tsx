@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Sparkles, ChevronDown, X, Image as ImageIcon, Download, AlertCircle, Monitor, Smartphone, Square, Grid, ZoomIn, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
-import { useTextToImage, useSEO, SEO_PAGES } from '@/hooks'
+import { useTextToImage, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/AuthModal'
@@ -236,7 +236,7 @@ export default function TextToImagePage() {
   const { isAuthenticated } = useAuth()
   
   // SEO meta tags
-  useSEO(SEO_PAGES.textToImage)
+  useSEO(getSeoPages(t).textToImage)
   const examplePrompts = t.textToImage.examplePrompts
   const [prompt, setPrompt] = useState('')
   const [negativePrompt, setNegativePrompt] = useState('')

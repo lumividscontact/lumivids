@@ -98,6 +98,10 @@ export const en = {
 
   // Home Page
   home: {
+    seo: {
+      title: 'Dashboard',
+      description: 'Your AI video and image creation dashboard. Access your projects, view recent generations and start creating.',
+    },
     title: 'Create Amazing Videos with AI',
     subtitle: 'Transform your ideas into stunning videos using cutting-edge artificial intelligence',
     getStarted: 'Get Started',
@@ -149,6 +153,11 @@ export const en = {
 
   // Text to Video Page
   textToVideo: {
+    seo: {
+      title: 'Text to Video - Create Video with AI',
+      description: 'Transform your ideas into stunning videos. Write a prompt and let AI create high-quality videos with MiniMax, Kling, Sora and more.',
+      keywords: ['text to video', 'AI video', 'video generator', 'create video with AI', 'prompt to video'],
+    },
     title: 'Text to Video',
     subtitle: 'Transform your ideas into stunning cinematic videos',
     promptLabel: 'Describe your video',
@@ -202,6 +211,11 @@ export const en = {
 
   // Image to Video Page
   imageToVideo: {
+    seo: {
+      title: 'Image to Video - Animate Image with AI',
+      description: 'Bring your images to life! Use AI to transform static photos into stunning animated videos.',
+      keywords: ['image to video', 'animate image', 'photo to video', 'AI animation', 'animate image with AI'],
+    },
     title: 'Image to Video',
     subtitle: 'Animate your static images with fluid and realistic movements',
     uploadLabel: 'Upload Image',
@@ -250,6 +264,11 @@ export const en = {
 
   // Text to Image Page
   textToImage: {
+    seo: {
+      title: 'Text to Image - Create Image with AI',
+      description: 'Generate unique images from text descriptions. Use Flux, Stable Diffusion, DALL-E and other AI models.',
+      keywords: ['text to image', 'AI image', 'image generator', 'create image with AI', 'prompt to image'],
+    },
     title: 'Text to Image',
     subtitle: 'Create unique and stunning images from text descriptions',
     promptLabel: 'Describe your image',
@@ -277,6 +296,10 @@ export const en = {
   },
 
   myVideos: {
+    seo: {
+      title: 'My Creations',
+      description: 'View all your generated videos and images. Download, share and manage your creations.',
+    },
     title: 'My Videos',
     countSummary: '{total} items • {videos} videos • {images} images',
     searchPlaceholder: 'Search by title or prompt...',
@@ -342,6 +365,11 @@ export const en = {
 
   // Image to Image Page
   imageToImage: {
+    seo: {
+      title: 'Image to Image - Transform Image with AI',
+      description: 'Transform and enhance your images with AI. Edit styles, improve quality and create variations.',
+      keywords: ['image to image', 'edit image with AI', 'transform image', 'AI image editing'],
+    },
     title: 'Image to Image',
     subtitle: 'Transform, enhance and reimagine your images with AI',
     uploadLabel: 'Original Image',
@@ -398,6 +426,10 @@ export const en = {
 
   // My Favorites Page
   myFavorites: {
+    seo: {
+      title: 'Favorites',
+      description: 'Your favorite videos and images in one place. Quickly access your best creations.',
+    },
     title: 'My Favorites',
     subtitle: 'Your favorite videos and images in one place',
     countSummary: '{total} saved items',
@@ -427,6 +459,10 @@ export const en = {
 
   // My Account Page
   myAccount: {
+    seo: {
+      title: 'My Account',
+      description: 'Manage your account, view your credits and configure your preferences.',
+    },
     title: 'My Account',
     subtitle: 'Manage your settings and personal information',
     memberSince: 'Member since',
@@ -700,6 +736,10 @@ export const en = {
 
   // Auth Page
   auth: {
+    seo: {
+      title: 'Login',
+      description: 'Sign in to your Lumivids account or create a new one to start generating videos and images with AI.',
+    },
     login: 'Login',
     register: 'Sign Up',
     googleLoginButton: 'Continue with Google',

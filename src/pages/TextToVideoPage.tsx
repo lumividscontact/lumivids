@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Video, ChevronDown, X, Volume2, VolumeX, Monitor, Smartphone, Square } from 'lucide-react'
-import { useTextToVideo, useSEO, SEO_PAGES } from '@/hooks'
+import { useTextToVideo, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/AuthModal'
@@ -67,7 +67,7 @@ export default function TextToVideoPage() {
   const examplePrompts = t.textToVideo.examplePrompts
   
   // SEO meta tags
-  useSEO(SEO_PAGES.textToVideo)
+  useSEO(getSeoPages(t).textToVideo)
   
   // Get initial model from URL query param
   const getInitialModel = (): ModelConfig => {
