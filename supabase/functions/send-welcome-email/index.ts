@@ -6,41 +6,34 @@ import { enforceRateLimit } from '../_shared/rateLimit.ts'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || ''
-const RESEND_FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || ''
 const APP_URL = Deno.env.get('APP_URL') || 'https://lumivids.com'
+const RESEND_WELCOME_EVENT = Deno.env.get('RESEND_WELCOME_EVENT') || 'welcome_email'
 
-async function sendResendEmail(params: {
-  to: string
-  subject: string
-  html: string
-  text: string
+async function sendResendEvent(params: {
+  event: string
+  email: string
+  payload?: Record<string, unknown>
 }): Promise<void> {
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY not configured')
   }
 
-  if (!RESEND_FROM_EMAIL) {
-    throw new Error('RESEND_FROM_EMAIL not configured')
-  }
-
-  const response = await fetch('https://api.resend.com/emails', {
+  const response = await fetch('https://api.resend.com/events/send', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: RESEND_FROM_EMAIL,
-      to: [params.to],
-      subject: params.subject,
-      html: params.html,
-      text: params.text,
+      event: params.event,
+      email: params.email,
+      payload: params.payload ?? {},
     }),
   })
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({})) as { message?: string; error?: string }
-    throw new Error(payload.message || payload.error || 'Failed to send email via Resend')
+    throw new Error(payload.message || payload.error || 'Failed to send event via Resend')
   }
 }
 
@@ -133,25 +126,14 @@ serve(async (req: Request) => {
       .trim()
       .split(/\s+/)[0]
 
-    const subject = 'Welcome to Lumivids'
-    const html = `
-      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;max-width:640px;margin:0 auto;padding:24px;">
-        <h1 style="margin:0 0 16px;font-size:28px;">Welcome to Lumivids, ${firstName}!</h1>
-        <p style="margin:0 0 16px;">Your account is ready and you already have 10 bonus credits waiting for you.</p>
-        <p style="margin:0 0 16px;">Start creating AI videos and images in minutes, explore the gallery for inspiration, and test your first workflow now.</p>
-        <p style="margin:24px 0;">
-          <a href="${APP_URL}/home" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:600;">Open Lumivids</a>
-        </p>
-        <p style="margin:0;color:#4b5563;">If you need help, just reply to this email.</p>
-      </div>
-    `
-    const text = `Welcome to Lumivids, ${firstName}!\n\nYour account is ready and you already have 10 bonus credits waiting for you.\n\nStart here: ${APP_URL}/home\n`
-
-    await sendResendEmail({
-      to: recipientEmail,
-      subject,
-      html,
-      text,
+    await sendResendEvent({
+      event: RESEND_WELCOME_EVENT,
+      email: recipientEmail,
+      payload: {
+        first_name: firstName,
+        app_url: APP_URL,
+        credits_bonus: 10,
+      },
     })
 
     const { error: updateError } = await supabase
