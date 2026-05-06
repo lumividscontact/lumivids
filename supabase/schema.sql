@@ -373,6 +373,11 @@ CREATE POLICY "Users can view their own videos"
   ON public.generated_videos FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins can view all generated videos" ON public.generated_videos;
+CREATE POLICY "Admins can view all generated videos"
+  ON public.generated_videos FOR SELECT
+  USING (public.is_admin());
+
 DROP POLICY IF EXISTS "Users can insert their own videos" ON public.generated_videos;
 CREATE POLICY "Users can insert their own videos"
   ON public.generated_videos FOR INSERT

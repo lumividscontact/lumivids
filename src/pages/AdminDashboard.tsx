@@ -110,6 +110,64 @@ const PAGE_SIZE = 15
 const GENERATIONS_PAGE_SIZE = 12
 type AdminTab = 'users' | 'generations' | 'finance' | 'moderation' | 'system' | 'support'
 
+const ADMIN_PREVIEW_PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='225'%3E%3Crect fill='%23374151' width='400' height='225'/%3E%3C/svg%3E`
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined
+
+function normalizeMediaUrl(url: string): string {
+  const trimmed = url.trim()
+  if (!trimmed) return trimmed
+
+  const toHttps = (value: string) => value.startsWith('http://') ? `https://${value.slice(7)}` : value
+
+  // Handle raw storage object paths accidentally persisted without host.
+  if (!trimmed.includes('://') && SUPABASE_URL) {
+    const base = SUPABASE_URL.replace(/\/$/, '')
+
+    if (trimmed.startsWith('generations/')) {
+      return `${base}/storage/v1/object/public/videos/${trimmed}`
+    }
+
+    if (trimmed.startsWith('videos/')) {
+      return `${base}/storage/v1/object/public/${trimmed}`
+    }
+
+    if (trimmed.startsWith('/storage/v1/object/')) {
+      return `${base}${trimmed}`
+    }
+  }
+
+  try {
+    const parsed = new URL(toHttps(trimmed))
+    const path = parsed.pathname
+
+    // Signed URL can expire; when bucket is public we can safely switch to public path.
+    const signMarker = '/storage/v1/object/sign/'
+    const signIndex = path.indexOf(signMarker)
+    if (signIndex >= 0) {
+      const rest = path.slice(signIndex + signMarker.length)
+      return `${parsed.origin}/storage/v1/object/public/${rest}`
+    }
+
+    const objectMarker = '/storage/v1/object/'
+    const objectIndex = path.indexOf(objectMarker)
+    if (objectIndex >= 0) {
+      const rest = path.slice(objectIndex + objectMarker.length)
+      if (!rest.startsWith('public/')) {
+        return `${parsed.origin}/storage/v1/object/public/${rest}`
+      }
+    }
+
+    return parsed.toString()
+  } catch {
+    return toHttps(trimmed)
+  }
+}
+
+function getPreviewVideoSrc(url: string): string {
+  if (url.includes('#')) return url
+  return `${url}#t=0.1`
+}
+
 function StatCard({ icon: Icon, label, value, accent }: { icon: typeof Users; label: string; value: string | number; accent: string }) {
   return (
     <div className="bg-dark-800/60 border border-dark-700 rounded-2xl p-5 flex items-start gap-4 hover:border-dark-600 transition-colors">
@@ -600,6 +658,7 @@ export default function AdminDashboard() {
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [exportingUsers, setExportingUsers] = useState(false)
 
   const [generations, setGenerations] = useState<AdminGenerationRow[]>([])
   const [totalGenerations, setTotalGenerations] = useState(0)
@@ -615,6 +674,7 @@ export default function AdminDashboard() {
   const [generationAnalytics, setGenerationAnalytics] = useState<AdminGenerationAnalytics | null>(null)
   const [reportsData, setReportsData] = useState<AdminReportsData | null>(null)
   const [previewGeneration, setPreviewGeneration] = useState<AdminGenerationRow | null>(null)
+  const [previewMediaError, setPreviewMediaError] = useState(false)
 
   const [stripeEvents, setStripeEvents] = useState<StripeWebhookEventRow[]>([])
   const [stripeEventsPage, setStripeEventsPage] = useState(0)
@@ -784,15 +844,23 @@ export default function AdminDashboard() {
         const [statsData] = await Promise.all([fetchAdminStats(), loadUsers()])
         setStats(statsData)
       } else if (tab === 'generations') {
-        const [statsData, generationAnalyticsData, reports] = await Promise.all([
+        await loadGenerations()
+
+        const [statsResult, analyticsResult, reportsResult] = await Promise.allSettled([
           fetchAdminStats(),
           fetchGenerationAnalytics(),
           fetchAdminReportsData(),
-          loadGenerations(),
         ])
-        setStats(statsData)
-        setGenerationAnalytics(generationAnalyticsData)
-        setReportsData(reports)
+
+        if (statsResult.status === 'fulfilled') {
+          setStats(statsResult.value)
+        }
+        if (analyticsResult.status === 'fulfilled') {
+          setGenerationAnalytics(analyticsResult.value)
+        }
+        if (reportsResult.status === 'fulfilled') {
+          setReportsData(reportsResult.value)
+        }
       } else if (tab === 'finance') {
         await Promise.all([
           loadStripeEvents(),
@@ -855,6 +923,85 @@ export default function AdminDashboard() {
   const handleSearch = () => {
     setPage(0)
     setSearch(searchInput)
+  }
+
+  const handleExportUsersCsv = async () => {
+    if (exportingUsers) return
+
+    setExportingUsers(true)
+    try {
+      const exportPageSize = 200
+      const collectedUsers: AdminUserWithDetails[] = []
+      let exportPage = 0
+      let expectedTotal = 0
+
+      while (true) {
+        const result = await fetchAdminUsers(exportPage, exportPageSize, search)
+        expectedTotal = result.total
+        collectedUsers.push(...result.users)
+
+        if (result.users.length < exportPageSize || collectedUsers.length >= expectedTotal) {
+          break
+        }
+
+        exportPage += 1
+      }
+
+      const escapeCsv = (value: string | number | boolean | null | undefined): string => {
+        const normalized = value == null ? '' : String(value)
+        if (/[",\n]/.test(normalized)) {
+          return `"${normalized.replace(/"/g, '""')}"`
+        }
+        return normalized
+      }
+
+      const csvLines = [
+        [
+          'user_id',
+          'display_name',
+          'email',
+          'role',
+          'plan',
+          'subscription_status',
+          'credits',
+          'is_suspended',
+          'suspended_reason',
+          'must_reset_password',
+          'force_logout_at',
+          'created_at',
+        ].join(','),
+        ...collectedUsers.map((adminUser) => [
+          escapeCsv(adminUser.user_id),
+          escapeCsv(adminUser.display_name),
+          escapeCsv(adminUser.email),
+          escapeCsv(adminUser.role),
+          escapeCsv(adminUser.plan ?? 'free'),
+          escapeCsv(adminUser.subscriptionStatus),
+          escapeCsv(adminUser.credits),
+          escapeCsv(adminUser.is_suspended),
+          escapeCsv(adminUser.suspended_reason),
+          escapeCsv(adminUser.must_reset_password),
+          escapeCsv(adminUser.force_logout_at),
+          escapeCsv(adminUser.created_at),
+        ].join(',')),
+      ]
+
+      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const suffix = search.trim() ? `-${search.trim().toLowerCase().replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')}` : ''
+      link.href = url
+      link.setAttribute('download', `admin-users${suffix ? suffix : ''}-${new Date().toISOString().slice(0, 10)}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('[Admin] Failed to export users CSV:', err)
+      window.alert(err instanceof Error ? err.message : 'Falha ao exportar usuários')
+    } finally {
+      setExportingUsers(false)
+    }
   }
 
   const handleGenerationSearch = () => {
@@ -1343,6 +1490,13 @@ export default function AdminDashboard() {
   const flagsTotalPages = Math.ceil(flagsTotal / 12)
   const supportTicketsTotalPages = Math.ceil(supportTicketsTotal / 12)
 
+  const previewOutputUrl = previewGeneration?.output_url ? normalizeMediaUrl(previewGeneration.output_url) : null
+  const previewThumbnailUrl = previewGeneration?.thumbnail_url ? normalizeMediaUrl(previewGeneration.thumbnail_url) : ADMIN_PREVIEW_PLACEHOLDER
+
+  useEffect(() => {
+    setPreviewMediaError(false)
+  }, [previewGeneration?.id])
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1436,6 +1590,9 @@ export default function AdminDashboard() {
                   <span className="text-sm text-dark-400 font-normal ml-1">({totalUsers})</span>
                 </h2>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button onClick={handleExportUsersCsv} disabled={exportingUsers} className="btn-secondary text-sm px-4 py-2 inline-flex items-center gap-2 disabled:opacity-40">
+                    <Download className={`w-4 h-4 ${exportingUsers ? 'animate-pulse' : ''}`} /> CSV
+                  </button>
                   <div className="relative flex-1 sm:flex-none">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-dark-500" />
                     <input
@@ -2359,7 +2516,7 @@ export default function AdminDashboard() {
         </>
       )}
 
-      {previewGeneration && previewGeneration.output_url && (
+      {previewGeneration && previewOutputUrl && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-4xl bg-dark-900 border border-dark-700 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
@@ -2367,15 +2524,51 @@ export default function AdminDashboard() {
                 {previewGeneration.type.includes('video') ? <Play className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
                 Preview
               </h3>
-              <button onClick={() => setPreviewGeneration(null)} className="btn-secondary text-sm px-3 py-2">
-                {t.common.close}
-              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewOutputUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-secondary text-sm px-3 py-2"
+                >
+                  Abrir mídia
+                </a>
+                <button
+                  onClick={() => {
+                    setPreviewGeneration(null)
+                    setPreviewMediaError(false)
+                  }}
+                  className="btn-secondary text-sm px-3 py-2"
+                >
+                  {t.common.close}
+                </button>
+              </div>
             </div>
-            {previewGeneration.type.includes('video') ? (
-              <video src={previewGeneration.output_url} controls className="w-full max-h-[70vh] rounded-xl bg-black" />
+            {previewGeneration.type.includes('video') && !previewMediaError ? (
+              <video
+                src={getPreviewVideoSrc(previewOutputUrl)}
+                controls
+                autoPlay
+                playsInline
+                preload="metadata"
+                crossOrigin="anonymous"
+                poster={previewThumbnailUrl}
+                className="w-full max-h-[70vh] rounded-xl bg-black"
+                onError={() => setPreviewMediaError(true)}
+              />
             ) : (
-              <img src={previewGeneration.output_url} alt="Preview" className="w-full max-h-[70vh] object-contain rounded-xl bg-black/40" />
+              <img
+                src={previewMediaError ? previewThumbnailUrl : previewOutputUrl}
+                alt="Preview"
+                className="w-full max-h-[70vh] object-contain rounded-xl bg-black/40"
+                onError={(e) => {
+                  e.currentTarget.src = ADMIN_PREVIEW_PLACEHOLDER
+                }}
+              />
             )}
+            <p className="mt-3 text-xs text-dark-400 break-all">
+              URL: {previewOutputUrl}
+            </p>
           </div>
         </div>
       )}

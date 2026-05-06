@@ -86,6 +86,25 @@ export interface AdminGenerationRow {
   } | null
 }
 
+function isReplicateMediaUrl(url: string | null | undefined): boolean {
+  return typeof url === 'string' && (url.includes('replicate.delivery') || url.includes('replicate.com'))
+}
+
+function pickBestMediaUrl(...candidates: Array<string | null | undefined>): string | null {
+  const permanent = candidates.find((candidate) => {
+    if (typeof candidate !== 'string') return false
+    const trimmed = candidate.trim()
+    return trimmed.length > 0 && !isReplicateMediaUrl(trimmed)
+  })
+
+  if (typeof permanent === 'string') {
+    return permanent.trim()
+  }
+
+  const any = candidates.find((candidate) => typeof candidate === 'string' && candidate.trim().length > 0)
+  return typeof any === 'string' ? any.trim() : null
+}
+
 export interface AdminStats {
   totalUsers: number
   activeSubscriptions: number
@@ -662,7 +681,7 @@ export async function fetchAdminGenerations(
   let query = supabase
     .from('generations')
     .select(
-      'id, user_id, type, status, prompt, output_url, thumbnail_url, model_name, credits_used, error_message, created_at, completed_at',
+      'id, user_id, type, status, prompt, output_url, thumbnail_url, model_name, credits_used, error_message, created_at, completed_at, generated_videos(video_url, thumbnail_url)',
       { count: 'exact' }
     )
     .order('created_at', { ascending: false })
@@ -697,7 +716,54 @@ export async function fetchAdminGenerations(
     query = query.lte('created_at', `${filters.dateTo}T23:59:59.999Z`)
   }
 
-  const { data, error, count } = await query
+  let { data, error, count } = await query
+
+  if (error) {
+    console.warn('[Admin] fetchAdminGenerations with generated_videos failed, retrying without relation:', error)
+
+    let fallbackQuery = supabase
+      .from('generations')
+      .select(
+        'id, user_id, type, status, prompt, output_url, thumbnail_url, model_name, credits_used, error_message, created_at, completed_at',
+        { count: 'exact' }
+      )
+      .order('created_at', { ascending: false })
+      .range(page * pageSize, (page + 1) * pageSize - 1)
+
+    if (filters.status && filters.status !== 'all') {
+      fallbackQuery = fallbackQuery.eq('status', filters.status)
+    }
+
+    if (filters.type && filters.type !== 'all') {
+      fallbackQuery = fallbackQuery.eq('type', filters.type)
+    }
+
+    if (filters.search) {
+      const search = filters.search.trim()
+      if (search) {
+        const safe = sanitizePostgrestValue(search)
+        fallbackQuery = fallbackQuery.or(`prompt.ilike.%${safe}%,model_name.ilike.%${safe}%`)
+      }
+    }
+
+    if (filters.model && filters.model.trim()) {
+      const safeModel = sanitizePostgrestValue(filters.model.trim())
+      fallbackQuery = fallbackQuery.ilike('model_name', `%${safeModel}%`)
+    }
+
+    if (filters.dateFrom) {
+      fallbackQuery = fallbackQuery.gte('created_at', `${filters.dateFrom}T00:00:00.000Z`)
+    }
+
+    if (filters.dateTo) {
+      fallbackQuery = fallbackQuery.lte('created_at', `${filters.dateTo}T23:59:59.999Z`)
+    }
+
+    const fallbackResult = await fallbackQuery
+    data = fallbackResult.data
+    error = fallbackResult.error
+    count = fallbackResult.count
+  }
 
   if (error) {
     throw error
@@ -706,10 +772,26 @@ export async function fetchAdminGenerations(
   const userIds = (data ?? []).map((row) => row.user_id)
   const profilesByUserId = await fetchProfilesByUserIds(userIds)
 
-  const generations = (data ?? []).map((row: any) => ({
-    ...row,
-    profile: profilesByUserId.get(row.user_id) ?? null,
-  })) as AdminGenerationRow[]
+  const generations = (data ?? []).map((row: any) => {
+    const videos = Array.isArray(row.generated_videos) ? row.generated_videos : []
+    const bestVideoUrl = pickBestMediaUrl(
+      ...videos.map((video: { video_url?: string | null }) => video?.video_url ?? null),
+      row.output_url,
+    )
+    const bestThumbnailUrl = pickBestMediaUrl(
+      ...videos.map((video: { thumbnail_url?: string | null }) => video?.thumbnail_url ?? null),
+      row.thumbnail_url,
+      ...videos.map((video: { video_url?: string | null }) => video?.video_url ?? null),
+      row.output_url,
+    )
+
+    return {
+      ...row,
+      output_url: bestVideoUrl,
+      thumbnail_url: bestThumbnailUrl,
+      profile: profilesByUserId.get(row.user_id) ?? null,
+    }
+  }) as AdminGenerationRow[]
 
   return {
     generations,

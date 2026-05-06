@@ -17,8 +17,20 @@ function isReplicateUrl(url: string | null | undefined): boolean {
   return typeof url === 'string' && (url.includes('replicate.delivery') || url.includes('replicate.com'))
 }
 
+function isSignedStorageUrl(url: string | null | undefined): boolean {
+  return typeof url === 'string' && url.includes('/storage/v1/object/sign/')
+}
+
+function normalizeUrl(url: string): string {
+  const trimmed = url.trim()
+  if (trimmed.startsWith('http://')) {
+    return `https://${trimmed.slice(7)}`
+  }
+  return trimmed
+}
+
 function pickBestUrl(...candidates: (string | null | undefined)[]): string {
-  const permanent = candidates.find((u) => typeof u === 'string' && u.length > 0 && !isReplicateUrl(u))
+  const permanent = candidates.find((u) => typeof u === 'string' && u.length > 0 && !isReplicateUrl(u) && !isSignedStorageUrl(u))
   if (permanent) return permanent
 
   const any = candidates.find((u) => typeof u === 'string' && u.length > 0)
@@ -41,22 +53,13 @@ function useInspirationGallery() {
       setIsLoading(true)
       setError(null)
       try {
-        const { data, error: dbError } = await supabase
-          .from('generations')
-          .select('id, type, prompt, output_url, thumbnail_url, model_name, settings, generated_videos(video_url, thumbnail_url)')
-          .eq('is_public', true)
-          .eq('status', 'succeeded')
-          .is('hidden_at', null)
-          .order('created_at', { ascending: false })
+        const { data, error: dbError } = await supabase.rpc('get_inspiration_admin_feed')
 
         if (dbError) throw dbError
 
         const mapped: InspirationItem[] = (data ?? [])
           .map((row) => {
-            const gv = Array.isArray(row.generated_videos) && row.generated_videos.length > 0
-              ? row.generated_videos[0]
-              : null
-
+            const mediaType = generationTypeToMediaType(row.type as string)
             const settings = (row.settings ?? {}) as Record<string, unknown>
             const settingsOutput = typeof settings.outputUrl === 'string'
               ? settings.outputUrl
@@ -69,17 +72,25 @@ function useInspirationGallery() {
                 ? settings.thumbnail_url
                 : null
 
-            const mediaUrl = pickBestUrl(
-              row.output_url as string | null | undefined,
-              gv?.video_url as string | null | undefined,
-              settingsOutput,
-            )
-            const rawThumb = pickBestUrl(
+            const rawThumbUrl = pickBestUrl(
               row.thumbnail_url as string | null | undefined,
-              gv?.thumbnail_url as string | null | undefined,
               settingsThumb,
             )
-            const mediaType = generationTypeToMediaType(row.type as string)
+
+            const mediaUrlRaw = mediaType === 'image'
+              ? pickBestUrl(
+                  row.output_url as string | null | undefined,
+                  settingsOutput,
+                  row.thumbnail_url as string | null | undefined,
+                  settingsThumb,
+                )
+              : pickBestUrl(
+                  row.output_url as string | null | undefined,
+                  settingsOutput,
+                )
+
+            const mediaUrl = mediaUrlRaw ? normalizeUrl(mediaUrlRaw) : ''
+            const rawThumb = rawThumbUrl ? normalizeUrl(rawThumbUrl) : ''
             // Para imagens sem thumbnail, usa a própria imagem como thumb
             const thumbnailUrl = rawThumb || (mediaType === 'image' ? mediaUrl : '')
 
