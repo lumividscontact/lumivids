@@ -4,6 +4,7 @@ import type { PlanType, UserRole } from '@/lib/database.types'
 import { INITIAL_CREDITS, USER_CREDITS_CACHE_KEY } from '@/config/constants'
 import { detectRuntimeLanguage, getRuntimeMessage, getStoredRuntimeLanguage } from '@/i18n/runtime'
 import { trackEvent } from '@/services/analytics'
+import { requestWelcomeEmail } from '@/services/welcomeEmail'
 
 // ============================================
 // Credits Cache Helpers
@@ -387,6 +388,12 @@ function useSupabaseAuth() {
     return hydratedUser
   }, [createUserFromAuth, loadUserDataFromDB, withTimeout])
 
+  const triggerWelcomeEmail = useCallback(() => {
+    requestWelcomeEmail().catch((err) => {
+      console.warn('[Auth] welcome email request failed (non-blocking):', err)
+    })
+  }, [])
+
   const enforceAccountState = useCallback(async (userId: string, lastSignInAt?: string | null): Promise<boolean> => {
     const { data: profile, error } = await supabase
       .from('profiles')
@@ -488,6 +495,8 @@ function useSupabaseAuth() {
             setUser(hydratedUser)
           }
 
+          triggerWelcomeEmail()
+
           enforceAccountState(session.user.id, session.user.last_sign_in_at).catch((err) => {
             console.warn('[Auth] enforceAccountState failed (non-blocking):', err)
           })
@@ -540,6 +549,8 @@ function useSupabaseAuth() {
             setUser(hydratedUser)
           }
 
+          triggerWelcomeEmail()
+
           // Enforce account state in background – never blocks auth state change
           enforceAccountState(session.user.id, session.user.last_sign_in_at).catch((err) => {
             console.warn('[Auth] enforceAccountState in onAuthStateChange failed:', err)
@@ -554,7 +565,7 @@ function useSupabaseAuth() {
       isMounted = false
       authListener.subscription.unsubscribe()
     }
-  }, [createHydratedUserFromAuth, createUserFromAuth, enforceAccountState, withTimeout])
+  }, [createHydratedUserFromAuth, createUserFromAuth, enforceAccountState, triggerWelcomeEmail, withTimeout])
 
   const login = async (email: string, password: string) => {
     setIsAuthenticating(true)
@@ -582,6 +593,7 @@ function useSupabaseAuth() {
 
         const hydratedUser = await createHydratedUserFromAuth(data.user)
         setUser(hydratedUser)
+        triggerWelcomeEmail()
         trackEvent('login', { method: 'email' })
       }
     } finally {
@@ -642,6 +654,7 @@ function useSupabaseAuth() {
       if (data.user) {
         const hydratedUser = await createHydratedUserFromAuth(data.user)
         setUser(hydratedUser)
+        triggerWelcomeEmail()
         trackEvent('sign_up', { method: 'email' })
       }
     } finally {

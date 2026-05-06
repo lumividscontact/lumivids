@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   suspended_reason TEXT,
   must_reset_password BOOLEAN NOT NULL DEFAULT false,
   force_logout_at TIMESTAMPTZ,
+  welcome_email_pending BOOLEAN NOT NULL DEFAULT false,
+  welcome_email_sent_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -33,6 +35,8 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN NOT NU
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS suspended_reason TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS must_reset_password BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS force_logout_at TIMESTAMPTZ;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_pending BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_sent_at TIMESTAMPTZ;
 ALTER TABLE public.profiles ALTER COLUMN language SET DEFAULT 'en';
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -938,11 +942,12 @@ CREATE TRIGGER update_saved_prompts_updated_at
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (user_id, display_name, email)
+  INSERT INTO public.profiles (user_id, display_name, email, welcome_email_pending)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
-    NEW.email
+    NEW.email,
+    true
   );
 
   INSERT INTO public.user_credits (user_id, credits, lifetime_credits)

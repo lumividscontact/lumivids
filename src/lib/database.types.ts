@@ -53,6 +53,8 @@ export interface Database {
           suspended_reason: string | null
           must_reset_password: boolean
           force_logout_at: string | null
+          welcome_email_pending: boolean
+          welcome_email_sent_at: string | null
           created_at: string
           updated_at: string
         }
@@ -70,6 +72,8 @@ export interface Database {
           suspended_reason?: string | null
           must_reset_password?: boolean
           force_logout_at?: string | null
+          welcome_email_pending?: boolean
+          welcome_email_sent_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -87,6 +91,8 @@ export interface Database {
           suspended_reason?: string | null
           must_reset_password?: boolean
           force_logout_at?: string | null
+          welcome_email_pending?: boolean
+          welcome_email_sent_at?: string | null
           created_at?: string
           updated_at?: string
         }

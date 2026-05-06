@@ -26,6 +26,7 @@ supabase login
 | `cancel-prediction` | Cancela uma predição em andamento |
 | `cleanup-stale-generations` | Finaliza gerações travadas e reembolsa créditos automaticamente |
 | `admin-rpc` | Proxy server-side para RPCs administrativas com validação de admin |
+| `send-welcome-email` | Envia e-mail de boas-vindas para novos usuários via Resend |
 
 ## Deploy
 
@@ -53,12 +54,13 @@ supabase functions deploy check-prediction
 supabase functions deploy cancel-prediction
 supabase functions deploy cleanup-stale-generations
 supabase functions deploy admin-rpc
+supabase functions deploy send-welcome-email
 ```
 
 ### 4. Ou deploy em lote (PowerShell):
 
 ```powershell
-$functions = @("text-to-video", "text-to-image", "image-to-video", "image-to-image", "check-prediction", "cancel-prediction", "cleanup-stale-generations", "admin-rpc")
+$functions = @("text-to-video", "text-to-image", "image-to-video", "image-to-image", "check-prediction", "cancel-prediction", "cleanup-stale-generations", "admin-rpc", "send-welcome-email")
 foreach ($fn in $functions) {
     Write-Host "Deploying $fn..."
     supabase functions deploy $fn
@@ -78,6 +80,7 @@ https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/check-prediction
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/cancel-prediction
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/cleanup-stale-generations
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/admin-rpc
+https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/send-welcome-email
 ```
 
 ## Agendar cleanup automático (Scheduler)
@@ -112,6 +115,9 @@ supabase secrets list
 - `CORS_ALLOWED_ORIGINS`: lista de origens separadas por vírgula (ex.: `https://lumivids.com,https://staging.lumivids.com,http://localhost:5173`)
 - `CORS_ALLOWED_ORIGIN`: origem única (legado/alternativo quando não usar lista)
 - `RATE_LIMIT_FALLBACK_MODE`: `fail-closed` (recomendado em produção) ou `memory` (útil em dev/local)
+- `RESEND_API_KEY`: chave da API do Resend
+- `RESEND_FROM_EMAIL`: remetente verificado no Resend (ex.: `Lumivids <hello@lumivids.com>`)
+- `APP_URL`: URL pública da aplicação usada no CTA do e-mail (ex.: `https://lumivids.com`)
 
 ## Logs das Funções
 
