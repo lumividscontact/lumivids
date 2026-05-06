@@ -4,14 +4,14 @@ import { updateUsageStats } from '@/services/usageStats'
 import { useCredits } from '@/contexts/CreditsContext'
 import { getModelById, calculateCredits, Resolution } from '@/config/models'
 import { useLanguage } from '@/i18n'
-import { useGeneration } from './useGeneration'
+import { useGeneration, type UseGenerationConfig } from './useGeneration'
 import { createEstimatedPollingProgress } from './estimatedProgress'
 
 export function useTextToVideo() {
   const { t } = useLanguage()
   const { getCost } = useCredits()
 
-  const generationConfig = useMemo(() => ({
+  const generationConfig = useMemo<UseGenerationConfig<TextToVideoInput, string[] | null>>(() => ({
     generationType: 'text-to-video',
     calculateCost: (input) => {
       const model = getModelById(input.model)

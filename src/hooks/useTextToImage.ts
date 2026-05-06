@@ -3,14 +3,14 @@ import { replicateAPI, resolvePredictionOutputUrls, TextToImageInput } from '@/s
 import { updateUsageStats } from '@/services/usageStats'
 import { useCredits } from '@/contexts/CreditsContext'
 import { useLanguage } from '@/i18n'
-import { useGeneration } from './useGeneration'
+import { useGeneration, type UseGenerationConfig } from './useGeneration'
 import { createEstimatedPollingProgress } from './estimatedProgress'
 
 export function useTextToImage() {
   const { credits, getCost } = useCredits()
   const { t } = useLanguage()
 
-  const generationConfig = useMemo(() => ({
+  const generationConfig = useMemo<UseGenerationConfig<TextToImageInput, string[]>>(() => ({
     generationType: 'text-to-image',
     calculateCost: (input) =>
       getCost('text-to-image', input.model, {

@@ -8,6 +8,8 @@ import AuthModal from '@/components/AuthModal'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
 import GenerationVideoPreview from '@/components/GenerationVideoPreview'
+import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
+import ModelLogo from '@/components/ModelLogo'
 import { 
   TEXT_TO_VIDEO_MODELS, 
   ModelConfig, 
@@ -56,7 +58,7 @@ const STYLE_PRESETS = [
     descriptionKey: 'fantasyDesc',
     prompt: 'fantasy, ethereal lighting, magical atmosphere',
   },
-]
+] as const
 
 const MAX_PROMPT_CHARS = 2000
 
@@ -67,8 +69,21 @@ export default function TextToVideoPage() {
   const examplePrompts = t.textToVideo.examplePrompts
   
   // SEO meta tags
-  useSEO(getSeoPages(t).textToVideo)
-  
+  useSEO({
+    ...getSeoPages(t).textToVideo,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Lumivids – Text to Video Generator',
+      url: 'https://lumivids.com/text-to-video',
+      description: t.textToVideo.seo.description,
+      applicationCategory: 'MultimediaApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      featureList: 'AI text to video, multiple AI models, HD video output, no editing skills required',
+    },
+  })
+
   // Get initial model from URL query param
   const getInitialModel = (): ModelConfig => {
     const modelId = searchParams.get('model')
@@ -137,7 +152,7 @@ export default function TextToVideoPage() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useTextToVideo()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium } = useTextToVideo()
 
   useEffect(() => {
     return () => {
@@ -183,6 +198,8 @@ export default function TextToVideoPage() {
   const currentCost = useMemo(() => {
     return calculateCredits(selectedModel, duration, resolution, withAudio)
   }, [selectedModel, duration, resolution, withAudio])
+
+  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
 
   const selectedStylePreset = useMemo(() => {
     return STYLE_PRESETS.find((item) => item.id === stylePresetId) || null
@@ -239,17 +256,6 @@ export default function TextToVideoPage() {
     }
   }
 
-  const getModelIcon = (modelId: string) => {
-    if (modelId.includes('seedance')) return '📊'
-    if (modelId.includes('kling')) return '✨'
-    if (modelId.includes('minimax')) return '🎬'
-    if (modelId.includes('luma')) return '🌙'
-    if (modelId.includes('haiper')) return '🚀'
-    if (modelId.includes('wan')) return '🔄'
-    if (modelId.includes('hailuo')) return '🎭'
-    return '🎥'
-  }
-
   const getAspectRatioIcon = (ratio: AspectRatio) => {
     switch (ratio) {
       case '16:9': return <Monitor className="w-4 h-4" />
@@ -275,11 +281,11 @@ export default function TextToVideoPage() {
               className="w-full flex items-center justify-between p-3 bg-dark-800 rounded-xl hover:bg-dark-700 transition-colors disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{getModelIcon(selectedModel.id)}</span>
+                <ModelLogo modelId={selectedModel.id} />
                 <div className="text-left">
                   <p className="font-medium text-white">{selectedModel.name}</p>
                   <p className="text-xs text-dark-400">
-                    {selectedModel.credits.perSecond
+                    {selectedModel.credits.perSecond?.[resolution] !== undefined
                       ? `${selectedModel.credits.perSecond[resolution] * (duration || selectedModel.minDuration || 5)} ${t.ui.creditsLabel.toLowerCase()} (${selectedModel.credits.perSecond[resolution]}/s)`
                       : `${selectedModel.credits.base} ${t.ui.creditsLabel.toLowerCase()}`}
                   </p>
@@ -293,8 +299,9 @@ export default function TextToVideoPage() {
               <div className="mt-2 max-h-80 overflow-y-auto rounded-xl bg-dark-800 border border-dark-700">
                 {TEXT_TO_VIDEO_MODELS.map((model) => {
                   const isSelected = selectedModel.id === model.id
-                  const cost = model.credits.perSecond 
-                    ? model.credits.perSecond[model.defaultResolution] * (model.minDuration || 5)
+                  const perSecondCost = model.credits.perSecond?.[model.defaultResolution]
+                  const cost = perSecondCost !== undefined
+                    ? perSecondCost * (model.minDuration || 5)
                     : model.credits.base
                   return (
                     <button
@@ -305,7 +312,7 @@ export default function TextToVideoPage() {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{getModelIcon(model.id)}</span>
+                        <ModelLogo modelId={model.id} />
                         <div className="text-left">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-white text-sm">{model.name}</p>
@@ -490,28 +497,41 @@ export default function TextToVideoPage() {
 
           {/* Audio Toggle */}
           {selectedModel.supportsAudio && (
-            <div className="card">
+            <button
+              onClick={() => setWithAudio(!withAudio)}
+              disabled={isGenerating}
+              className={`w-full text-left rounded-xl border-2 p-4 transition-all duration-200 disabled:opacity-50 ${
+                withAudio
+                  ? 'border-orange-500/60 bg-orange-500/10 hover:bg-orange-500/15'
+                  : 'border-dark-700 bg-dark-800 hover:border-dark-600 hover:bg-dark-700'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {withAudio ? <Volume2 className="w-5 h-5 text-orange-400" /> : <VolumeX className="w-5 h-5 text-dark-400" />}
+                  <div className={`p-2 rounded-lg transition-colors ${
+                    withAudio ? 'bg-orange-500/20' : 'bg-dark-700'
+                  }`}>
+                    {withAudio
+                      ? <Volume2 className="w-5 h-5 text-orange-400" />
+                      : <VolumeX className="w-5 h-5 text-dark-400" />
+                    }
+                  </div>
                   <div>
-                    <p className="text-sm font-medium text-white">{t.textToVideo.generateAudio}</p>
+                    <p className={`text-sm font-semibold ${
+                      withAudio ? 'text-orange-300' : 'text-white'
+                    }`}>{t.textToVideo.generateAudio}</p>
                     <p className="text-xs text-dark-400">+1cr/s {t.common.additional}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setWithAudio(!withAudio)}
-                  disabled={isGenerating}
-                  className={`relative w-12 h-6 rounded-full transition-colors disabled:opacity-50 ${
-                    withAudio ? 'bg-primary-500' : 'bg-dark-700'
-                  }`}
-                >
-                  <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                <div className={`relative w-12 h-6 rounded-full transition-colors ${
+                  withAudio ? 'bg-orange-500' : 'bg-dark-700'
+                }`}>
+                  <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
                     withAudio ? 'translate-x-7' : 'translate-x-1'
                   }`} />
-                </button>
+                </div>
               </div>
-            </div>
+            </button>
           )}
 
           {/* Auth Modal */}
@@ -534,23 +554,19 @@ export default function TextToVideoPage() {
               progressBarGradientClassName="bg-gradient-to-r from-primary-500 to-accent-500"
             />
 
+            <FreemiumDailyStatus currentCost={currentCost} />
+
             <GenerationActionButtons
               isGenerating={isGenerating}
               onGenerate={handleGenerate}
               onCancel={cancel}
-              generateDisabled={!prompt.trim() || isFinalPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost)}
+              generateDisabled={!prompt.trim() || isFinalPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
               generateLabel={`${t.ui.createButton} | ${currentCost} ${t.ui.creditsLabel}`}
               generatingLabel={t.common.generating}
               cancelLabel={t.common.cancel}
               generateIcon={<Video className="w-5 h-5" />}
               generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium flex items-center justify-center gap-2 hover:from-primary-600 hover:to-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
-
-            {isAuthenticated && credits < currentCost && !isGenerating && (
-              <p className="text-xs text-red-400 text-center">
-                {t.ui.insufficientCreditsMessage} {credits} {t.common.credits}.
-              </p>
-            )}
           </div>
         </div>
 

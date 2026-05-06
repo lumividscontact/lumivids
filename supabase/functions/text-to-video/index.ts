@@ -9,17 +9,89 @@ import { validatePrompt } from '../_shared/promptValidation.ts'
 const SUPPORTED_ASPECT_RATIOS_BY_MODEL: Record<string, string[]> = {
   'seedance-1-lite': ['16:9', '9:16', '1:1'],
   'seedance-1.5-pro': ['16:9', '9:16', '1:1'],
+  'seedance-2.0': ['16:9', '4:3', '1:1', '3:4', '9:16', '21:9'],
+  'grok-imagine-video': ['16:9', '9:16', '1:1', '4:3', '3:4', '3:2', '2:3'],
   'kling-v2.5-turbo-pro': ['16:9', '9:16', '1:1'],
   'hailuo-2.3': ['16:9', '9:16', '1:1'],
   'wan-2.6': ['16:9', '9:16', '1:1'],
   'google-veo-3.1-fast': ['16:9', '9:16', '1:1'],
+  'runway-gen-4.5': ['16:9'],
   'openai-sora-2': ['16:9', '9:16'],
   'openai-sora-2-pro': ['16:9', '9:16'],
+  'p-video-standard': ['16:9', '9:16', '1:1'],
+  'p-video-draft': ['16:9', '9:16', '1:1'],
+  'kling-v3-omni': ['16:9', '9:16', '1:1'],
+  'p-video-720p-standard': ['16:9', '9:16', '1:1'],
+  'p-video-720p-draft': ['16:9', '9:16', '1:1'],
+  'p-video-1080p-standard': ['16:9', '9:16', '1:1'],
+  'p-video-1080p-draft': ['16:9', '9:16', '1:1'],
+  'kling-v3-omni-standard': ['16:9', '9:16', '1:1'],
+  'kling-v3-omni-standard-audio': ['16:9', '9:16', '1:1'],
+  'kling-v3-omni-pro': ['16:9', '9:16', '1:1'],
+  'kling-v3-omni-pro-audio': ['16:9', '9:16', '1:1'],
+  'kling-v3-omni-4k': ['16:9', '9:16', '1:1'],
+  'kling-v3-omni-4k-audio': ['16:9', '9:16', '1:1'],
 }
 
 const normalizeWanDimension = (value: number): number => {
   const snapped = Math.round(value / 32) * 32
   return Math.max(256, snapped)
+}
+
+const CANONICAL_MODEL_BY_REPLICATE_ID: Record<string, string> = {
+  'bytedance/seedance-1-lite': 'seedance-1-lite',
+  'bytedance/seedance-1.5-pro': 'seedance-1.5-pro',
+  'bytedance/seedance-2.0': 'seedance-2.0',
+  'xai/grok-imagine-video': 'grok-imagine-video',
+  'kwaivgi/kling-v2.5-turbo-pro': 'kling-v2.5-turbo-pro',
+  'minimax/hailuo-2.3': 'hailuo-2.3',
+  'wan-video/wan-2.6-t2v': 'wan-2.6',
+  'google/veo-3.1-fast': 'google-veo-3.1-fast',
+  'runwayml/gen-4.5': 'runway-gen-4.5',
+  'openai/sora-2': 'openai-sora-2',
+  'openai/sora-2-pro': 'openai-sora-2-pro',
+  'prunaai/p-video': 'p-video-standard',
+  'kwaivgi/kling-v3-omni-video': 'kling-v3-omni',
+}
+
+const normalizeModelToken = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[_\s]+/g, '-')
+
+const resolveIncomingModel = (rawModel: unknown): string | null => {
+  const original = typeof rawModel === 'string' ? rawModel.trim() : ''
+  if (!original) return null
+
+  if (MODELS[original]) {
+    return original
+  }
+
+  const normalized = normalizeModelToken(original)
+
+  // Allow case/spacing variants of known keys.
+  const byKey = Object.keys(MODELS).find((key) => normalizeModelToken(key) === normalized)
+  if (byKey) {
+    return byKey
+  }
+
+  // Accept replicate model ids sent by older/newer clients.
+  const byReplicateId = CANONICAL_MODEL_BY_REPLICATE_ID[normalized]
+  if (byReplicateId && MODELS[byReplicateId]) {
+    return byReplicateId
+  }
+
+  // Safe family-level fallbacks for recently introduced model variants.
+  if (normalized.startsWith('p-video')) {
+    return 'p-video-standard'
+  }
+
+  if (normalized.startsWith('kling-v3-omni')) {
+    return 'kling-v3-omni'
+  }
+
+  return null
 }
 
 serve(async (req) => {
@@ -30,6 +102,8 @@ serve(async (req) => {
   // Track for potential refund
   let userId: string | null = null
   let creditsDeducted = 0
+  let predictionId: string | null = null
+  let generationPersisted = false
 
   try {
     // Authenticate user
@@ -80,15 +154,17 @@ serve(async (req) => {
     }
     const prompt = promptResult.prompt
 
-    if (!MODELS[model]) {
-      return new Response(JSON.stringify({ error: 'Invalid model' }), {
+    const resolvedModel = resolveIncomingModel(model)
+
+    if (!resolvedModel || !MODELS[resolvedModel]) {
+      return new Response(JSON.stringify({ error: 'Invalid model', requestedModel: model }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     try {
-      await ensureModelEnabled(model)
+      await ensureModelEnabled(resolvedModel)
     } catch {
       return new Response(JSON.stringify({ error: 'Model disabled by admin' }), {
         status: 403,
@@ -104,7 +180,7 @@ serve(async (req) => {
       ? aspectRatio
       : supportedAspectRatios[0]
 
-    const modelId = MODELS[model]
+    const modelId = MODELS[resolvedModel]
 
     // Normalize effective generation settings BEFORE charging
     let billingDuration = requestedDuration
@@ -128,18 +204,19 @@ serve(async (req) => {
 
     // Calculate credit cost with normalized values
     const cost = await calculateCreditCost('text-to-video', {
-      model,
+      model: resolvedModel,
       duration: billingDuration,
       resolution: billingResolution,
       withAudio,
     })
 
     // Deduct credits BEFORE starting generation
-    const deductResult = await deductCredits(userId, cost, `Text to Video: ${model}`)
+    const deductResult = await deductCredits(userId, cost, `Text to Video: ${resolvedModel}`)
     if (!deductResult.success) {
+      const isDailyLimit = deductResult.error === 'DAILY_LIMIT_REACHED'
       return new Response(JSON.stringify({ 
-        error: deductResult.error || 'Insufficient credits',
-        code: 'INSUFFICIENT_CREDITS',
+        error: isDailyLimit ? 'Daily free limit reached' : (deductResult.error || 'Insufficient credits'),
+        code: isDailyLimit ? 'DAILY_LIMIT_REACHED' : 'INSUFFICIENT_CREDITS',
         required: cost,
       }), {
         status: 402,
@@ -157,7 +234,22 @@ serve(async (req) => {
     const dims = resolutionMap[billingResolution]?.[effectiveAspectRatio] || resolutionMap['720p']['16:9']
 
     // Model-specific configurations
-    if (modelId.includes('seedance')) {
+    if (resolvedModel === 'grok-imagine-video') {
+      input = {
+        prompt,
+        duration: Math.min(Math.max(requestedDuration, 1), 15),
+        resolution: billingResolution === '480p' ? '480p' : '720p',
+        aspect_ratio: effectiveAspectRatio,
+      }
+    } else if (resolvedModel === 'seedance-2.0') {
+      input = {
+        prompt,
+        duration: Math.min(Math.max(requestedDuration, 5), 15),
+        resolution: billingResolution === '480p' ? '480p' : '720p',
+        aspect_ratio: effectiveAspectRatio,
+        generate_audio: withAudio || false,
+      }
+    } else if (modelId.includes('seedance')) {
       input = {
         prompt,
         negative_prompt: negativePrompt || '',
@@ -167,7 +259,7 @@ serve(async (req) => {
         aspect_ratio: effectiveAspectRatio,
         seed: seed || Math.floor(Math.random() * 1000000),
       }
-      if (model === 'seedance-1.5-pro' && withAudio) {
+      if (resolvedModel === 'seedance-1.5-pro' && withAudio) {
         input.audio = true
       }
     } else if (modelId.includes('hailuo')) {
@@ -190,7 +282,7 @@ serve(async (req) => {
         prompt,
         aspect_ratio: effectiveAspectRatio,
       }
-    } else if (modelId.includes('kling')) {
+    } else if (modelId.includes('kling') && !modelId.includes('kling-v3-omni')) {
       input = {
         prompt,
         negative_prompt: negativePrompt || '',
@@ -240,6 +332,15 @@ serve(async (req) => {
         resolution: billingResolution,
         generate_audio: withAudio || false,
       }
+    } else if (modelId.includes('runwayml/gen-4.5')) {
+      input = {
+        prompt,
+        duration: Math.min(Math.max(requestedDuration, 5), 10),
+        aspect_ratio: effectiveAspectRatio,
+      }
+      if (seed) {
+        input.seed = seed
+      }
     } else if (modelId.includes('openai') && modelId.includes('sora')) {
       // Sora aceita apenas "portrait" ou "landscape"
       const soraAspect = effectiveAspectRatio === '9:16' ? 'portrait' : 'landscape'
@@ -257,27 +358,48 @@ serve(async (req) => {
       }
 
       console.log('[Sora] Final input:', JSON.stringify(input))
+    } else if (resolvedModel.startsWith('p-video-')) {
+      const pDraft = resolvedModel.includes('-draft')
+      const pResolution = requestedResolution === '1080p' ? '1080p' : '720p'
+      input = {
+        prompt,
+        resolution: pResolution,
+        draft: pDraft,
+        save_audio: withAudio || false,
+        duration: requestedDuration,
+        aspect_ratio: effectiveAspectRatio,
+      }
+    } else if (resolvedModel.startsWith('kling-v3-omni')) {
+      const klingMode = billingResolution === '4k' ? '4k' : billingResolution === '1080p' ? 'pro' : 'standard'
+      input = {
+        prompt,
+        mode: klingMode,
+        generate_audio: withAudio || false,
+        duration: Math.min(Math.max(requestedDuration, 3), 15),
+        aspect_ratio: effectiveAspectRatio,
+      }
     }
 
-    console.log(`[Text2Video] Model: ${modelId}, Prompt: ${prompt.substring(0, 50)}...`)
+    console.log(`[Text2Video] Model: ${resolvedModel} -> ${modelId}, Prompt: ${prompt.substring(0, 50)}...`)
 
     const prediction = await replicate.predictions.create({
       model: modelId,
       input,
     })
+    predictionId = prediction.id
 
     await persistGenerationStart({
       userId,
       type: 'text-to-video',
       predictionId: prediction.id,
       modelId,
-      modelName: model,
+      modelName: resolvedModel,
       creditsUsed: creditsDeducted,
       status: prediction.status,
       prompt,
       negativePrompt,
       settings: {
-        model,
+        model: resolvedModel,
         aspectRatio: effectiveAspectRatio,
         duration: billingDuration,
         resolution: billingResolution,
@@ -285,6 +407,7 @@ serve(async (req) => {
         seed: seed || null,
       },
     })
+    generationPersisted = true
 
     return new Response(JSON.stringify({
       id: prediction.id,
@@ -299,8 +422,26 @@ serve(async (req) => {
     
     // Refund credits if generation failed before starting
     if (userId && creditsDeducted > 0) {
-      console.log(`[Text2Video] Refunding ${creditsDeducted} credits to user ${userId}`)
-      await refundCredits(userId, creditsDeducted, 'Text to Video failed')
+      let canRefund = true
+
+      if (predictionId && !generationPersisted) {
+        try {
+          const replicate = getReplicate()
+          await replicate.predictions.cancel(predictionId)
+          console.warn(`[Text2Video] Canceled orphaned prediction ${predictionId} after persistence failure`)
+        } catch (cancelError) {
+          canRefund = false
+          console.error(
+            `[Text2Video] Failed to cancel orphaned prediction ${predictionId}; skipping refund to avoid free delivery`,
+            cancelError,
+          )
+        }
+      }
+
+      if (canRefund) {
+        console.log(`[Text2Video] Refunding ${creditsDeducted} credits to user ${userId}`)
+        await refundCredits(userId, creditsDeducted, 'Text to Video failed')
+      }
     }
     
     return new Response(JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' }), {

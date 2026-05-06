@@ -9,12 +9,13 @@ interface UseMediaGalleryOptions {
 }
 
 const GENERATIONS_BATCH_SIZE = 100
+const INITIAL_GENERATIONS_PREFETCH_LIMIT = 2000
 const POLLING_MIN_DELAY_MS = 5000
 const POLLING_MAX_DELAY_MS = 30000
-const MY_VIDEOS_CACHE_KEY = 'lumivids_my_videos_cache_v1'
+const MY_VIDEOS_CACHE_KEY = 'lumivids_my_videos_cache_v2'
 const MY_VIDEOS_CACHE_TTL_MS = 1000 * 60 * 10
 const CACHE_WRITE_DEBOUNCE_MS = 300
-const GENERATION_SELECT_COLUMNS = 'id, replicate_prediction_id, type, status, error_message, output_url, thumbnail_url, model_name, model_id, prompt, settings, credits_used, created_at, input_image_url'
+const GENERATION_SELECT_COLUMNS = 'id, replicate_prediction_id, type, status, error_message, output_url, thumbnail_url, model_name, model_id, prompt, settings, credits_used, created_at, input_image_url, hidden_at, generated_videos(video_url, thumbnail_url)'
 
 const DEFAULT_FILTERS: MediaFilters = {
   filter: 'all',
@@ -43,6 +44,36 @@ interface Generation {
   credits_used?: number
   created_at: string
   input_image_url?: string
+  hidden_at?: string | null
+  generated_videos?: Array<{
+    video_url?: string | null
+    thumbnail_url?: string | null
+  }> | null
+}
+
+async function fetchGenerationsRange(
+  userId: string,
+  offset: number,
+  includeHidden: boolean = false
+): Promise<Generation[]> {
+  let query = supabase
+    .from('generations')
+    .select(GENERATION_SELECT_COLUMNS)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + GENERATIONS_BATCH_SIZE - 1)
+
+  if (!includeHidden) {
+    query = query.is('hidden_at', null)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    throw error
+  }
+
+  return (data || []) as Generation[]
 }
 
 function readGenerationsCache(): Generation[] {
@@ -110,47 +141,6 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
     }
   }, [])
 
-  const extractGenerationStoragePath = useCallback((url?: string) => {
-    if (!url) return null
-
-    const publicSegment = '/storage/v1/object/public/generations/'
-    const signedSegment = '/storage/v1/object/sign/generations/'
-
-    const getPathFromSegment = (value: string, segment: string) => {
-      const index = value.indexOf(segment)
-      if (index === -1) return null
-      return decodeURIComponent(value.slice(index + segment.length).split('?')[0])
-    }
-
-    const directPath = getPathFromSegment(url, publicSegment) || getPathFromSegment(url, signedSegment)
-    if (directPath) return directPath
-
-    try {
-      const parsed = new URL(url)
-      return getPathFromSegment(parsed.pathname, publicSegment) || getPathFromSegment(parsed.pathname, signedSegment)
-    } catch {
-      return null
-    }
-  }, [])
-
-  const deleteGenerationFiles = useCallback(async (generation: Generation) => {
-    const paths = new Set<string>()
-    const outputPath = extractGenerationStoragePath(generation.output_url)
-    const thumbPath = extractGenerationStoragePath(generation.thumbnail_url)
-    const inputPath = extractGenerationStoragePath(generation.input_image_url)
-
-    if (outputPath) paths.add(outputPath)
-    if (thumbPath) paths.add(thumbPath)
-    if (inputPath) paths.add(inputPath)
-
-    if (paths.size === 0) return
-
-    const { error } = await supabase.storage.from('generations').remove(Array.from(paths))
-    if (error) {
-      console.error('Error deleting generation files from storage:', error)
-    }
-  }, [extractGenerationStoragePath])
-
   // Filters state
   const [filters, setFilters] = useState<MediaFilters>(DEFAULT_FILTERS)
   
@@ -179,44 +169,86 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
       return
     }
 
-    const offset = reset ? 0 : dbGenerationsRef.current.length
-
     isLoadingMoreRef.current = true
     if (isMountedRef.current) {
       setIsLoadingMore(true)
     }
 
     try {
-      const { data, error } = await supabase
-        .from('generations')
-        .select(GENERATION_SELECT_COLUMNS)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .range(offset, offset + GENERATIONS_BATCH_SIZE - 1)
+      if (reset) {
+        // Prefetch more than one page on first load so older-day items
+        // appear without forcing users to page through partially loaded data.
+        let offset = 0
+        const collected: Generation[] = []
+        let shouldContinue = true
+        let hasMore = false
 
-      if (error) {
-        console.error('Error loading generations batch:', error)
+        while (shouldContinue) {
+          const rows = await fetchGenerationsRange(userId, offset, false)
+          collected.push(...rows)
+
+          if (rows.length < GENERATIONS_BATCH_SIZE) {
+            hasMore = false
+            shouldContinue = false
+            break
+          }
+
+          offset += GENERATIONS_BATCH_SIZE
+          if (collected.length >= INITIAL_GENERATIONS_PREFETCH_LIMIT) {
+            hasMore = true
+            shouldContinue = false
+          }
+        }
+
+        // Recovery fallback: if nothing is visible, try loading even hidden rows.
+        // This handles cases where historical generations were soft-hidden incorrectly.
+        if (collected.length === 0) {
+          let fallbackOffset = 0
+          let fallbackContinue = true
+
+          while (fallbackContinue) {
+            const rows = await fetchGenerationsRange(userId, fallbackOffset, true)
+            collected.push(...rows)
+
+            if (rows.length < GENERATIONS_BATCH_SIZE) {
+              hasMore = false
+              fallbackContinue = false
+              break
+            }
+
+            fallbackOffset += GENERATIONS_BATCH_SIZE
+            if (collected.length >= INITIAL_GENERATIONS_PREFETCH_LIMIT) {
+              hasMore = true
+              fallbackContinue = false
+            }
+          }
+        }
+
+        setHasMoreGenerations(hasMore)
+
+        if (!isMountedRef.current) {
+          return
+        }
+
+        dbGenerationsRef.current = collected
+        setDbGenerations(collected)
         return
       }
 
-      const rows = data || []
+      const offset = dbGenerationsRef.current.length
+      const rows = await fetchGenerationsRange(userId, offset, false)
       setHasMoreGenerations(rows.length === GENERATIONS_BATCH_SIZE)
 
       if (!isMountedRef.current) {
         return
       }
 
-      if (reset) {
-        dbGenerationsRef.current = rows
-        setDbGenerations(rows)
-      } else {
-        setDbGenerations((prev) => {
-          const existingIds = new Set(prev.map((item) => item.id))
-          const merged = [...prev, ...rows.filter((item) => !existingIds.has(item.id))]
-          dbGenerationsRef.current = merged
-          return merged
-        })
-      }
+      setDbGenerations((prev) => {
+        const existingIds = new Set(prev.map((item) => item.id))
+        const merged = [...prev, ...rows.filter((item) => !existingIds.has(item.id))]
+        dbGenerationsRef.current = merged
+        return merged
+      })
     } finally {
       isLoadingMoreRef.current = false
       if (isMountedRef.current) {
@@ -257,10 +289,50 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
 
   // Load generations and favorites
   useEffect(() => {
-    (async () => {
+    const loadForUser = async (resolvedUserId: string | null, options?: { clearOnNoUser?: boolean }) => {
+      const clearOnNoUser = options?.clearOnNoUser ?? false
+
+      if (!resolvedUserId) {
+        // Keep cached/on-screen data when auth is temporarily unresolved.
+        // Only clear explicitly on real sign-out event.
+        if (clearOnNoUser && isMountedRef.current) {
+          setDbGenerations([])
+          dbGenerationsRef.current = []
+          writeGenerationsCache([])
+          setFavoriteIds(new Set())
+        }
+        userIdRef.current = null
+        if (isMountedRef.current) {
+          setUserId(null)
+          setIsLoading(false)
+        }
+        return
+      }
+
+      userIdRef.current = resolvedUserId
+      if (isMountedRef.current) {
+        setUserId(resolvedUserId)
+      }
+
+      await fetchGenerationsBatch({ reset: true })
+
+      if (isMountedRef.current) {
+        setIsLoading(false)
+      }
+
       try {
-        // Try getUser() first; if it fails (e.g. network issues), fall back
-        // to getSession() which can work from the local cache.
+        const favIds = await fetchFavoriteIds(resolvedUserId)
+        if (isMountedRef.current) {
+          setFavoriteIds(favIds)
+        }
+      } catch (favoritesError) {
+        console.error('Error loading favorites:', favoritesError)
+      }
+    }
+
+    const bootstrap = async () => {
+      try {
+        // Try getUser() first; fall back to getSession() from local cache.
         let resolvedUserId: string | null = null
 
         try {
@@ -279,46 +351,34 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
           }
         }
 
-        if (!resolvedUserId) {
-          if (isMountedRef.current) {
-            setDbGenerations([])
-            dbGenerationsRef.current = []
-            writeGenerationsCache([])
-            setUserId(null)
-            setIsLoading(false)
-          }
-          return
-        }
-
-        userIdRef.current = resolvedUserId
-        setUserId(resolvedUserId)
-
-        await fetchGenerationsBatch({ reset: true })
-
-        if (isMountedRef.current) {
-          setIsLoading(false)
-        }
-
-        void (async () => {
-          try {
-            const favIds = await fetchFavoriteIds(resolvedUserId!)
-            if (isMountedRef.current) {
-              setFavoriteIds(favIds)
-            }
-          } catch (favoritesError) {
-            console.error('Error loading favorites:', favoritesError)
-          }
-        })()
+        await loadForUser(resolvedUserId, { clearOnNoUser: false })
       } catch (error) {
         console.error('Error fetching data:', error)
         if (isMountedRef.current) {
           setIsLoading(false)
         }
       }
-    })()
+    }
+
+    void bootstrap()
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMountedRef.current) return
+
+      if (event === 'SIGNED_OUT') {
+        void loadForUser(null, { clearOnNoUser: true })
+        return
+      }
+
+      const nextUserId = session?.user?.id ?? null
+      if (nextUserId) {
+        void loadForUser(nextUserId, { clearOnNoUser: false })
+      }
+    })
 
     return () => {
       clearPollingTimeout()
+      authListener.subscription.unsubscribe()
     }
   }, [clearPollingTimeout, fetchGenerationsBatch])
 
@@ -350,6 +410,10 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
 
           const changed = payload.new as Generation | null
           if (!changed?.id) return
+          if (changed.hidden_at) {
+            removeGenerationById(changed.id)
+            return
+          }
           upsertGeneration(changed)
         }
       )
@@ -422,11 +486,14 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
 
           const updateData: Record<string, unknown> = {
             status: prediction.status,
-            output_url: outputUrl,
-            thumbnail_url: outputUrl,
             error_message: prediction.error || null,
-            completed_at: prediction.status === 'succeeded' ? new Date().toISOString() : null,
+            completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+          }
+
+          if (outputUrl) {
+            updateData.output_url = outputUrl
+            updateData.thumbnail_url = outputUrl
           }
 
           await supabase
@@ -443,6 +510,7 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
           .from('generations')
           .select(GENERATION_SELECT_COLUMNS)
           .eq('user_id', userId)
+          .is('hidden_at', null)
           .in('id', idsToRefresh)
 
         if (data && data.length > 0 && isMountedRef.current) {
@@ -522,6 +590,9 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
     return dbGenerations.map((gen) => {
       const isVideo = gen.type === 'text-to-video' || gen.type === 'image-to-video'
       const settings = gen.settings as Record<string, unknown> || {}
+      const generatedVideo = Array.isArray(gen.generated_videos) ? gen.generated_videos[0] : null
+      const generatedVideoUrl = typeof generatedVideo?.video_url === 'string' ? generatedVideo.video_url : null
+      const generatedThumbnail = typeof generatedVideo?.thumbnail_url === 'string' ? generatedVideo.thumbnail_url : null
       const settingsOutput = typeof settings.outputUrl === 'string'
         ? settings.outputUrl
         : typeof settings.output_url === 'string'
@@ -532,13 +603,32 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
         : typeof settings.thumbnail_url === 'string'
           ? settings.thumbnail_url
           : null
-      const resolvedOutputUrl = gen.output_url || settingsOutput || undefined
+
+      // Prefer permanent Supabase Storage URLs over expiring Replicate CDN URLs.
+      // A URL is considered a Replicate URL if it contains replicate.delivery or replicate.com.
+      const isReplicateUrl = (url: string | null | undefined): boolean =>
+        typeof url === 'string' && (url.includes('replicate.delivery') || url.includes('replicate.com'))
+
+      const pickBestUrl = (...candidates: (string | null | undefined)[]): string | undefined => {
+        const permanent = candidates.find(u => typeof u === 'string' && u.length > 0 && !isReplicateUrl(u))
+        if (permanent) return permanent as string
+        const any = candidates.find(u => typeof u === 'string' && u.length > 0)
+        return any as string | undefined
+      }
+
+      const resolvedOutputUrl = pickBestUrl(
+        gen.output_url,
+        generatedVideoUrl,
+        settingsOutput,
+      )
       const resolvedThumbnail =
-        gen.thumbnail_url
-        || settingsThumb
-        || resolvedOutputUrl
-        || gen.input_image_url
-        || PLACEHOLDER_THUMB
+        pickBestUrl(
+          gen.thumbnail_url,
+          generatedThumbnail,
+          settingsThumb,
+          resolvedOutputUrl,
+          gen.input_image_url,
+        ) || PLACEHOLDER_THUMB
       const aspectRatio: MediaItem['aspectRatio'] = ['16:9', '9:16', '1:1', '4:3'].includes(settings.aspectRatio as string)
         ? settings.aspectRatio as MediaItem['aspectRatio']
         : '16:9'
@@ -651,12 +741,10 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
   // Delete single item
   const deleteItem = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const targetGeneration = dbGenerations.find((item) => item.id === id)
-      if (targetGeneration) {
-        await deleteGenerationFiles(targetGeneration)
-      }
-
-      const { error } = await supabase.from('generations').delete().eq('id', id)
+      const { error } = await supabase
+        .from('generations')
+        .update({ hidden_at: new Date().toISOString() })
+        .eq('id', id)
       if (error) throw error
       setDbGenerations((prev) => prev.filter((item) => item.id !== id))
       return true
@@ -664,18 +752,16 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
       console.error('Error deleting generation:', error)
       return false
     }
-  }, [dbGenerations, deleteGenerationFiles])
+  }, [])
 
   // Delete multiple items
   const deleteItems = useCallback(async (ids: string[]): Promise<boolean> => {
     if (ids.length === 0) return false
     try {
-      const targetGenerations = dbGenerations.filter((item) => ids.includes(item.id))
-      if (targetGenerations.length > 0) {
-        await Promise.allSettled(targetGenerations.map((generation) => deleteGenerationFiles(generation)))
-      }
-
-      const { error } = await supabase.from('generations').delete().in('id', ids)
+      const { error } = await supabase
+        .from('generations')
+        .update({ hidden_at: new Date().toISOString() })
+        .in('id', ids)
       if (error) throw error
       setDbGenerations((prev) => prev.filter((item) => !ids.includes(item.id)))
       return true
@@ -683,7 +769,7 @@ export function useMediaGallery(options: UseMediaGalleryOptions = {}) {
       console.error('Error deleting generations:', error)
       return false
     }
-  }, [dbGenerations, deleteGenerationFiles])
+  }, [])
 
   // Update filters
   const updateFilter = useCallback(<K extends keyof MediaFilters>(key: K, value: MediaFilters[K]) => {

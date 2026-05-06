@@ -35,9 +35,10 @@ export default function PrivacyPolicyPage() {
     canonical: getSeoPages(t).privacy.canonical,
     image: getSeoPages(t).privacy.image,
     hreflang: {
-      'pt-BR': '/privacy?lang=pt',
-      en: '/privacy?lang=en',
-      es: '/privacy?lang=es',
+      'pt-BR': '/pt/privacy',
+      en: '/privacy',
+      es: '/es/privacy',
+      id: '/id/privacy',
       'x-default': '/privacy',
     },
     structuredData: [

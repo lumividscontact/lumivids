@@ -50,6 +50,7 @@ export const en = {
     additional: 'additional',
     regenerate: 'Regenerate',
     copyPrompt: 'Copy Prompt',
+    copied: 'Copied!',
     openExternal: 'Open in New Tab',
     favorite: 'Favorite',
     unfavorite: 'Unfavorite',
@@ -88,12 +89,94 @@ export const en = {
     imageToVideo: 'Image to Video',
     textToImage: 'Text to Image',
     imageToImage: 'Image to Image',
+    inspiration: 'Inspiration',
     myVideos: 'My Videos',
     myFavorites: 'My Favorites',
     myAccount: 'My Account',
     support: 'Support',
     pricing: 'Pricing',
     logout: 'Logout',
+    workflows: 'Workflows',
+  },
+
+  // Workflows Page
+  workflows: {
+    seo: {
+      title: 'Ready-made Workflows',
+      description: 'Choose a ready-made workflow for your segment and start creating professional content in seconds.',
+    },
+    title: 'Ready-made Workflows',
+    subtitle: 'Choose a template for your segment and generate professional content instantly.',
+    useTemplate: 'Use template',
+    estimatedCost: 'Estimated',
+    segments: {
+      ecommerce: 'E-commerce',
+      infoproduct: 'Infoproduct',
+      reels: 'Reels',
+      social: 'Social Media',
+    },
+    items: {
+      'ecommerce-product-showcase': {
+        title: 'Product Showcase',
+        description: '360° rotation video of your product on a clean background, perfect for ads.',
+      },
+      'ecommerce-product-image': {
+        title: 'Product Photo',
+        description: 'Professional product photo on white background, studio lighting.',
+      },
+      'ecommerce-lifestyle-video': {
+        title: 'Lifestyle Video',
+        description: 'Customer using the product in a lifestyle setting, warm and natural.',
+      },
+      'ecommerce-unboxing': {
+        title: 'Unboxing Video',
+        description: 'Premium close-up unboxing with smooth slow motion and luxury feel.',
+      },
+      'infoproduct-course-promo': {
+        title: 'Course Promo',
+        description: 'Professional presenter in a modern office, ideal for course launches.',
+      },
+      'infoproduct-ebook-cover': {
+        title: 'E-book Cover',
+        description: 'Modern e-book cover with bold typography and gradient background.',
+      },
+      'infoproduct-testimonial-bg': {
+        title: 'Testimonial Background',
+        description: 'Animated gradient background, perfect behind testimonial videos.',
+      },
+      'infoproduct-webinar-thumbnail': {
+        title: 'Webinar Thumbnail',
+        description: 'Professional thumbnail for webinars and online events.',
+      },
+      'reels-talking-head-bg': {
+        title: 'Talking-head Background',
+        description: 'Aesthetic animated background for vertical talking-head videos.',
+      },
+      'reels-hook-opener': {
+        title: 'Hook Opener',
+        description: 'Dynamic zoom-in opener to grab attention in the first second.',
+      },
+      'reels-aesthetic-cover': {
+        title: 'Aesthetic Cover',
+        description: 'Vibrant lifestyle cover image for Instagram Reels.',
+      },
+      'reels-cinematic-broll': {
+        title: 'Cinematic B-roll',
+        description: 'Cinematic city night b-roll footage, moody and vertical.',
+      },
+      'social-ad-banner': {
+        title: 'Ad Banner',
+        description: 'Eye-catching banner for social media ads with bold design.',
+      },
+      'social-story-video': {
+        title: 'Story Video',
+        description: 'Engaging story video with quick transitions and trendy aesthetic.',
+      },
+      'social-square-post': {
+        title: 'Square Post',
+        description: 'Bold square post graphic with strong contrast and visual impact.',
+      },
+    },
   },
 
   // Home Page
@@ -154,9 +237,9 @@ export const en = {
   // Text to Video Page
   textToVideo: {
     seo: {
-      title: 'Text to Video - Create Video with AI',
-      description: 'Transform your ideas into stunning videos. Write a prompt and let AI create high-quality videos with MiniMax, Kling, Sora and more.',
-      keywords: ['text to video', 'AI video', 'video generator', 'create video with AI', 'prompt to video'],
+      title: 'AI Text to Video Generator — Free Online Tool | Lumivids',
+      description: 'Free AI text to video generator. Type any prompt and create high-quality videos in seconds using Kling, MiniMax, Sora, and Veo. No editing skills needed.',
+      keywords: ['text to video', 'AI video generator', 'free text to video AI', 'convert text to video online', 'AI video maker', 'video from prompt', 'Kling video generator', 'Sora text to video'],
     },
     title: 'Text to Video',
     subtitle: 'Transform your ideas into stunning cinematic videos',
@@ -212,9 +295,9 @@ export const en = {
   // Image to Video Page
   imageToVideo: {
     seo: {
-      title: 'Image to Video - Animate Image with AI',
-      description: 'Bring your images to life! Use AI to transform static photos into stunning animated videos.',
-      keywords: ['image to video', 'animate image', 'photo to video', 'AI animation', 'animate image with AI'],
+      title: 'AI Image to Video — Animate Any Photo Online | Lumivids',
+      description: 'Animate photos and images with AI. Upload any picture and generate a fluid animated video in seconds. Free to try — powered by Kling, Luma, and more.',
+      keywords: ['image to video', 'animate image AI', 'photo to video AI', 'AI image animator free', 'animate photo online', 'AI animation generator', 'bring image to life AI'],
     },
     title: 'Image to Video',
     subtitle: 'Animate your static images with fluid and realistic movements',
@@ -265,9 +348,9 @@ export const en = {
   // Text to Image Page
   textToImage: {
     seo: {
-      title: 'Text to Image - Create Image with AI',
-      description: 'Generate unique images from text descriptions. Use Flux, Stable Diffusion, DALL-E and other AI models.',
-      keywords: ['text to image', 'AI image', 'image generator', 'create image with AI', 'prompt to image'],
+      title: 'AI Image Generator from Text — Free Online | Lumivids',
+      description: 'Generate photorealistic images, AI art, and illustrations from text. Free online AI image generator powered by Flux, Stable Diffusion, and more — no signup required to try.',
+      keywords: ['text to image AI', 'AI image generator free', 'AI art generator', 'generate image from text', 'AI art from text prompt', 'free AI image creator', 'Flux image generator online'],
     },
     title: 'Text to Image',
     subtitle: 'Create unique and stunning images from text descriptions',
@@ -366,9 +449,9 @@ export const en = {
   // Image to Image Page
   imageToImage: {
     seo: {
-      title: 'Image to Image - Transform Image with AI',
-      description: 'Transform and enhance your images with AI. Edit styles, improve quality and create variations.',
-      keywords: ['image to image', 'edit image with AI', 'transform image', 'AI image editing'],
+      title: 'AI Image Editor — Transform & Enhance Photos Online | Lumivids',
+      description: 'Transform, upscale, and restyle any photo with AI. Change backgrounds, improve quality, create style variations — free AI image editor powered by Flux and more.',
+      keywords: ['image to image AI', 'AI photo editor', 'enhance image AI', 'AI image transformer', 'restyle photo AI', 'AI photo enhancer free', 'transform image online'],
     },
     title: 'Image to Image',
     subtitle: 'Transform, enhance and reimagine your images with AI',
@@ -408,7 +491,9 @@ export const en = {
     modelDescriptions: {
       fluxImg2img: 'Transform images with AI',
       nanoBananaPro: 'High quality image transformation',
+      nanoBanana2: 'Fast image transformation with conversational editing, multi-image fusion, and character consistency',
       seedream45: 'High quality image transformation with strong instruction following',
+      seedream5Lite: 'Image transformation with built-in reasoning, strong text rendering, and example-based editing',
     },
     badges: {
       new: 'New',
@@ -455,6 +540,42 @@ export const en = {
     removeFavorite: 'Remove from favorites',
     deleteConfirmTitle: 'Remove from favorites?',
     deleteConfirmMessage: 'This will remove this item from your favorites.',
+  },
+
+  reporting: {
+    action: 'Report',
+    reasonPrompt: 'Reason for report:',
+    defaultReason: 'Inappropriate content',
+    detailsPrompt: 'Details (optional):',
+    success: 'Report submitted successfully.',
+    error: 'Failed to submit report.',
+  },
+
+  supportPage: {
+    title: 'Support',
+    subtitle: 'Open tickets and chat with our team.',
+    subjectPlaceholder: 'Subject',
+    messagePlaceholder: 'Initial message',
+    createTicket: 'Create ticket',
+    creatingTicket: 'Creating...',
+    myTickets: 'My tickets',
+    filterAll: 'All',
+    statusOpen: 'Open',
+    statusInProgress: 'In progress',
+    statusResolved: 'Resolved',
+    statusClosed: 'Closed',
+    emptyTickets: 'You do not have any tickets yet.',
+    conversation: 'Conversation',
+    selectTicket: 'Select a ticket to view messages.',
+    emptyMessages: 'No messages yet.',
+    replyPlaceholder: 'Write your message...',
+    send: 'Send',
+    sending: 'Sending...',
+    createTicketError: 'Failed to create ticket.',
+    sendMessageError: 'Failed to send message.',
+    senderAdmin: 'Admin',
+    senderUser: 'You',
+    senderSystem: 'System',
   },
 
   // My Account Page
@@ -536,6 +657,8 @@ export const en = {
       remaining: '{current} of {max} credits remaining',
       buyMore: 'Buy More Credits',
       lowCreditsWarning: 'Low credits! Consider upgrading.',
+      freemiumBonusDays: 'Day {used} of {max} · come back tomorrow for +10 free credits',
+      freemiumBonusCapReached: 'Free bonus ended · upgrade to keep generating',
     },
     settings: {
       title: 'Settings',
@@ -655,13 +778,22 @@ export const en = {
     publicCtaSubtitle: 'Join thousands of creators already using Lumivids',
     welcomeCredits: 'welcome credits',
     planTaglines: {
+      starter: 'Start without barriers',
       creator: 'Perfect to get started',
       studio: 'For regular creators',
       director: 'For professionals',
     },
     planFeatures: {
+      starter: [
+        '225 credits/month',
+        'Up to ~45 videos/month',
+        '1 parallel job',
+        '1080p HD output',
+        'Access to essential AI models',
+        '24/7 support',
+        'Cancel anytime',
+      ],
       creator: [
-        '450 credits/month',
         'Up to ~90 videos/month',
         '2 parallel jobs',
         '1080p HD output',
@@ -801,6 +933,17 @@ export const en = {
     inlineUpdate: 'Update',
   },
 
+  freemium: {
+    dailyCreditsTitle: 'Free daily credits',
+    dailyUsageSummary: '{remaining} of {limit} free credits left today',
+    dailyRemaining: 'Daily: {remaining}/{limit}',
+    limitReachedHint: 'You reached the free daily limit.',
+    resetsDaily: 'Resets daily (UTC)',
+    upgradeToContinue: 'Upgrade',
+    bonusDaysInfo: 'Bonus day {used} of {max}',
+    bonusCapReachedHint: 'You used all {max} free bonus days. Upgrade to keep generating.',
+  },
+
   // Status messages
   status: {
     starting: 'Starting...',
@@ -822,6 +965,12 @@ export const en = {
     invalidFile: 'Invalid file. Use PNG, JPG or WebP.',
     fileTooLarge: 'File too large. Maximum 10MB.',
     generationFailed: 'Generation failed. Please try again.',
+    generationInProgress: 'Generation already in progress.',
+    modelUnavailable: 'This model is temporarily unavailable.',
+    concurrentLimitReached: 'You have reached the limit of {limit} simultaneous generations for your plan.',
+    maintenanceInProgress: 'Generations are temporarily unavailable while maintenance is in progress.',
+    promptBlockedByPolicy: 'Prompt blocked by security policy.',
+    dailyLimitReached: 'You reached the free daily credit limit. Try again tomorrow or upgrade.',
   },
 
   // Success messages
@@ -838,12 +987,22 @@ export const en = {
   // Landing Page
   landing: {
     seo: {
-      title: 'Lumivids - AI Video & Image Generator',
-      description: 'Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more with next-generation AI models.',
-      keywords: ['AI video generator', 'text to video', 'image to video', 'AI image generator', 'artificial intelligence', 'video generator'],
+      title: 'Lumivids - Free AI Video & Image Generator',
+      description: 'Free AI video and image generator. Create stunning videos from text, animate photos, and generate AI art in seconds with Kling, Sora, MiniMax, Veo, and Flux. No editing skills required.',
+      keywords: ['AI video generator', 'free AI video generator', 'text to video AI', 'image to video AI', 'AI image generator', 'AI art generator free', 'video generator online', 'Lumivids'],
     },
     hero: {
       badge: 'Powered by the latest AI models',
+      titlePrefix: 'Create publish-ready videos in',
+      titleHighlight: 'minutes, not hours',
+      subtitle: 'Turn an idea into an AI video in a few clicks, with no editing software and no setup required.',
+      primaryCta: 'Create my first video for free',
+      secondaryCta: 'See plans and pricing',
+      ctaMicrocopy: 'No credit card required. Free credits to get started.',
+      ctaProof: 'Up to 50 free credits to get started · 10 per day for 5 days, no card required.',
+      trustNoCard: 'No credit card required',
+      trustCancelAnytime: 'Cancel anytime',
+      trustSupport: '24/7 support',
       maxResolutionLabel: 'Max Resolution',
       maxDurationLabel: 'Max Duration',
       safeLabel: 'Safe',
@@ -1187,6 +1346,32 @@ export const en = {
       markFailed: 'Mark failed',
       markSucceeded: 'Mark succeeded',
       noResults: 'No generations found.',
+    },
+  },
+
+  // Inspiration Gallery Page
+  inspiration: {
+    seo: {
+      title: 'Inspiration',
+      description: 'Explore a gallery of AI-generated videos and images to find inspiration and learn the best prompts.',
+    },
+    title: 'Inspiration Gallery',
+    description: 'Explore examples created with leading AI models. Click on any item to copy the prompt and use it in your creations.',
+    filterByType: 'Filter by type',
+    filterByCategory: 'Filter by category',
+    videos: 'Videos',
+    images: 'Images',
+    prompt: 'Prompt',
+    showing: 'Showing {count} result(s)',
+    noResults: 'No results found with the selected filters.',
+    image: 'Image',
+    categories: {
+      abstract: 'Abstract',
+      nature: 'Nature',
+      people: 'People',
+      technology: 'Technology',
+      lifestyle: 'Lifestyle',
+      animation: 'Animation',
     },
   },
 }

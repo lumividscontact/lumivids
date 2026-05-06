@@ -10,4 +10,5 @@ Disallow: /settings/
 Disallow: /auth/callback
 
 Sitemap: https://lumivids.com/sitemap.xml
+Sitemap: https://lumivids.com/blog/sitemap_index.xml
 Host: lumivids.com

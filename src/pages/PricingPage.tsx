@@ -1,4 +1,4 @@
-import { Check, Sparkles, Zap, Crown, Building2, Settings, Loader2, X } from 'lucide-react'
+import { Check, Sparkles, Zap, Crown, Building2, Rocket, Settings, Loader2, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useCredits } from '@/contexts/CreditsContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -8,16 +8,24 @@ import { useSearchParams } from 'react-router-dom'
 import { LoadingSpinner } from '@/components/Loading'
 import { useSEO, getSeoPages } from '@/hooks'
 import { trackEvent } from '@/services/analytics'
+import type { Plan } from '@/contexts/CreditsContext'
 
 const planIcons: Record<string, typeof Zap> = {
+  starter: Rocket,
   creator: Zap,
   studio: Crown,
   director: Building2,
 }
 
+type PaidPlan = Plan & { id: Exclude<Plan['id'], null> }
+
+function isPaidPlan(plan: Plan): plan is PaidPlan {
+  return plan.id !== null
+}
+
 export default function PricingPage() {
   const { plans, plan: currentPlan, credits } = useCredits()
-  const { user, isLoading: authLoading } = useAuth()
+  const { isLoading: authLoading } = useAuth()
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly')
@@ -98,6 +106,7 @@ export default function PricingPage() {
     t.pricing.faq.canUpgrade,
     t.pricing.faq.canCancel,
   ]
+  const paidPlans = plans.filter(isPaidPlan)
 
   return (
     <div className="min-h-screen p-4 sm:p-8">
@@ -189,15 +198,14 @@ export default function PricingPage() {
           </div>
         </div>
       ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-        {plans.map((planItem) => {
-          const Icon = planIcons[planItem.id]
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-[1600px] mx-auto">
+        {paidPlans.map((planItem) => {
+          const Icon = planIcons[planItem.id] ?? Sparkles
           const isCurrentPlan = hasCurrentPlan && planItem.id === currentPlan
           const isPopular = planItem.popular
+          const annualMonthlyPrice = planItem.annualMonthlyPrice ?? planItem.price
           const hasAnnualMonthlyPrice = typeof planItem.annualMonthlyPrice === 'number'
-          const displayedPrice = billingPeriod === 'annual' && hasAnnualMonthlyPrice
-            ? planItem.annualMonthlyPrice
-            : planItem.price
+          const displayedPrice = billingPeriod === 'annual' ? annualMonthlyPrice : planItem.price
           const showStruckMonthlyPrice = billingPeriod === 'annual' && hasAnnualMonthlyPrice && planItem.price > displayedPrice
           const discountPercent = showStruckMonthlyPrice
             ? Math.round(((planItem.price - displayedPrice) / planItem.price) * 100)
@@ -211,7 +219,7 @@ export default function PricingPage() {
           return (
             <div
               key={planItem.id}
-              className={`relative overflow-hidden rounded-2xl p-6 transition-all duration-300 ${
+              className={`relative overflow-hidden rounded-2xl p-5 transition-all duration-300 ${
                 isPopular
                     ? 'bg-gradient-to-r from-primary-500/25 to-primary-600/35 border border-primary-500/60'
                   : 'bg-dark-800/50 border border-dark-700 hover:border-dark-600'
@@ -236,47 +244,49 @@ export default function PricingPage() {
               )}
 
               {/* Plan Header */}
-              <div className="mb-6">
+              <div className="mb-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div
-                      className={`w-12 h-12 rounded-xl mb-3 flex items-center justify-center ${
+                      className={`w-10 h-10 rounded-xl mb-2.5 flex items-center justify-center ${
                         isPopular ? 'bg-primary-500' : 'bg-dark-700'
                       }`}
                     >
-                      <Icon className={`w-6 h-6 ${isPopular ? 'text-white' : 'text-primary-400'}`} />
+                      <Icon className={`w-5 h-5 ${isPopular ? 'text-white' : 'text-primary-400'}`} />
                     </div>
-                    <h3 className="text-3xl font-bold text-white leading-none">{planItem.name}</h3>
+                    <h3 className="text-2xl font-bold text-white leading-none">{planItem.name}</h3>
                     {planItem.tagline && (
-                      <p className="text-dark-300 text-sm mt-2">{planItem.tagline}</p>
+                      <p className="text-dark-300 text-xs mt-1.5">
+                        {t.pricing.planTaglines?.[planItem.id as keyof typeof t.pricing.planTaglines] ?? planItem.tagline}
+                      </p>
                     )}
                   </div>
                   <div className="text-right">
                     {billingPeriod === 'annual' && discountPercent > 0 && (
-                      <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-green-500/20 text-green-400 text-sm font-semibold mb-1">
+                      <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-green-500/20 text-green-400 text-xs font-semibold mb-1">
                         {discountPercent}% OFF 🎉
                       </div>
                     )}
-                    <div className="text-5xl font-bold text-white leading-none">
+                    <div className="text-4xl font-bold text-white leading-none">
                       ${showPrice ? displayedPrice.toFixed(1) : '0'}
                     </div>
-                    <div className="text-xl text-dark-300 font-semibold">{t.pricing.perMonth}</div>
+                    <div className="text-base text-dark-300 font-semibold">{t.pricing.perMonth}</div>
                     {showPrice && showStruckMonthlyPrice && (
-                      <div className="text-lg text-dark-500 line-through">
+                      <div className="text-sm text-dark-500 line-through">
                         ${planItem.price.toFixed(1)}
                       </div>
                     )}
                   </div>
                 </div>
                 {showPrice && billingPeriod === 'annual' && (
-                  <p className="text-sm text-dark-300 mt-3">{t.pricing.billedAnnually}</p>
+                  <p className="text-xs text-dark-300 mt-2">{t.pricing.billedAnnually}</p>
                 )}
-                <div className="mt-4 inline-flex items-center gap-2 text-primary-400 font-semibold text-3xl">
-                  <Sparkles className="w-5 h-5" />
+                <div className="mt-3 inline-flex items-center gap-2 text-primary-400 font-semibold text-2xl">
+                  <Sparkles className="w-4 h-4" />
                   <span>{planItem.credits}</span>
                 </div>
                 {costPerCreditValue !== null && (
-                  <div className="mt-3">
+                  <div className="mt-2">
                     <p className="text-xs text-dark-400">{t.pricing.costPerCreditLabel}</p>
                     <p className="text-sm text-white font-semibold">${costPerCreditValue.toFixed(4)}</p>
                   </div>
@@ -284,11 +294,11 @@ export default function PricingPage() {
               </div>
 
               {/* Features */}
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-2.5 mb-5">
                 {(t.pricing.planFeatures?.[planItem.id as keyof typeof t.pricing.planFeatures] ?? planItem.features).map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-dark-300 text-sm">{feature}</span>
+                    <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-dark-300 text-xs">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -297,7 +307,7 @@ export default function PricingPage() {
               <button
                 onClick={() => handleSubscribe(planItem.id as string)}
                 disabled={isCurrentPlan || isLoading || loadingPlan !== null}
-                className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                   isCurrentPlan
                     ? 'bg-dark-700 text-dark-400 cursor-not-allowed'
                     : isLoading

@@ -35,9 +35,10 @@ export default function TermsOfServicePage() {
     canonical: getSeoPages(t).terms.canonical,
     image: getSeoPages(t).terms.image,
     hreflang: {
-      'pt-BR': '/terms?lang=pt',
-      en: '/terms?lang=en',
-      es: '/terms?lang=es',
+      'pt-BR': '/pt/terms',
+      en: '/terms',
+      es: '/es/terms',
+      id: '/id/terms',
       'x-default': '/terms',
     },
     structuredData: [

@@ -3,13 +3,13 @@ import { useAuth } from './AuthContext'
 import { supabase } from '@/lib/supabase'
 import { CREDIT_COSTS, calculateCreditCost, type OperationType, type Resolution } from '@/config/creditCosts'
 import { CREDITS_CACHE_DURATION_MS, CREDITS_DEBOUNCE_MS, USER_CREDITS_CACHE_KEY, INITIAL_CREDITS } from '@/config/constants'
-import { PLAN_CREDITS } from '../../supabase/functions/_shared/planConfig.ts'
+import { PLAN_CREDITS, FREE_DAILY_CREDITS } from '../../supabase/functions/_shared/planConfig.ts'
 
 // Re-export for backwards compatibility
 export { CREDIT_COSTS }
 export type { OperationType, Resolution }
 
-export type PlanType = 'creator' | 'studio' | 'director' | null
+export type PlanType = 'starter' | 'creator' | 'studio' | 'director' | null
 
 // Update credits cache in localStorage
 function updateCreditsCache(userId: string, credits: number, plan: PlanType): void {
@@ -42,11 +42,12 @@ export interface Plan {
 export const FREE_PLAN: Plan = {
   id: null,
   name: 'Bônus',
-  tagline: 'Créditos iniciais para começar',
+  tagline: 'Freemium com créditos diários',
   credits: INITIAL_CREDITS,
   price: 0,
   features: [
     `${INITIAL_CREDITS.toLocaleString('pt-BR')} créditos de boas-vindas`,
+    `${FREE_DAILY_CREDITS.toLocaleString('pt-BR')} créditos grátis por dia`,
     '1 tarefa paralela',
     'Modelos essenciais',
     'Comece sem assinatura',
@@ -54,6 +55,23 @@ export const FREE_PLAN: Plan = {
 }
 
 export const PLANS: Plan[] = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    tagline: 'Para começar sem barreiras',
+    credits: PLAN_CREDITS.starter,
+    price: 7.9,
+    annualMonthlyPrice: 6.3,
+    features: [
+      `${PLAN_CREDITS.starter.toLocaleString('pt-BR')} créditos/mês`,
+      `Até ~${Math.floor(PLAN_CREDITS.starter / 5)} vídeos/mês`,
+      '1 tarefa paralela',
+      'Saída em HD 1080p',
+      'Acesso a modelos essenciais de IA',
+      'Suporte 24/7',
+      'Cancele quando quiser',
+    ],
+  },
   {
     id: 'creator',
     name: 'Creator',
@@ -119,12 +137,25 @@ interface SubscriptionInfo {
   daysUntilExpiration: number | null
 }
 
+interface FreemiumStatus {
+  isEligible: boolean
+  dailyLimit: number
+  usedToday: number
+  remainingToday: number
+  nextResetAt: string | null
+  isLimitReached: boolean
+  bonusDaysUsed: number
+  bonusDaysMax: number
+  bonusCapReached: boolean
+}
+
 interface CreditsContextType {
   credits: number
   plan: PlanType
   plans: Plan[]
   currentPlan: Plan
   subscription: SubscriptionInfo | null
+  freemium: FreemiumStatus | null
   canAfford: (cost: number) => boolean
   getCost: (
     type: keyof typeof CREDIT_COSTS,
@@ -152,6 +183,7 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
   const [credits, setCredits] = useState(user?.credits ?? 0)
   const [plan, setPlan] = useState<PlanType>((user?.plan as PlanType) ?? null)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
+  const [freemium, setFreemium] = useState<FreemiumStatus | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   
   // Cache refs
@@ -165,11 +197,13 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
       setPlan((user.plan as PlanType) ?? null)
       // Reset subscription on user change, will be fetched in refreshCredits
       setSubscription(null)
+      setFreemium(null)
       return
     }
     setCredits(0)
     setPlan(null)
     setSubscription(null)
+    setFreemium(null)
   }, [user])
 
   // Get current plan details - fallback to default if plan not found
@@ -230,6 +264,10 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
 
         if (error) {
           console.error('Error deducting credits:', error)
+          return false
+        }
+
+        if (data === false) {
           return false
         }
 
@@ -300,23 +338,67 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
       setIsRefreshing(true)
       try {
         // Fetch credits and subscription in parallel
-        const [creditsResult, subResult] = await Promise.all([
+        const [creditsResult, subResult, freemiumResult] = await Promise.all([
           supabase
             .from('user_credits')
             .select('credits')
             .eq('user_id', userId)
-            .single(),
+            .maybeSingle(),
           supabase
             .from('subscriptions')
             .select('plan, status, current_period_end, cancel_at_period_end')
             .eq('user_id', userId)
-            .maybeSingle()
+            .maybeSingle(),
+          supabase
+            .rpc('refresh_freemium_credits', { p_user_id: userId })
         ])
 
-        if (creditsResult.error) {
+        // freemiumResult is authoritative because refresh_freemium_credits
+        // runs the daily top-up before returning the updated balance.
+        // Resolve credits state: prefer freemiumRow.credits (post top-up),
+        // fall back to the parallel user_credits select.
+        const freemiumRow = !freemiumResult.error
+          ? (Array.isArray(freemiumResult.data) ? freemiumResult.data[0] : freemiumResult.data)
+          : null
+
+        const resolvedCredits =
+          freemiumRow != null && typeof freemiumRow.credits === 'number'
+            ? freemiumRow.credits
+            : (!creditsResult.error ? (creditsResult.data?.credits ?? 0) : null)
+
+        if (resolvedCredits !== null) {
+          setCredits(resolvedCredits)
+          updateCreditsCache(userId, resolvedCredits, plan)
+        } else if (creditsResult.error) {
           console.error('Error fetching credits:', creditsResult.error)
-        } else if (creditsResult.data) {
-          setCredits(creditsResult.data.credits ?? 0)
+        }
+
+        if (freemiumResult.error) {
+          console.error('Error fetching freemium status:', freemiumResult.error)
+          setFreemium(null)
+        } else {
+          if (!freemiumRow) {
+            setFreemium(null)
+          } else {
+            const dailyLimit = Number(freemiumRow.free_daily_limit ?? FREE_DAILY_CREDITS)
+            const usedToday = Number(freemiumRow.free_daily_used ?? 0)
+            const remainingToday = Number(freemiumRow.free_daily_remaining ?? Math.max(dailyLimit - usedToday, 0))
+            const isEligible = Boolean(freemiumRow.is_freemium)
+            const bonusDaysUsed = Number(freemiumRow.free_bonus_days_used ?? 1)
+            const bonusDaysMax = Number(freemiumRow.free_bonus_days_max ?? 5)
+            const bonusCapReached = isEligible && bonusDaysUsed >= bonusDaysMax
+            setFreemium({
+              isEligible,
+              dailyLimit,
+              usedToday,
+              remainingToday,
+              nextResetAt: typeof freemiumRow.next_reset_at === 'string' ? freemiumRow.next_reset_at : null,
+              isLimitReached: isEligible && remainingToday <= 0,
+              bonusDaysUsed,
+              bonusDaysMax,
+              bonusCapReached,
+            })
+          }
         }
 
         let newPlan: PlanType = null
@@ -355,9 +437,7 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
         }
 
         // Update localStorage cache with fresh credits data
-        if (creditsResult.data) {
-          updateCreditsCache(userId, creditsResult.data.credits ?? 0, newPlan)
-        }
+        updateCreditsCache(userId, creditsResult.data?.credits ?? 0, newPlan)
 
         // Update cache timestamp on successful fetch
         lastFetchTimestamp.current = Date.now()
@@ -391,6 +471,7 @@ export function CreditsProvider({ children }: { children: ReactNode }) {
         currentPlan,
         subscription,
         canAfford,
+        freemium,
         getCost,
         deductCredits,
         addCredits,

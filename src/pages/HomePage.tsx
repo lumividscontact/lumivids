@@ -14,6 +14,12 @@ interface RecentActivityItem {
   status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled'
 }
 
+const GENERATION_STATUSES: RecentActivityItem['status'][] = ['starting', 'processing', 'succeeded', 'failed', 'canceled']
+
+function isGenerationStatus(value: string): value is RecentActivityItem['status'] {
+  return GENERATION_STATUSES.includes(value as RecentActivityItem['status'])
+}
+
 const featuredVideos = [
   {
     id: 1,
@@ -116,6 +122,7 @@ export default function HomePage() {
         .from('generations')
         .select('id, type, prompt, model_name, status, created_at')
         .eq('user_id', user.id)
+        .is('hidden_at', null)
         .order('created_at', { ascending: false })
         .limit(6)
 
@@ -128,10 +135,10 @@ export default function HomePage() {
 
       const normalized = (data ?? []).map((item) => ({
         id: item.id,
-        type: item.type.includes('video') ? 'video' : 'image',
+        type: (item.type.includes('video') ? 'video' : 'image') as RecentActivityItem['type'],
         title: (item.prompt?.trim() || item.model_name || item.type).slice(0, 80),
         time: formatRelativeTime(item.created_at),
-        status: item.status,
+        status: isGenerationStatus(item.status) ? item.status : 'processing',
       }))
 
       setRecentActivity(normalized)

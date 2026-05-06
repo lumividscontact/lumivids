@@ -50,6 +50,7 @@ export const pt = {
     additional: 'adicional',
     regenerate: 'Regerar',
     copyPrompt: 'Copiar Prompt',
+    copied: 'Copiado!',
     openExternal: 'Abrir em Nova Aba',
     favorite: 'Favoritar',
     unfavorite: 'Desfavoritar',
@@ -88,12 +89,94 @@ export const pt = {
     imageToVideo: 'Imagem para Vídeo',
     textToImage: 'Texto para Imagem',
     imageToImage: 'Imagem para Imagem',
+    inspiration: 'Inspiração',
     myVideos: 'Minhas Criações',
     myFavorites: 'Meus Favoritos',
     myAccount: 'Minha Conta',
     support: 'Suporte',
     pricing: 'Planos',
     logout: 'Sair',
+    workflows: 'Workflows',
+  },
+
+  // Workflows Page
+  workflows: {
+    seo: {
+      title: 'Workflows Prontos',
+      description: 'Escolha um workflow pronto para o seu segmento e comece a criar conteúdo profissional em segundos.',
+    },
+    title: 'Workflows Prontos',
+    subtitle: 'Escolha um template para o seu segmento e gere conteúdo profissional instantaneamente.',
+    useTemplate: 'Usar template',
+    estimatedCost: 'Estimado',
+    segments: {
+      ecommerce: 'E-commerce',
+      infoproduct: 'Infoproduto',
+      reels: 'Reels',
+      social: 'Redes Sociais',
+    },
+    items: {
+      'ecommerce-product-showcase': {
+        title: 'Showcase de Produto',
+        description: 'Vídeo com rotação 360° do seu produto em fundo limpo, perfeito para anúncios.',
+      },
+      'ecommerce-product-image': {
+        title: 'Foto de Produto',
+        description: 'Foto profissional do produto em fundo branco, iluminação de estúdio.',
+      },
+      'ecommerce-lifestyle-video': {
+        title: 'Vídeo Lifestyle',
+        description: 'Cliente usando o produto em ambiente lifestyle, quente e natural.',
+      },
+      'ecommerce-unboxing': {
+        title: 'Vídeo Unboxing',
+        description: 'Unboxing premium em close com câmera lenta e sensação de luxo.',
+      },
+      'infoproduct-course-promo': {
+        title: 'Promo de Curso',
+        description: 'Apresentador profissional em escritório moderno, ideal para lançamentos.',
+      },
+      'infoproduct-ebook-cover': {
+        title: 'Capa de E-book',
+        description: 'Capa de e-book moderna com tipografia bold e fundo gradiente.',
+      },
+      'infoproduct-testimonial-bg': {
+        title: 'Fundo para Depoimento',
+        description: 'Fundo animado com gradiente suave, perfeito atrás de depoimentos.',
+      },
+      'infoproduct-webinar-thumbnail': {
+        title: 'Thumbnail de Webinar',
+        description: 'Thumbnail profissional para webinars e eventos online.',
+      },
+      'reels-talking-head-bg': {
+        title: 'Fundo para Talking-head',
+        description: 'Fundo animado estético para vídeos verticais de talking-head.',
+      },
+      'reels-hook-opener': {
+        title: 'Abertura Hook',
+        description: 'Zoom dinâmico para prender a atenção no primeiro segundo.',
+      },
+      'reels-aesthetic-cover': {
+        title: 'Capa Estética',
+        description: 'Imagem de capa vibrante e lifestyle para Reels do Instagram.',
+      },
+      'reels-cinematic-broll': {
+        title: 'B-roll Cinemático',
+        description: 'Footage cinemático de cidade à noite, atmosfera intensa e vertical.',
+      },
+      'social-ad-banner': {
+        title: 'Banner para Anúncio',
+        description: 'Banner chamativo para anúncios em redes sociais com design bold.',
+      },
+      'social-story-video': {
+        title: 'Vídeo para Stories',
+        description: 'Vídeo envolvente para stories com transições rápidas e estética atual.',
+      },
+      'social-square-post': {
+        title: 'Post Quadrado',
+        description: 'Post quadrado bold com alto contraste e impacto visual forte.',
+      },
+    },
   },
 
   // Home Page
@@ -154,9 +237,9 @@ export const pt = {
   // Text to Video Page
   textToVideo: {
     seo: {
-      title: 'Texto para Vídeo - Criar Vídeo com IA',
-      description: 'Transforme suas ideias em vídeos impressionantes. Escreva um prompt e deixe a IA criar vídeos de alta qualidade com MiniMax, Kling, Sora e mais.',
-      keywords: ['texto para vídeo', 'vídeo com IA', 'gerador de vídeo', 'criar vídeo com IA', 'prompt para vídeo'],
+      title: 'Gerador de Vídeo por Texto com IA — Grátis Online | Lumivids',
+      description: 'Gerador de vídeo com IA gratuito. Digite qualquer prompt e crie vídeos de alta qualidade em segundos com Kling, MiniMax, Sora e Veo. Sem habilidades de edição.',
+      keywords: ['texto para vídeo', 'gerador de vídeo com IA', 'criar vídeo com IA grátis', 'converter texto em vídeo online', 'gerador de vídeo IA', 'vídeo por prompt', 'Kling gerador de vídeo', 'Sora texto para vídeo'],
     },
     title: 'Texto para Vídeo',
     subtitle: 'Transforme suas ideias em vídeos cinematográficos impressionantes',
@@ -212,9 +295,9 @@ export const pt = {
   // Image to Video Page
   imageToVideo: {
     seo: {
-      title: 'Imagem para Vídeo - Animar Imagem com IA',
-      description: 'Dê vida às suas imagens! Use IA para transformar fotos estáticas em vídeos animados impressionantes.',
-      keywords: ['imagem para vídeo', 'animar imagem', 'foto para vídeo', 'animação com IA', 'animar imagem com IA'],
+      title: 'Animar Imagem com IA — Foto para Vídeo Online Grátis | Lumivids',
+      description: 'Anime fotos e imagens com IA. Faça upload de qualquer foto e gere um vídeo animado fluido em segundos. Grátis para experimentar com Kling, Luma e mais.',
+      keywords: ['imagem para vídeo', 'animar imagem IA', 'foto para vídeo IA', 'animador de imagem IA grátis', 'animar foto online', 'gerador de animação IA', 'dar vida à imagem com IA'],
     },
     title: 'Imagem para Vídeo',
     subtitle: 'Anime suas imagens estáticas com movimentos fluidos e realistas',
@@ -265,9 +348,9 @@ export const pt = {
   // Text to Image Page
   textToImage: {
     seo: {
-      title: 'Texto para Imagem - Criar Imagem com IA',
-      description: 'Gere imagens únicas a partir de descrições de texto. Use Flux, Stable Diffusion, DALL-E e outros modelos de IA.',
-      keywords: ['texto para imagem', 'imagem com IA', 'gerador de imagem', 'criar imagem com IA', 'prompt para imagem'],
+      title: 'Gerador de Imagens com IA por Texto — Grátis Online | Lumivids',
+      description: 'Gere imagens fotorrealistas, arte com IA e ilustrações a partir de texto. Gerador de imagens gratuito com Flux, Stable Diffusion e mais. Experimente sem cadastro.',
+      keywords: ['texto para imagem IA', 'gerador de imagem IA grátis', 'gerador de arte IA', 'gerar imagem por texto', 'arte IA a partir de texto', 'criar imagem com IA grátis', 'Flux gerador de imagem online'],
     },
     title: 'Texto para Imagem',
     subtitle: 'Crie imagens únicas e impressionantes a partir de descrições de texto',
@@ -298,9 +381,9 @@ export const pt = {
   // Image to Image Page
   imageToImage: {
     seo: {
-      title: 'Imagem para Imagem - Transformar Imagem com IA',
-      description: 'Transforme e aprimore suas imagens com IA. Edite estilos, melhore qualidade e crie variações.',
-      keywords: ['imagem para imagem', 'editar imagem com IA', 'transformar imagem', 'edição de imagem com IA'],
+      title: 'Editor de Imagem com IA — Transforme Fotos Online | Lumivids',
+      description: 'Transforme, melhore e redesenhe qualquer foto com IA. Troque fundos, aumente qualidade, crie variações de estilo — editor de imagem IA gratuito online com Flux e mais.',
+      keywords: ['imagem para imagem IA', 'editor de foto com IA', 'melhorar imagem IA', 'transformar imagem online IA', 'redimensionar foto com IA', 'aprimorar imagem com IA grátis', 'transformar foto online'],
     },
     title: 'Imagem para Imagem',
     subtitle: 'Transforme, melhore e reimagine suas imagens com IA',
@@ -340,7 +423,9 @@ export const pt = {
     modelDescriptions: {
       fluxImg2img: 'Transforme imagens com IA',
       nanoBananaPro: 'Transformação de imagem em alta qualidade',
+      nanoBanana2: 'Transformação rápida de imagem com edição conversacional, fusão de múltiplas imagens e consistência de personagem',
       seedream45: 'Transformação de imagem em alta qualidade com forte aderência a instruções',
+      seedream5Lite: 'Transformação de imagem com raciocínio embutido, ótima renderização de texto e edição guiada por exemplos',
     },
     badges: {
       new: 'Novo',
@@ -457,6 +542,42 @@ export const pt = {
     deleteConfirmMessage: 'Este item será removido dos seus favoritos.',
   },
 
+  reporting: {
+    action: 'Reportar',
+    reasonPrompt: 'Motivo da denúncia:',
+    defaultReason: 'Conteúdo impróprio',
+    detailsPrompt: 'Detalhes (opcional):',
+    success: 'Denúncia enviada com sucesso.',
+    error: 'Falha ao enviar denúncia.',
+  },
+
+  supportPage: {
+    title: 'Suporte',
+    subtitle: 'Abra tickets e converse com nossa equipe.',
+    subjectPlaceholder: 'Assunto',
+    messagePlaceholder: 'Mensagem inicial',
+    createTicket: 'Criar ticket',
+    creatingTicket: 'Criando...',
+    myTickets: 'Meus tickets',
+    filterAll: 'Todos',
+    statusOpen: 'Abertos',
+    statusInProgress: 'Em andamento',
+    statusResolved: 'Resolvidos',
+    statusClosed: 'Fechados',
+    emptyTickets: 'Você ainda não tem tickets.',
+    conversation: 'Conversa',
+    selectTicket: 'Selecione um ticket para ver as mensagens.',
+    emptyMessages: 'Sem mensagens ainda.',
+    replyPlaceholder: 'Escreva sua mensagem...',
+    send: 'Enviar',
+    sending: 'Enviando...',
+    createTicketError: 'Falha ao criar ticket.',
+    sendMessageError: 'Falha ao enviar mensagem.',
+    senderAdmin: 'Admin',
+    senderUser: 'Você',
+    senderSystem: 'Sistema',
+  },
+
   // My Account Page
   myAccount: {
     seo: {
@@ -536,6 +657,8 @@ export const pt = {
       remaining: '{current} de {max} créditos restantes',
       buyMore: 'Comprar Mais Créditos',
       lowCreditsWarning: 'Créditos baixos! Considere fazer upgrade.',
+      freemiumBonusDays: 'Dia {used} de {max} · volte amanhã para +10 créditos grátis',
+      freemiumBonusCapReached: 'Bônus grátis encerrado · faça upgrade para continuar gerando',
     },
     settings: {
       title: 'Configurações',
@@ -655,13 +778,22 @@ export const pt = {
     publicCtaSubtitle: 'Junte-se a milhares de criadores que já estão usando o Lumivids',
     welcomeCredits: 'créditos de boas-vindas',
     planTaglines: {
+      starter: 'Para começar sem barreiras',
       creator: 'Perfeito para começar',
       studio: 'Para criadores regulares',
       director: 'Para profissionais',
     },
     planFeatures: {
+      starter: [
+        '225 créditos/mês',
+        'Até ~45 vídeos/mês',
+        '1 tarefa paralela',
+        'Saída em HD 1080p',
+        'Acesso a modelos essenciais de IA',
+        'Suporte 24/7',
+        'Cancele quando quiser',
+      ],
       creator: [
-        '450 créditos/mês',
         'Até ~90 vídeos/mês',
         '2 tarefas paralelas',
         'Saída em HD 1080p',
@@ -801,6 +933,17 @@ export const pt = {
     inlineUpdate: 'Atualizar',
   },
 
+  freemium: {
+    dailyCreditsTitle: 'Créditos diários grátis',
+    dailyUsageSummary: '{remaining} de {limit} créditos grátis restantes hoje',
+    dailyRemaining: 'Diário: {remaining}/{limit}',
+    limitReachedHint: 'Você atingiu o limite diário do plano grátis.',
+    resetsDaily: 'Reinicia diariamente (UTC)',
+    upgradeToContinue: 'Fazer upgrade',
+    bonusDaysInfo: 'Dia {used} de {max} de bônus grátis',
+    bonusCapReachedHint: 'Você usou todos os {max} dias de créditos grátis. Faça upgrade para continuar.',
+  },
+
   // Status messages
   status: {
     starting: 'Iniciando...',
@@ -822,6 +965,12 @@ export const pt = {
     invalidFile: 'Arquivo inválido. Use PNG, JPG ou WebP.',
     fileTooLarge: 'Arquivo muito grande. Máximo 10MB.',
     generationFailed: 'Falha na geração. Tente novamente.',
+    generationInProgress: 'Já existe uma geração em andamento.',
+    modelUnavailable: 'Este modelo está temporariamente indisponível.',
+    concurrentLimitReached: 'Você atingiu o limite de {limit} gerações simultâneas do seu plano.',
+    maintenanceInProgress: 'As gerações estão temporariamente indisponíveis durante a manutenção.',
+    promptBlockedByPolicy: 'Prompt bloqueado por política de segurança.',
+    dailyLimitReached: 'Você atingiu o limite diário de créditos grátis. Tente novamente amanhã ou faça upgrade.',
   },
 
   // Success messages
@@ -838,12 +987,22 @@ export const pt = {
   // Landing Page
   landing: {
     seo: {
-      title: 'Lumivids - Gerador de Vídeo e Imagem com IA',
-      description: 'Crie vídeos e imagens incríveis com inteligência artificial. Transforme texto em vídeo, anime imagens e muito mais com modelos de IA de última geração.',
-      keywords: ['gerador de vídeo com IA', 'texto para vídeo', 'imagem para vídeo', 'gerador de imagem com IA', 'inteligência artificial', 'gerador de vídeo'],
+      title: 'Lumivids - Gerador de Vídeo e Imagem com IA Grátis',
+      description: 'Gerador de vídeo e imagem com IA gratuito. Crie vídeos incríveis a partir de texto, anime fotos e gere arte IA em segundos com Kling, Sora, MiniMax, Veo e Flux. Sem habilidades de edição.',
+      keywords: ['gerador de vídeo com IA', 'gerador de vídeo IA grátis', 'texto para vídeo IA', 'imagem para vídeo IA', 'gerador de imagem IA', 'gerador de arte IA grátis', 'gerador de vídeo online', 'Lumivids'],
     },
     hero: {
       badge: 'Desenvolvido com os modelos de IA mais recentes',
+      titlePrefix: 'Crie vídeos prontos para publicar em',
+      titleHighlight: 'minutos, não horas',
+      subtitle: 'Transforme uma ideia em vídeo com IA em poucos cliques, sem precisar editar ou instalar nada.',
+      primaryCta: 'Criar meu primeiro vídeo grátis',
+      secondaryCta: 'Ver planos e preços',
+      ctaMicrocopy: 'Sem cartão de crédito. Créditos grátis para começar.',
+      ctaProof: 'Até 50 créditos grátis para começar · 10 por dia durante 5 dias, sem cartão.',
+      trustNoCard: 'Sem cartão de crédito',
+      trustCancelAnytime: 'Cancele quando quiser',
+      trustSupport: 'Suporte 24/7',
       maxResolutionLabel: 'Resolução Máx.',
       maxDurationLabel: 'Duração Máx.',
       safeLabel: 'Seguro',
@@ -1187,6 +1346,32 @@ export const pt = {
       markFailed: 'Marcar falha',
       markSucceeded: 'Marcar sucesso',
       noResults: 'Nenhuma geração encontrada.',
+    },
+  },
+
+  // Inspiration Gallery Page
+  inspiration: {
+    seo: {
+      title: 'Inspiração',
+      description: 'Explore uma galeria de vídeos e imagens geradas com IA para encontrar inspiração e aprender os melhores prompts.',
+    },
+    title: 'Galeria de Inspiração',
+    description: 'Explore exemplos criados com os principais modelos de IA. Clique em qualquer item para copiar o prompt e usar em suas criações.',
+    filterByType: 'Filtrar por tipo',
+    filterByCategory: 'Filtrar por categoria',
+    videos: 'Vídeos',
+    images: 'Imagens',
+    prompt: 'Prompt',
+    showing: 'Mostrando {count} resultado(s)',
+    noResults: 'Nenhum resultado encontrado com os filtros selecionados.',
+    image: 'Imagem',
+    categories: {
+      abstract: 'Abstrato',
+      nature: 'Natureza',
+      people: 'Pessoas',
+      technology: 'Tecnologia',
+      lifestyle: 'Estilo de Vida',
+      animation: 'Animação',
     },
   },
 }

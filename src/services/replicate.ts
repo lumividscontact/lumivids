@@ -47,6 +47,7 @@ export interface ImageToVideoInput {
   aspectRatio?: string
   duration?: string
   resolution?: string
+  withAudio?: boolean
 }
 
 export interface TextToImageInput {
@@ -56,6 +57,7 @@ export interface TextToImageInput {
   aspectRatio: string
   resolution?: string
   numOutputs?: number
+  quality?: 'auto' | 'low' | 'medium' | 'high'
 }
 
 export interface ImageToImageInput {
@@ -206,7 +208,11 @@ class ReplicateAPI {
         }
       }
 
-      throw new Error(error.error || 'Failed to create prediction')
+      if (response.status === 402 && error?.code === 'DAILY_LIMIT_REACHED') {
+        throw new Error('DAILY_LIMIT_REACHED')
+      }
+
+      throw new Error(error.code || error.error || 'Failed to create prediction')
     }
 
     return response.json()
@@ -223,7 +229,10 @@ class ReplicateAPI {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || 'Failed to create prediction')
+      if (response.status === 402 && error?.code === 'DAILY_LIMIT_REACHED') {
+        throw new Error('DAILY_LIMIT_REACHED')
+      }
+      throw new Error(error.code || error.error || 'Failed to create prediction')
     }
 
     return response.json()
@@ -240,7 +249,10 @@ class ReplicateAPI {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || 'Failed to create prediction')
+      if (response.status === 402 && error?.code === 'DAILY_LIMIT_REACHED') {
+        throw new Error('DAILY_LIMIT_REACHED')
+      }
+      throw new Error(error.code || error.error || 'Failed to create prediction')
     }
 
     return response.json()

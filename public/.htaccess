@@ -1,6 +1,12 @@
+DirectoryIndex index.html index.php
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+  
+  # Redirect www to non-www (consolidate to non-www version)
+  RewriteCond %{HTTP_HOST} ^www\.lumivids\.com [NC]
+  RewriteRule ^(.*)$ https://lumivids.com/$1 [L,R=301]
   
   # Handle Authorization Header
   RewriteCond %{HTTP:Authorization} .
@@ -12,6 +18,8 @@
   RewriteRule ^ %1 [L,R=301]
   
   # Handle Front Controller (SPA)
+  # Exclude /blog/* so WordPress can handle its own routes and dynamic sitemaps
+  RewriteCond %{REQUEST_URI} !^/blog/
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^ index.html [L]

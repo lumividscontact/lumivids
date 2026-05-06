@@ -7,9 +7,14 @@ import { getPlanCredits } from '../_shared/planConfig.ts'
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const STRIPE_DEFAULT_LOCALE = (Deno.env.get('STRIPE_DEFAULT_LOCALE') || 'en').toLowerCase()
 
 // Price IDs for each plan (configure in Stripe Dashboard)
 const PRICE_IDS: Record<string, { monthly: string; annual: string }> = {
+  starter: {
+    monthly: Deno.env.get('STRIPE_PRICE_STARTER_MONTHLY') || '',
+    annual: Deno.env.get('STRIPE_PRICE_STARTER_ANNUAL') || '',
+  },
   creator: {
     monthly: Deno.env.get('STRIPE_PRICE_CREATOR_MONTHLY') || '',
     annual: Deno.env.get('STRIPE_PRICE_CREATOR_ANNUAL') || '',
@@ -25,6 +30,10 @@ const PRICE_IDS: Record<string, { monthly: string; annual: string }> = {
 }
 
 const PRICE_ENV_KEYS: Record<string, { monthly: string; annual: string }> = {
+  starter: {
+    monthly: 'STRIPE_PRICE_STARTER_MONTHLY',
+    annual: 'STRIPE_PRICE_STARTER_ANNUAL',
+  },
   creator: {
     monthly: 'STRIPE_PRICE_CREATOR_MONTHLY',
     annual: 'STRIPE_PRICE_CREATOR_ANNUAL',
@@ -174,8 +183,14 @@ serve(async (req) => {
       const customer = await stripeRequest('/customers', 'POST', {
         email: user.email || '',
         'metadata[supabase_user_id]': user.id,
+        'preferred_locales[0]': STRIPE_DEFAULT_LOCALE,
       })
       customerId = customer.id
+    } else {
+      // Keep customer locale pinned to English so Stripe-hosted pages and emails are consistent.
+      await stripeRequest(`/customers/${customerId}`, 'POST', {
+        'preferred_locales[0]': STRIPE_DEFAULT_LOCALE,
+      })
     }
 
     const planCredits = getPlanCredits(planId)
@@ -187,6 +202,7 @@ serve(async (req) => {
       'line_items[0][price]': priceId,
       'line_items[0][quantity]': '1',
       mode: 'subscription',
+      locale: STRIPE_DEFAULT_LOCALE,
       success_url: successUrl || `${Deno.env.get('APP_URL')}/pricing?success=true`,
       cancel_url: cancelUrl || `${Deno.env.get('APP_URL')}/pricing?canceled=true`,
       'subscription_data[metadata][supabase_user_id]': user.id,

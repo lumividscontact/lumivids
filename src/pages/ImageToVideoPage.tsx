@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Layers, ChevronDown, X, Monitor, Smartphone, Square } from 'lucide-react'
+import { Layers, ChevronDown, X, Volume2, VolumeX } from 'lucide-react'
 import { useImageToVideo, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
@@ -8,6 +8,8 @@ import AuthModal from '@/components/AuthModal'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
 import GenerationVideoPreview from '@/components/GenerationVideoPreview'
+import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
+import ModelLogo from '@/components/ModelLogo'
 import { 
   IMAGE_TO_VIDEO_MODELS, 
   ModelConfig, 
@@ -29,7 +31,20 @@ export default function ImageToVideoPage() {
   const examplePrompts = t.imageToVideo.examplePrompts
   
   // SEO meta tags
-  useSEO(getSeoPages(t).imageToVideo)
+  useSEO({
+    ...getSeoPages(t).imageToVideo,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Lumivids – Image to Video Animator',
+      url: 'https://lumivids.com/image-to-video',
+      description: t.imageToVideo.seo.description,
+      applicationCategory: 'MultimediaApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      featureList: 'AI image animation, photo to video, multiple AI models, free to try',
+    },
+  })
 
   // Compute initial values from URL once (lazy initializer pattern)
   const initialValuesRef = useRef<{
@@ -129,11 +144,12 @@ export default function ImageToVideoPage() {
   const [duration, setDuration] = useState(() => initialValuesRef.current!.duration)
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() => initialValuesRef.current!.aspectRatio)
   const [resolution, setResolution] = useState<Resolution>(() => initialValuesRef.current!.resolution)
+  const [withAudio, setWithAudio] = useState(false)
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useImageToVideo()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium } = useImageToVideo()
 
   useEffect(() => {
     return () => {
@@ -169,26 +185,63 @@ export default function ImageToVideoPage() {
 
   // Get available options
   const availableDurations = useMemo(() => getDurationOptions(selectedModel), [selectedModel])
-  const availableAspectRatios = selectedModel.supportedAspectRatios
   const availableResolutions = selectedModel.supportedResolutions
 
   // Calculate credit cost
   const currentCost = useMemo(() => {
     if (selectedModel.credits.perSecond) {
-      return calculateCredits(selectedModel, duration, resolution)
+      return calculateCredits(selectedModel, duration, resolution, withAudio)
     }
     return selectedModel.credits.base
-  }, [selectedModel, duration, resolution])
+  }, [selectedModel, duration, resolution, withAudio])
+
+  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
 
   const handleModelChange = (model: ModelConfig) => {
     setSelectedModel(model)
     setDuration(model.defaultDuration || 5)
     setResolution(model.defaultResolution)
+    if (!model.supportsAudio) {
+      setWithAudio(false)
+    }
     setIsModelDropdownOpen(false)
     if (!model.supportedAspectRatios.includes(aspectRatio)) {
       setAspectRatio(model.supportedAspectRatios[0])
     }
   }
+
+  const handleImageChange = useCallback((url: string | null) => {
+    setUploadedImageUrl(url)
+    if (!url) {
+      setAspectRatio(selectedModel.supportedAspectRatios[0] || '16:9')
+    }
+  }, [selectedModel.supportedAspectRatios])
+
+  const handleImageDimensions = useCallback((width: number, height: number) => {
+    const ratio = width / height
+    const ratioValues: Partial<Record<AspectRatio, number>> = {
+      '16:9': 16 / 9,
+      '9:16': 9 / 16,
+      '1:1': 1,
+      '4:3': 4 / 3,
+      '3:4': 3 / 4,
+      '2:3': 2 / 3,
+      '3:2': 3 / 2,
+      '21:9': 21 / 9,
+    }
+    let closest: AspectRatio = selectedModel.supportedAspectRatios[0] || '16:9'
+    let minDiff = Infinity
+    for (const ar of selectedModel.supportedAspectRatios) {
+      const arValue = ratioValues[ar]
+      if (arValue === undefined) continue
+      const diff = Math.abs(ratio - arValue)
+      if (diff < minDiff) {
+        minDiff = diff
+        closest = ar
+      }
+    }
+    setAspectRatio(closest)
+  }, [selectedModel.supportedAspectRatios])
 
   const isPromptTooLong = prompt.length > MAX_PROMPT_CHARS
 
@@ -209,6 +262,7 @@ export default function ImageToVideoPage() {
         aspectRatio,
         duration: String(duration),
         resolution,
+        withAudio: selectedModel.supportsAudio ? withAudio : undefined,
       })
     } catch (err) {
       console.error('Generation failed:', err)
@@ -216,24 +270,6 @@ export default function ImageToVideoPage() {
   }
 
   const videoUrl = output ? (Array.isArray(output) ? output[0] : output) : null
-
-  const getModelIcon = (modelId: string) => {
-    if (modelId.includes('kling')) return '✨'
-    if (modelId.includes('luma')) return '🌙'
-    if (modelId.includes('stable')) return '🎬'
-    if (modelId.includes('minimax')) return '⚡'
-    if (modelId.includes('haiper')) return '🚀'
-    return '🎥'
-  }
-
-  const getAspectRatioIcon = (ratio: AspectRatio) => {
-    switch (ratio) {
-      case '16:9': return <Monitor className="w-4 h-4" />
-      case '9:16': return <Smartphone className="w-4 h-4" />
-      case '1:1': return <Square className="w-4 h-4" />
-      default: return <Monitor className="w-4 h-4" />
-    }
-  }
 
   const getStatusText = () => {
     switch (status) {
@@ -259,11 +295,11 @@ export default function ImageToVideoPage() {
               className="w-full flex items-center justify-between p-3 bg-dark-800 rounded-xl hover:bg-dark-700 transition-colors disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{getModelIcon(selectedModel.id)}</span>
+                <ModelLogo modelId={selectedModel.id} />
                 <div className="text-left">
                   <p className="font-medium text-white">{selectedModel.name}</p>
                   <p className="text-xs text-dark-400">
-                    {selectedModel.credits.perSecond 
+                    {selectedModel.credits.perSecond?.[resolution] !== undefined
                       ? `${selectedModel.credits.perSecond[resolution] * (duration || selectedModel.minDuration || 5)} ${t.ui.creditsLabel.toLowerCase()} (${selectedModel.credits.perSecond[resolution]}/s)` 
                       : `${selectedModel.credits.base} ${t.ui.creditsLabel.toLowerCase()}`}
                   </p>
@@ -277,8 +313,9 @@ export default function ImageToVideoPage() {
               <div className="mt-2 max-h-80 overflow-y-auto rounded-xl bg-dark-800 border border-dark-700">
                 {IMAGE_TO_VIDEO_MODELS.map((model) => {
                   const isSelected = selectedModel.id === model.id
-                  const cost = model.credits.perSecond 
-                    ? model.credits.perSecond[model.defaultResolution] * (model.minDuration || 5)
+                  const perSecondCost = model.credits.perSecond?.[model.defaultResolution]
+                  const cost = perSecondCost !== undefined
+                    ? perSecondCost * (model.minDuration || 5)
                     : model.credits.base
                   return (
                     <button
@@ -289,7 +326,7 @@ export default function ImageToVideoPage() {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{getModelIcon(model.id)}</span>
+                        <ModelLogo modelId={model.id} />
                         <div className="text-left">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-white text-sm">{model.name}</p>
@@ -324,9 +361,9 @@ export default function ImageToVideoPage() {
             <label className="block text-sm font-medium text-dark-400 mb-3">{t.imageToVideo.uploadLabel}</label>
             <ImageUpload
               value={uploadedImageUrl}
-              onChange={setUploadedImageUrl}
+              onChange={handleImageChange}
+              onDimensionsDetected={handleImageDimensions}
               disabled={isGenerating}
-              aspectRatio={aspectRatio === '1:1' ? '1:1' : aspectRatio === '9:16' ? '9:16' : '16:9'}
             />
           </div>
 
@@ -388,29 +425,7 @@ export default function ImageToVideoPage() {
             </div>
           )}
 
-          {/* Aspect Ratio */}
-          {!selectedModel.hideAspectRatioSelector && (
-          <div className="card">
-            <label className="block text-sm font-medium text-dark-400 mb-3">{t.textToVideo.aspectRatioLabel}</label>
-            <div className="flex gap-2">
-              {availableAspectRatios.map((ratio) => (
-                <button
-                  key={ratio}
-                  onClick={() => setAspectRatio(ratio)}
-                  disabled={isGenerating}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${
-                    aspectRatio === ratio
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
-                  }`}
-                >
-                  {getAspectRatioIcon(ratio)}
-                  {ratio}
-                </button>
-              ))}
-            </div>
-          </div>
-          )}
+
 
           {/* Resolution */}
           {!selectedModel.hideResolutionSelector && (
@@ -433,6 +448,45 @@ export default function ImageToVideoPage() {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Audio Toggle */}
+          {selectedModel.supportsAudio && (
+            <button
+              onClick={() => setWithAudio(!withAudio)}
+              disabled={isGenerating}
+              className={`w-full text-left rounded-xl border-2 p-4 transition-all duration-200 disabled:opacity-50 ${
+                withAudio
+                  ? 'border-orange-500/60 bg-orange-500/10 hover:bg-orange-500/15'
+                  : 'border-dark-700 bg-dark-800 hover:border-dark-600 hover:bg-dark-700'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg transition-colors ${
+                    withAudio ? 'bg-orange-500/20' : 'bg-dark-700'
+                  }`}>
+                    {withAudio
+                      ? <Volume2 className="w-5 h-5 text-orange-400" />
+                      : <VolumeX className="w-5 h-5 text-dark-400" />
+                    }
+                  </div>
+                  <div>
+                    <p className={`text-sm font-semibold ${
+                      withAudio ? 'text-orange-300' : 'text-white'
+                    }`}>{t.textToVideo.generateAudio}</p>
+                    <p className="text-xs text-dark-400">+1cr/s {t.common.additional}</p>
+                  </div>
+                </div>
+                <div className={`relative w-12 h-6 rounded-full transition-colors ${
+                  withAudio ? 'bg-orange-500' : 'bg-dark-700'
+                }`}>
+                  <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
+                    withAudio ? 'translate-x-7' : 'translate-x-1'
+                  }`} />
+                </div>
+              </div>
+            </button>
           )}
 
           {/* Motion Type */}
@@ -525,23 +579,19 @@ export default function ImageToVideoPage() {
               progressBarGradientClassName="bg-gradient-to-r from-purple-500 to-pink-500"
             />
 
+            <FreemiumDailyStatus currentCost={currentCost} />
+
             <GenerationActionButtons
               isGenerating={isGenerating}
               onGenerate={handleGenerate}
               onCancel={cancel}
-              generateDisabled={!uploadedImageUrl || isPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost)}
+              generateDisabled={!uploadedImageUrl || isPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
               generateLabel={`${t.imageToVideo.generateButton} | ${currentCost} ${t.ui.creditsLabel}`}
               generatingLabel={t.common.generating}
               cancelLabel={t.common.cancel}
               generateIcon={<Layers className="w-5 h-5" />}
               generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
-
-            {isAuthenticated && credits < currentCost && !isGenerating && (
-              <p className="text-xs text-red-400 text-center">
-                {t.ui.insufficientCreditsMessage} {credits} {t.common.credits}.
-              </p>
-            )}
           </div>
         </div>
 

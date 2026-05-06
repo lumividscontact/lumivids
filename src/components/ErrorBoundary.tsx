@@ -39,7 +39,7 @@ class ErrorBoundaryInner extends React.Component<ErrorBoundaryInnerProps, ErrorB
     console.error('[ErrorBoundary] Component stack:', errorInfo.componentStack)
     reportError(error, {
       source: 'react.error-boundary',
-      componentStack: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack ?? undefined,
     })
   }
 

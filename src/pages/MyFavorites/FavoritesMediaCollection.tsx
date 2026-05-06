@@ -201,7 +201,7 @@ export function FavoritesMediaCollection({
                     onReport(item)
                   }}
                   className="p-2 rounded-lg hover:bg-dark-700 transition-colors"
-                  title="Reportar"
+                  title={t.reporting.action}
                 >
                   <Flag className="w-5 h-5 text-dark-300" />
                 </button>
@@ -362,7 +362,7 @@ export function FavoritesMediaCollection({
                   onReport(item)
                 }}
                 className="p-2 rounded-lg hover:bg-dark-700 transition-colors"
-                title="Reportar"
+                title={t.reporting.action}
               >
                 <Flag className="w-5 h-5 text-dark-300" />
               </button>

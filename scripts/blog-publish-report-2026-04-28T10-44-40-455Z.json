@@ -1,0 +1,16 @@
+{
+  "total": 1,
+  "created": 0,
+  "updated": 0,
+  "skipped": 1,
+  "failed": 0,
+  "results": [
+    {
+      "index": 1,
+      "title": "Como transformar imagem em vídeo com IA em poucos passos",
+      "slug": "transformar-imagem-em-video-com-ia",
+      "action": "skipped",
+      "reason": "Dry-run: post nao publicado."
+    }
+  ]
+}

@@ -48,11 +48,16 @@ serve(async (req) => {
     const { 
       prompt: rawPrompt, 
       negativePrompt,
-      model = 'flux-pro',
+      model = 'flux-2-pro',
       aspectRatio = '1:1',
       resolution,
+      quality,
     } = body
     const numOutputs = clampNumOutputs(body.numOutputs || body.numImages || 1)
+    const normalizedQuality = ['auto', 'low', 'medium', 'high'].includes(String(quality || '').toLowerCase())
+      ? String(quality).toLowerCase()
+      : 'auto'
+    const billingModel = model === 'gpt-image-2' ? `gpt-image-2-${normalizedQuality}` : model
 
     const promptResult = validatePrompt(rawPrompt)
     if (!promptResult.valid) {
@@ -64,7 +69,7 @@ serve(async (req) => {
     const prompt = promptResult.prompt
 
     try {
-      await ensureModelEnabled(model)
+      await ensureModelEnabled(billingModel)
     } catch {
       return new Response(JSON.stringify({ error: 'Model disabled by admin' }), {
         status: 403,
@@ -74,17 +79,18 @@ serve(async (req) => {
 
     // Calculate credit cost
     const cost = await calculateCreditCost('text-to-image', {
-      model,
+      model: billingModel,
       resolution,
       numOutputs,
     })
 
     // Deduct credits BEFORE starting generation
-    const deductResult = await deductCredits(userId, cost, `Text to Image: ${model}`)
+    const deductResult = await deductCredits(userId, cost, `Text to Image: ${billingModel}`)
     if (!deductResult.success) {
+      const isDailyLimit = deductResult.error === 'DAILY_LIMIT_REACHED'
       return new Response(JSON.stringify({ 
-        error: deductResult.error || 'Insufficient credits',
-        code: 'INSUFFICIENT_CREDITS',
+        error: isDailyLimit ? 'Daily free limit reached' : (deductResult.error || 'Insufficient credits'),
+        code: isDailyLimit ? 'DAILY_LIMIT_REACHED' : 'INSUFFICIENT_CREDITS',
         required: cost,
       }), {
         status: 402,
@@ -96,7 +102,7 @@ serve(async (req) => {
     console.log(`[Text2Image] User ${userId} charged ${cost} credits`)
 
     const replicate = getReplicate()
-    const modelId = MODELS[model] || MODELS['flux-pro']
+    const modelId = MODELS[model] || MODELS[billingModel] || MODELS['flux-2-pro']
     
     const dimensions: Record<string, { width: number; height: number }> = {
       '1:1': { width: 1024, height: 1024 },
@@ -107,10 +113,26 @@ serve(async (req) => {
     }
     
     const { width, height } = dimensions[aspectRatio] || dimensions['1:1']
+
+    const fluxResolutionMap: Record<string, string> = {
+      '1k': '1 MP',
+      '2k': '2 MP',
+      '4k': '4 MP',
+      '1080p': '2 MP',
+      '720p': '1 MP',
+    }
     
     let input: Record<string, any> = {}
 
-    if (modelId.includes('flux')) {
+    if (modelId.includes('flux-2-pro')) {
+      const fluxResolution = resolution ? (fluxResolutionMap[String(resolution).toLowerCase()] || '2 MP') : '2 MP'
+      input = {
+        prompt,
+        aspect_ratio: aspectRatio,
+        resolution: fluxResolution,
+        output_format: 'webp',
+      }
+    } else if (modelId.includes('flux')) {
       input = {
         prompt,
         aspect_ratio: aspectRatio,
@@ -118,7 +140,7 @@ serve(async (req) => {
         output_quality: 90,
         num_outputs: numOutputs,
       }
-    } else if (modelId.includes('nano-banana-pro')) {
+    } else if (modelId.includes('nano-banana')) {
       const nanoAspectRatio = aspectRatio === 'auto' ? 'match_input_image' : aspectRatio
       const nanoResolution = resolution ? String(resolution).toUpperCase() : '2K'
       input = {
@@ -147,9 +169,21 @@ serve(async (req) => {
         prompt,
         aspect_ratio: aspectRatio,
         output_format: 'jpg',
+      }
+    } else if (modelId.includes('gpt-image-2')) {
+      const variant = model.startsWith('gpt-image-2-')
+        ? model.replace('gpt-image-2-', '')
+        : normalizedQuality
+      const allowedVariant = ['auto', 'low', 'medium', 'high'].includes(variant) ? variant : 'auto'
+
+      input = {
+        prompt,
+        aspect_ratio: aspectRatio,
+        quality: allowedVariant,
+        output_format: 'webp',
         number_of_images: numOutputs,
       }
-    } else if (modelId.includes('seedream-4.5')) {
+    } else if (modelId.includes('seedream')) {
       const seedreamAspectRatio = aspectRatio === 'auto' ? 'match_input_image' : aspectRatio
       const seedreamSize = resolution ? String(resolution).toUpperCase() : '2K'
       input = {
@@ -171,7 +205,11 @@ serve(async (req) => {
 
     // Some models don't support num_outputs natively (ideogram, imagen, seedream).
     // For those, we create predictions sequentially with a delay to avoid rate limits.
-    const singleOutputModel = modelId.includes('ideogram') || modelId.includes('imagen-4') || modelId.includes('seedream')
+    const singleOutputModel =
+      modelId.includes('ideogram') ||
+      modelId.includes('imagen-4') ||
+      modelId.includes('seedream') ||
+      modelId.includes('flux-2-pro')
 
     if (singleOutputModel && numOutputs > 1) {
       const predictions = []

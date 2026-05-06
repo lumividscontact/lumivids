@@ -23,6 +23,66 @@ type GenerationState = {
   credits_used: number
 }
 
+function inferVideoFormat(videoUrl: string): string {
+  try {
+    const pathname = new URL(videoUrl).pathname.toLowerCase()
+    if (pathname.endsWith('.webm')) return 'webm'
+    if (pathname.endsWith('.mov')) return 'mov'
+    if (pathname.endsWith('.mkv')) return 'mkv'
+  } catch {
+    // Fall through to default.
+  }
+
+  return 'mp4'
+}
+
+function inferFileExtension(url: string, contentType: string): string {
+  const lowerUrl = url.toLowerCase()
+  const lowerType = contentType.toLowerCase()
+
+  // Video types
+  if (lowerUrl.endsWith('.mp4') || lowerType.includes('video/mp4')) return 'mp4'
+  if (lowerUrl.endsWith('.webm') || lowerType.includes('video/webm')) return 'webm'
+  if (lowerUrl.endsWith('.mov') || lowerType.includes('video/quicktime')) return 'mov'
+  if (lowerUrl.endsWith('.mkv')) return 'mkv'
+
+  // Image types
+  if (lowerUrl.endsWith('.png') || lowerType.includes('image/png')) return 'png'
+  if (lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerType.includes('image/jpeg')) return 'jpg'
+  if (lowerUrl.endsWith('.webp') || lowerType.includes('image/webp')) return 'webp'
+  if (lowerUrl.endsWith('.gif') || lowerType.includes('image/gif')) return 'gif'
+
+  // Default: video
+  return lowerType.startsWith('image/') ? 'png' : 'mp4'
+}
+
+async function persistGeneratedVideo(
+  supabase: ReturnType<typeof createClient>,
+  generationState: GenerationState | null,
+  userId: string,
+  videoUrl: string,
+): Promise<void> {
+  if (!generationState?.id) {
+    return
+  }
+
+  const payload = {
+    user_id: userId,
+    generation_id: generationState.id,
+    video_url: videoUrl,
+    thumbnail_url: videoUrl,
+    format: inferVideoFormat(videoUrl),
+  }
+
+  const { error } = await supabase
+    .from('generated_videos')
+    .upsert(payload, { onConflict: 'generation_id' })
+
+  if (error) {
+    console.error('[Check Prediction] Failed to persist generated video:', error)
+  }
+}
+
 function encodeStoragePath(path: string): string {
   return path
     .split('/')
@@ -273,9 +333,9 @@ serve(async (req) => {
           }
 
           const contentType = videoResponse.headers.get('content-type') || 'video/mp4'
-          
-          // Generate filename
-          const extension = outputUrl.includes('.mp4') ? 'mp4' : 'webm'
+
+          // Generate filename with correct extension
+          const extension = inferFileExtension(outputUrl, contentType)
           const filename = `${id}.${extension}`
           const filepath = `generations/${authResult.userId}/${filename}`
 
@@ -290,8 +350,11 @@ serve(async (req) => {
             .from('videos')
             .getPublicUrl(filepath)
 
-          // Update prediction output with local URL
+          // Update prediction with permanent storage URL.
+          // Setting both local_output_url AND output ensures the client
+          // receives the permanent URL (not the expiring Replicate URL).
           prediction.local_output_url = publicUrl
+          prediction.output = [publicUrl]
         } catch (downloadError) {
           console.error('[Check Prediction] Download/Upload error:', downloadError)
           // Continue with original Replicate URL if download fails
@@ -319,6 +382,16 @@ serve(async (req) => {
     }
 
     await persistPredictionState(supabase, authResult.userId, id, prediction as PredictionLike)
+
+    if (prediction.status === 'succeeded') {
+      const persistedVideoUrl = prediction.local_output_url
+        || prediction.output_url
+        || (await resolveOutputUrl(prediction.output))
+
+      if (persistedVideoUrl) {
+        await persistGeneratedVideo(supabase, generationState, authResult.userId, persistedVideoUrl)
+      }
+    }
 
     // Refund credits if prediction failed or was canceled
     if (prediction.status === 'failed' || prediction.status === 'canceled') {

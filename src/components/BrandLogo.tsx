@@ -13,7 +13,7 @@ export default function BrandLogo({
 }: BrandLogoProps) {
   return (
     <>
-      <img src="/logo.svg" alt={alt} className={iconClassName} width={40} height={40} />
+      <img src="/logo.webp" alt={alt} className={iconClassName} width={40} height={40} />
       {showText ? <span className={textClassName}>Lumivids</span> : null}
     </>
   )

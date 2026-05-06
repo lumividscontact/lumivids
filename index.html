@@ -54,7 +54,11 @@
 
           // Update static meta tags to match the detected language
           var titles = { pt: 'Lumivids - Gerador de Vídeo e Imagem com IA', en: 'Lumivids - AI Video & Image Generator', es: 'Lumivids - Generador de Video e Imágenes con IA' }
-          var descs = { pt: 'Crie vídeos e imagens incríveis com inteligência artificial. Transforme texto em vídeo, anime imagens e muito mais.', en: 'Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more with next-generation AI models.', es: 'Crea videos e imágenes increíbles con inteligencia artificial. Convierte texto en video, anima imágenes y mucho más.' }
+          var descs = {
+            pt: 'Lumivids e um estúdio de IA gratuito para texto em video, imagem em video, texto em imagem e imagem em imagem. Crie com Kling, Sora, MiniMax, Veo e Flux em um unico fluxo.',
+            en: 'Lumivids is a free AI studio for text to video, image to video, text to image, and image to image creation. Generate with Kling, Sora, MiniMax, Veo, and Flux in one workflow.',
+            es: 'Lumivids es un estudio de IA gratis para texto a video, imagen a video, texto a imagen e imagen a imagen. Crea con Kling, Sora, MiniMax, Veo y Flux en un solo flujo.'
+          }
           var ogLocales = { pt: 'pt_BR', en: 'en_US', es: 'es_ES' }
 
           document.title = titles[normalized] || titles.en
@@ -72,32 +76,30 @@
       })()
     </script>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/webp" href="/logo.webp" />
+    <link rel="shortcut icon" href="/logo.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="cosmic-gateway-node" content="cg-n0EKli3wtGDe5K6r" />
     
     <!-- Primary Meta Tags -->
     <title>Lumivids - AI Video & Image Generator</title>
     <meta name="title" content="Lumivids - AI Video & Image Generator" />
-    <meta name="description" content="Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more with next-generation AI models." />
+    <meta name="description" content="Lumivids is a free AI studio for text to video, image to video, text to image, and image to image creation. Generate with Kling, Sora, MiniMax, Veo, and Flux in one workflow." />
     <meta name="keywords" content="AI video generator, text to video, image to video, AI image generator, artificial intelligence, video generator, Lumivids" />
     <meta name="author" content="Lumivids" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#7c3aed" />
-    <link rel="canonical" href="https://lumivids.com/" />
-    <link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/?lang=pt" />
-    <link rel="alternate" hreflang="en" href="https://lumivids.com/?lang=en" />
-    <link rel="alternate" hreflang="es" href="https://lumivids.com/?lang=es" />
-    <link rel="alternate" hreflang="x-default" href="https://lumivids.com/" />
+    <!-- Canonical and hreflang are set dynamically per-route by useSEO.ts -->
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://lumivids.com/" />
     <meta property="og:title" content="Lumivids - AI Video & Image Generator" />
-    <meta property="og:description" content="Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more." />
-    <meta property="og:image" content="https://lumivids.com/og/landing.svg" />
+    <meta property="og:description" content="Create videos and images with top AI models in one place. Lumivids supports text to video, image to video, text to image, and image to image workflows." />
+    <meta property="og:image" content="https://lumivids.com/og/landing.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:site_name" content="Lumivids" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:locale:alternate" content="pt_BR" />
@@ -107,8 +109,8 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://lumivids.com/" />
     <meta name="twitter:title" content="Lumivids - AI Video & Image Generator" />
-    <meta name="twitter:description" content="Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more." />
-    <meta name="twitter:image" content="https://lumivids.com/og/landing.svg" />
+    <meta name="twitter:description" content="Create videos and images with top AI models in one place. Lumivids supports text to video, image to video, text to image, and image to image workflows." />
+    <meta name="twitter:image" content="https://lumivids.com/og/landing.png" />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,7 +140,7 @@
         "@type": "WebSite",
         "name": "Lumivids",
         "url": "https://lumivids.com",
-        "description": "Create stunning videos and images with artificial intelligence.",
+        "description": "Lumivids is a free AI studio for text to video, image to video, text to image, and image to image generation.",
         "inLanguage": ["pt-BR", "en", "es"]
       }
     </script>
@@ -148,7 +150,7 @@
     <noscript>
       <main style="max-width: 860px; margin: 2rem auto; font-family: Inter, Arial, sans-serif; color: #111827; line-height: 1.6; padding: 0 1rem;">
         <h1>Lumivids - AI Video & Image Generator</h1>
-        <p>Create videos and images with artificial intelligence using advanced generation models.</p>
+        <p>Create videos and images in one AI studio using models like Kling, Sora, MiniMax, Veo, and Flux.</p>
         <p>Lumivids supports text to video, image to video, text to image, and image to image workflows in English, Portuguese, and Spanish.</p>
         <h2>Public Pages</h2>
         <ul>

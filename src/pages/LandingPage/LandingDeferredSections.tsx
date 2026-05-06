@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import BrandLogo from '@/components/BrandLogo'
+import ModelLogo from '@/components/ModelLogo'
 
 type LandingTranslations = Record<string, any>
 
@@ -59,22 +60,20 @@ const features = [
 ]
 
 const aiModels = [
-  { name: 'Kling 2.1', icon: '🚀', gradient: 'from-purple-600 to-blue-600' },
-  { name: 'Kling 2.5 Turbo', icon: '⚡', gradient: 'from-blue-500 to-cyan-500' },
-  { name: 'Hailuo 2.3', icon: '🎬', gradient: 'from-gray-600 to-gray-800' },
-  { name: 'Luma Ray 2', icon: '✨', gradient: 'from-pink-500 to-purple-500' },
-  { name: 'Wan 2.6', icon: '🌊', gradient: 'from-cyan-500 to-blue-500' },
-  { name: 'SeeDance', icon: '🏃', gradient: 'from-orange-500 to-red-500' },
-  { name: 'Sora 2', icon: '🎥', gradient: 'from-green-600 to-emerald-600' },
-  { name: 'Veo 3.1', icon: '⭐', gradient: 'from-yellow-500 to-orange-500' },
-  { name: 'Nano Banana', icon: '🍌', gradient: 'from-yellow-400 to-yellow-600' },
-  { name: 'Flux', icon: '🔥', gradient: 'from-red-500 to-orange-500' },
-  { name: 'Stable Diffusion', icon: '🎨', gradient: 'from-violet-500 to-purple-600' },
-  { name: 'Ideogram', icon: '💡', gradient: 'from-blue-400 to-indigo-500' },
-  { name: 'PrunaAI', icon: '🧠', gradient: 'from-pink-400 to-rose-500' },
-  { name: 'DALL-E', icon: '🖼️', gradient: 'from-teal-500 to-green-500' },
-  { name: 'Qwen', icon: '🤖', gradient: 'from-slate-500 to-gray-700' },
-  { name: 'Seedream', icon: '🌱', gradient: 'from-emerald-400 to-green-600' },
+  { name: 'Kling', modelId: 'kling-v2.5-turbo-pro' },
+  { name: 'Kling 3 Omni', modelId: 'kling-v3-omni' },
+  { name: 'Hailuo', modelId: 'hailuo-2.3' },
+  { name: 'Wan', modelId: 'wan-2.6' },
+  { name: 'Pruna AI', modelId: 'p-video-standard' },
+  { name: 'ByteDance', modelId: 'seedance-2.0' },
+  { name: 'OpenAI', modelId: 'openai-sora-2' },
+  { name: 'GPT Image 2', modelId: 'gpt-image-2' },
+  { name: 'Google', modelId: 'google-veo-3.1-fast' },
+  { name: 'Black Forest Labs', modelId: 'flux-schnell' },
+  { name: 'Stability AI', modelId: 'stable-diffusion-xl' },
+  { name: 'Ideogram', modelId: 'ideogram-v3' },
+  { name: 'xAI', modelId: 'grok-imagine-video' },
+  { name: 'Runway', modelId: 'runway-gen-4.5' },
 ]
 
 const getInitials = (name: string) => {
@@ -178,9 +177,11 @@ export default function LandingDeferredSections({
           <div className="flex flex-wrap justify-center gap-2 md:gap-3 max-w-5xl mx-auto">
             {aiModels.map((model) => (
               <div key={model.name} className="flex flex-col items-center gap-1">
-                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${model.gradient} flex items-center justify-center shadow-lg border border-white/10`}>
-                  <span className="text-xl md:text-2xl">{model.icon}</span>
-                </div>
+                <ModelLogo
+                  modelId={model.modelId}
+                  className="h-9 w-9 md:h-10 md:w-10"
+                  containerClassName="flex h-14 w-14 md:h-16 md:w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/95 p-2 shadow-lg ring-1 ring-white/10"
+                />
                 <span className="text-xs text-dark-300 font-medium text-center">{model.name}</span>
               </div>
             ))}
@@ -411,6 +412,34 @@ export default function LandingDeferredSections({
                     className="text-dark-400 hover:text-white transition-colors"
                   >
                     YP for AI
+                  </a>
+                </li>
+                <li className="pt-2">
+                  <a
+                    href="https://launchboosts.com/project/lumivids"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src="https://launchboosts.com/badges/featured-dark.svg"
+                      alt="Featured on LaunchBoosts"
+                      width="180"
+                      height="54"
+                    />
+                  </a>
+                </li>
+                <li className="pt-2">
+                  <a
+                    href="https://startupfa.me/s/lumivids?utm_source=lumivids.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src="https://startupfa.me/badges/featured/dark.webp"
+                      alt="Lumivids - Featured on Startup Fame"
+                      width="171"
+                      height="54"
+                    />
                   </a>
                 </li>
               </ul>

@@ -1,0 +1,373 @@
+{
+  "total": 52,
+  "created": 0,
+  "updated": 0,
+  "skipped": 0,
+  "failed": 52,
+  "results": [
+    {
+      "index": 1,
+      "title": "Como transformar imagem em vídeo com IA em poucos passos",
+      "slug": "transformar-imagem-em-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 2,
+      "title": "Como criar vídeo com IA sem editar manualmente",
+      "slug": "criar-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 3,
+      "title": "Como fazer vídeo de produto com IA para vender mais",
+      "slug": "fazer-video-de-produto-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 4,
+      "title": "Como converter foto em vídeo com movimento e trilha",
+      "slug": "converter-foto-em-video",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 5,
+      "title": "Como transformar texto em vídeo com IA",
+      "slug": "transformar-texto-em-video",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 6,
+      "title": "Como criar Reels com IA para Instagram",
+      "slug": "criar-reels-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 7,
+      "title": "Como criar vídeos para TikTok com IA em minutos",
+      "slug": "criar-tiktok-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 8,
+      "title": "Como fazer anúncio em vídeo com IA sem equipe criativa",
+      "slug": "fazer-anuncio-em-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 9,
+      "title": "Como animar uma imagem com IA para redes sociais",
+      "slug": "animar-imagem-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 10,
+      "title": "Como criar vídeo para ecommerce com IA",
+      "slug": "criar-video-para-ecommerce",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 11,
+      "title": "Como fazer vídeo para landing page com IA",
+      "slug": "fazer-video-para-landing-page",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 12,
+      "title": "Como criar vídeo vertical com IA para Shorts e Reels",
+      "slug": "criar-video-vertical-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 13,
+      "title": "Melhor gerador de vídeo com IA para criar vídeos rápidos em 2026",
+      "slug": "melhor-gerador-de-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 14,
+      "title": "Melhor app para criar vídeo com IA no celular e desktop",
+      "slug": "melhor-app-para-criar-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 15,
+      "title": "Melhor ferramenta para transformar imagem em vídeo com IA",
+      "slug": "melhor-ferramenta-imagem-para-video",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 16,
+      "title": "Melhor ferramenta de texto para vídeo com IA",
+      "slug": "melhor-ferramenta-texto-para-video",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 17,
+      "title": "Melhor gerador de Reels com IA para marcas e creators",
+      "slug": "melhor-gerador-de-reels-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 18,
+      "title": "Melhor criador de anúncios em vídeo com IA",
+      "slug": "melhor-criador-de-anuncios-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 19,
+      "title": "Melhor video maker com IA para ecommerce",
+      "slug": "melhor-video-maker-ia-para-ecommerce",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 20,
+      "title": "Melhor plataforma para criar vídeos curtos com IA",
+      "slug": "melhor-plataforma-para-criar-videos-curtos",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 21,
+      "title": "Melhor software de vídeo com IA para pequenas empresas",
+      "slug": "melhor-software-de-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 22,
+      "title": "Melhor gerador de vídeo para Instagram com IA",
+      "slug": "melhor-gerador-de-video-para-instagram",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 23,
+      "title": "Lumivids vs Runway: qual é melhor para vídeos rápidos?",
+      "slug": "lumivids-vs-runway",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 24,
+      "title": "Lumivids vs Kling: comparação para vídeo com IA",
+      "slug": "lumivids-vs-kling",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 25,
+      "title": "Lumivids vs Pika: qual gera vídeos mais práticos?",
+      "slug": "lumivids-vs-pika",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 26,
+      "title": "Lumivids vs InVideo: qual é melhor para marketing?",
+      "slug": "lumivids-vs-invideo",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 27,
+      "title": "Lumivids vs CapCut: IA automática ou edição manual?",
+      "slug": "lumivids-vs-capcut",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 28,
+      "title": "7 alternativas ao Runway para criar vídeos com IA",
+      "slug": "alternativas-ao-runway",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 29,
+      "title": "Melhores alternativas ao Pika para vídeo com IA",
+      "slug": "alternativas-ao-pika",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 30,
+      "title": "Ferramentas como Runway para criar vídeos promocionais",
+      "slug": "ferramentas-como-runway",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 31,
+      "title": "Melhores alternativas ao CapCut para gerar vídeos com IA",
+      "slug": "alternativas-ao-capcut-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 32,
+      "title": "Runway ou Pika: qual escolher para gerar vídeos com IA?",
+      "slug": "runway-ou-pika-para-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 33,
+      "title": "Como criar vídeos para imobiliária com IA",
+      "slug": "videos-para-imobiliaria-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 34,
+      "title": "Como criar vídeos para ecommerce com IA",
+      "slug": "videos-para-ecommerce-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 35,
+      "title": "Como criar vídeos para dropshipping com IA",
+      "slug": "videos-para-dropshipping-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 36,
+      "title": "Como afiliados podem criar vídeos com IA para vender mais",
+      "slug": "videos-para-afiliados-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 37,
+      "title": "Como criar vídeos para restaurante com IA",
+      "slug": "videos-para-restaurante-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 38,
+      "title": "Como criar vídeos para clínica com IA",
+      "slug": "videos-para-clinica-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 39,
+      "title": "Como criar vídeos para infoprodutos com IA",
+      "slug": "videos-para-infoproduto-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 40,
+      "title": "Como social media pode criar vídeos com IA em escala",
+      "slug": "videos-para-social-media-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 41,
+      "title": "Como agências criam vídeos com IA para vários clientes",
+      "slug": "videos-para-agencia-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 42,
+      "title": "Como corretores podem criar vídeos com IA para anúncios",
+      "slug": "videos-para-corretor-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 43,
+      "title": "Texto para vídeo com IA: como funciona e quando usar",
+      "slug": "texto-para-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 44,
+      "title": "Imagem para vídeo com IA: guia prático para iniciantes",
+      "slug": "imagem-para-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 45,
+      "title": "Foto para vídeo com IA: melhores usos para marketing",
+      "slug": "foto-para-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 46,
+      "title": "Como escrever prompt para gerar vídeo com IA",
+      "slug": "prompt-para-video-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 47,
+      "title": "Como gerar vídeo de produto com IA para anúncios",
+      "slug": "video-de-produto-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 48,
+      "title": "Como criar vídeo curto com IA para redes sociais",
+      "slug": "video-curto-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 49,
+      "title": "Como gerar vídeo vertical com IA para Reels e Shorts",
+      "slug": "video-vertical-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 50,
+      "title": "Como criar vídeo promocional com IA sem gravar nada",
+      "slug": "video-promocional-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 51,
+      "title": "Como criar vídeo sem aparecer usando IA",
+      "slug": "criar-video-sem-aparecer-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    },
+    {
+      "index": 52,
+      "title": "Como criar vídeo sem editar manualmente com IA",
+      "slug": "criar-video-sem-editar-com-ia",
+      "action": "failed",
+      "reason": "Falha ao gerar artigo via IA (429): {\n    \"error\": {\n        \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.\",\n        \"type\": \"insufficient_quota\",\n        \"param\": null,\n        \"code\": \"insufficient_quota\"\n    }\n}\n"
+    }
+  ]
+}

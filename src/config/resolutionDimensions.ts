@@ -78,6 +78,17 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '21:9': { width: 2048, height: 877 },
     auto: { width: 2048, height: 2048 },
   },
+  '3k': {
+    '16:9': { width: 3072, height: 1728 },
+    '9:16': { width: 1728, height: 3072 },
+    '1:1': { width: 3072, height: 3072 },
+    '4:3': { width: 3072, height: 2304 },
+    '3:4': { width: 2304, height: 3072 },
+    '2:3': { width: 2048, height: 3072 },
+    '3:2': { width: 3072, height: 2048 },
+    '21:9': { width: 3072, height: 1317 },
+    auto: { width: 3072, height: 3072 },
+  },
   '4k': {
     '16:9': { width: 3840, height: 2160 },
     '9:16': { width: 2160, height: 3840 },

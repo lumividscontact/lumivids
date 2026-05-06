@@ -3,7 +3,7 @@ import { Bell, Settings, Shield, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/components/Toast'
 import { LOW_CREDITS_THRESHOLD_PERCENT } from '@/config/constants'
-import { FREE_PLAN, PLANS } from '@/contexts/CreditsContext'
+import { FREE_PLAN, PLANS, useCredits } from '@/contexts/CreditsContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSubscription, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
@@ -41,10 +41,12 @@ export default function MyAccountPage() {
     userPlan: user?.plan,
   })
 
+  const { credits: contextCredits, freemium } = useCredits()
   const currentPlan = [...PLANS, FREE_PLAN].find((plan) => plan.id === user?.plan) || FREE_PLAN
+  const currentPlanName = currentPlan.id === null ? t.settings.payment.planFallback : currentPlan.name
   const isProfileLoading = !user
   const maxCredits = currentPlan.credits
-  const currentCredits = user?.credits || 0
+  const currentCredits = contextCredits
   const creditsRemainingLabel = t.myAccount.credits.remaining
     .replace('{current}', String(currentCredits))
     .replace('{max}', String(maxCredits))
@@ -173,7 +175,7 @@ export default function MyAccountPage() {
           <SubscriptionCard
             title={t.myAccount.sections.subscription}
             currentPlanLabel={t.myAccount.subscription.currentPlan}
-            currentPlanName={currentPlan.name}
+            currentPlanName={currentPlanName}
             statusLabel={t.myAccount.subscription.status}
             statusValue={subscriptionStatusLabel}
             renewalDateLabel={t.myAccount.subscription.renewalDate}
@@ -214,6 +216,12 @@ export default function MyAccountPage() {
             creditsPercentage={creditsPercentage}
             buyMoreLabel={t.myAccount.credits.buyMore}
             onBuyMore={() => navigate('/pricing')}
+            isFreemium={freemium?.isEligible}
+            bonusDaysUsed={freemium?.bonusDaysUsed}
+            bonusDaysMax={freemium?.bonusDaysMax}
+            bonusCapReached={freemium?.bonusCapReached}
+            freemiumBonusDaysLabel={t.myAccount.credits.freemiumBonusDays}
+            freemiumBonusCapReachedLabel={t.myAccount.credits.freemiumBonusCapReached}
           />
 
           <div className="card">

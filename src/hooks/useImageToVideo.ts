@@ -4,20 +4,21 @@ import { updateUsageStats } from '@/services/usageStats'
 import { useCredits } from '@/contexts/CreditsContext'
 import { getModelById, calculateCredits, Resolution } from '@/config/models'
 import { useLanguage } from '@/i18n'
-import { useGeneration } from './useGeneration'
+import { useGeneration, type UseGenerationConfig } from './useGeneration'
 import { createEstimatedPollingProgress } from './estimatedProgress'
 
 export function useImageToVideo() {
   const { t } = useLanguage()
   const { getCost } = useCredits()
 
-  const generationConfig = useMemo(() => ({
+  const generationConfig = useMemo<UseGenerationConfig<ImageToVideoInput, string[] | null>>(() => ({
     generationType: 'image-to-video',
     calculateCost: (input) => {
       const model = getModelById(input.model)
       const duration = parseInt(input.duration || '5') || 5
       const resolution = (input.resolution || '720p') as Resolution
-      return model ? calculateCredits(model, duration, resolution, false) : getCost('image-to-video', input.model)
+      const withAudio = input.withAudio || false
+      return model ? calculateCredits(model, duration, resolution, withAudio) : getCost('image-to-video', input.model)
     },
     createPrediction: async (input) => replicateAPI.createImageToVideo(input),
     waitForCompletion: async ({ predictionId, onProgress }) => {
@@ -72,6 +73,18 @@ export function useImageToVideo() {
     formatInsufficientCreditsError: ({ cost, credits }) =>
       `${t.errors.insufficientCredits} ${t.pricing.youNeed} ${cost} ${t.ui.creditsLabel.toLowerCase()}, ${t.pricing.youHave} ${credits} ${t.ui.creditsLabel.toLowerCase()}.`,
     formatFailureError: ({ errorMessage, cost }) => {
+      const normalized = errorMessage.toLowerCase()
+      if (
+        normalized.includes('e005')
+        || normalized.includes('flagged as sensitive')
+        || normalized.includes('moderation')
+        || normalized.includes('safety')
+        || normalized.includes('policy')
+        || normalized.includes('content')
+      ) {
+        return t.myVideos.failedReasonModeration
+      }
+
       const isInsufficientCredits = errorMessage.includes('Insufficient credits') || errorMessage.includes('INSUFFICIENT_CREDITS')
       if (!isInsufficientCredits) {
         return errorMessage

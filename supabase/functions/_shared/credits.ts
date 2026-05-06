@@ -116,6 +116,9 @@ export async function deductCredits(
 
   if (error) {
     console.error('[Credits] Deduction error:', error)
+    if (error.message?.includes('DAILY_LIMIT_REACHED')) {
+      return { success: false, error: 'DAILY_LIMIT_REACHED' }
+    }
     return { success: false, error: error.message }
   }
 

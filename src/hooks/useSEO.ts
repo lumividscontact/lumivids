@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { getLanguageBasePath, getPathPrefixLanguage, stripLanguagePrefix } from '@/i18n/runtime'
 
 type StructuredData = Record<string, unknown> | Record<string, unknown>[]
 
@@ -11,13 +12,13 @@ interface SEOConfig {
   type?: 'website' | 'article' | 'product'
   noindex?: boolean
   canonical?: string
-  hreflang?: Partial<Record<'pt-BR' | 'en' | 'es' | 'x-default', string>>
+  hreflang?: Partial<Record<'pt-BR' | 'en' | 'es' | 'id' | 'x-default', string>>
   structuredData?: StructuredData
 }
 
 const DEFAULT_CONFIG: SEOConfig = {
   title: 'Lumivids - AI Video & Image Generator',
-  description: 'Create stunning videos and images with artificial intelligence. Turn text into video, animate images, and more with next-generation AI models.',
+  description: 'Lumivids is a free AI studio for text to video, image to video, text to image, and image to image creation. Generate with Kling, Sora, MiniMax, Veo, and Flux in one workflow.',
   keywords: [
     'AI video generator',
     'text to video',
@@ -32,29 +33,72 @@ const DEFAULT_CONFIG: SEOConfig = {
     'Sora',
     'Google Veo',
   ],
-  image: '/og/landing.svg',
+  image: '/og/landing.png',
   type: 'website',
 }
 
 const SITE_NAME = 'Lumivids'
-const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://lumivids.com'
-const SUPPORTED_HREFLANGS: Array<'pt-BR' | 'en' | 'es'> = ['pt-BR', 'en', 'es']
+const BASE_URL = typeof window !== 'undefined' ? window.location.origin.replace(/^https?:\/\/(www\.)?/, 'https://') : 'https://lumivids.com'
+const SUPPORTED_HREFLANGS: Array<'pt-BR' | 'en' | 'es' | 'id'> = ['pt-BR', 'en', 'es', 'id']
 const JSON_LD_ELEMENT_ID = 'lumivids-seo-jsonld'
 const OG_LOCALE_BY_HTML_LANG: Record<string, string> = {
   'pt-BR': 'pt_BR',
   en: 'en_US',
   es: 'es_ES',
+  id: 'id_ID',
 }
 const OG_ALTERNATE_ELEMENT_SELECTOR = 'meta[property="og:locale:alternate"][data-seo="true"]'
+
+function normalizeCanonicalPath(pathname: string): string {
+  const stripped = stripLanguagePrefix(pathname)
+  return stripped === '/' ? '/' : stripped
+}
+
+function getLocalizedPath(pathname: string, language: 'pt' | 'en' | 'es' | 'id'): string {
+  const normalized = normalizeCanonicalPath(pathname)
+  const basePath = getLanguageBasePath(language)
+
+  if (normalized === '/') {
+    return basePath || '/'
+  }
+
+  return `${basePath}${normalized}`
+}
+
+const getImageMimeType = (imageUrl: string): string => {
+  const normalized = imageUrl.toLowerCase()
+  if (normalized.endsWith('.png')) return 'image/png'
+  if (normalized.endsWith('.jpg') || normalized.endsWith('.jpeg')) return 'image/jpeg'
+  if (normalized.endsWith('.webp')) return 'image/webp'
+  if (normalized.endsWith('.gif')) return 'image/gif'
+  if (normalized.endsWith('.svg')) return 'image/svg+xml'
+  return 'image/png'
+}
 
 /**
  * Hook for managing dynamic SEO meta tags
  * Updates document head with provided SEO configuration
  */
 export function useSEO(config: SEOConfig = {}) {
+  const {
+    title,
+    description,
+    keywords,
+    image,
+    url,
+    type,
+    noindex,
+    canonical,
+    hreflang,
+    structuredData,
+  } = config
+  const keywordsKey = keywords?.join(',')
+  const hreflangKey = JSON.stringify(hreflang)
+  const structuredDataKey = JSON.stringify(structuredData)
+
   useEffect(() => {
-    const mergedConfig = { ...DEFAULT_CONFIG, ...config }
-    const {
+    const mergedConfig = {
+      ...DEFAULT_CONFIG,
       title,
       description,
       keywords,
@@ -63,7 +107,17 @@ export function useSEO(config: SEOConfig = {}) {
       type,
       noindex,
       canonical,
-    } = mergedConfig
+      hreflang,
+      structuredData,
+    }
+    const mergedTitle = mergedConfig.title
+    const mergedDescription = mergedConfig.description
+    const mergedKeywords = mergedConfig.keywords
+    const mergedImage = mergedConfig.image
+    const mergedUrl = mergedConfig.url
+    const mergedType = mergedConfig.type
+    const mergedNoindex = mergedConfig.noindex
+    const mergedCanonical = mergedConfig.canonical
 
     // Helper to set or create meta tag
     const setMetaTag = (name: string, content: string, isProperty = false) => {
@@ -140,68 +194,92 @@ export function useSEO(config: SEOConfig = {}) {
     }
 
     // Title
-    const fullTitle = title === DEFAULT_CONFIG.title 
-      ? title 
-      : `${title} | ${SITE_NAME}`
+    const fullTitle = mergedTitle === DEFAULT_CONFIG.title 
+      ? mergedTitle 
+      : `${mergedTitle} | ${SITE_NAME}`
     document.title = fullTitle || SITE_NAME
 
     // Basic meta tags
-    if (description) {
-      setMetaTag('description', description)
+    if (mergedDescription) {
+      setMetaTag('description', mergedDescription)
     }
     
-    if (keywords && keywords.length > 0) {
-      setMetaTag('keywords', keywords.join(', '))
+    if (mergedKeywords && mergedKeywords.length > 0) {
+      setMetaTag('keywords', mergedKeywords.join(', '))
     }
 
     // Robots
-    if (noindex) {
+    if (mergedNoindex) {
       setMetaTag('robots', 'noindex, nofollow')
     } else {
       setMetaTag('robots', 'index, follow')
     }
 
     // Canonical URL
-    const pagePath = url || (typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '')
+    const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '/'
+    const currentLanguage = getPathPrefixLanguage(currentPathname) ?? 'en'
+    const isAbsoluteCanonical = Boolean(mergedCanonical && mergedCanonical.startsWith('http'))
+    const canonicalPath = mergedCanonical && !isAbsoluteCanonical
+      ? getLocalizedPath(mergedCanonical, currentLanguage)
+      : currentPathname
+    const pagePath = mergedUrl || (typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '')
     const pageUrl = pagePath.startsWith('http') ? pagePath : `${BASE_URL}${pagePath}`
-    if (canonical || pageUrl) {
-      const canonicalUrl = canonical ? (canonical.startsWith('http') ? canonical : `${BASE_URL}${canonical}`) : pageUrl
+    if (canonicalPath || pageUrl) {
+      const canonicalUrl = mergedCanonical
+        ? (isAbsoluteCanonical ? mergedCanonical : `${BASE_URL}${canonicalPath}`)
+        : pageUrl
       setLinkTag('canonical', canonicalUrl)
 
-      // Hreflang alternates
+      // Hreflang alternates — skip for noindex pages (they must not be in hreflang clusters)
       removeSeoAlternates()
-      const hreflangConfig = config.hreflang || {
-        'pt-BR': `${BASE_URL}${window.location.pathname}?lang=pt`,
-        en: `${BASE_URL}${window.location.pathname}?lang=en`,
-        es: `${BASE_URL}${window.location.pathname}?lang=es`,
-        'x-default': `${BASE_URL}${window.location.pathname}`,
-      }
+      if (!mergedNoindex) {
+        const currentLang = getPathPrefixLanguage(window.location.pathname) ?? 'en'
 
-      for (const locale of SUPPORTED_HREFLANGS) {
-        const href = hreflangConfig[locale]
-        if (href) {
-          const fullHref = href.startsWith('http') ? href : `${BASE_URL}${href}`
-          setLinkTag('alternate', fullHref, locale)
-          const element = document.querySelector(`link[rel="alternate"][hreflang="${locale}"]`)
+        const hreflangConfig = hreflang || {
+          'pt-BR': `${BASE_URL}${getLocalizedPath(window.location.pathname, 'pt')}`,
+          en: `${BASE_URL}${getLocalizedPath(window.location.pathname, 'en')}`,
+          es: `${BASE_URL}${getLocalizedPath(window.location.pathname, 'es')}`,
+          id: `${BASE_URL}${getLocalizedPath(window.location.pathname, 'id')}`,
+          'x-default': `${BASE_URL}${getLocalizedPath(window.location.pathname, 'en')}`,
+        }
+
+        // Ensure self-referencing hreflang for the current language
+        if (currentLang === 'pt') {
+          hreflangConfig['pt-BR'] = `${BASE_URL}${getLocalizedPath(window.location.pathname, 'pt')}`
+        } else if (currentLang === 'es') {
+          hreflangConfig['es'] = `${BASE_URL}${getLocalizedPath(window.location.pathname, 'es')}`
+        } else if (currentLang === 'id') {
+          hreflangConfig['id'] = `${BASE_URL}${getLocalizedPath(window.location.pathname, 'id')}`
+        } else {
+          hreflangConfig['en'] = `${BASE_URL}${getLocalizedPath(window.location.pathname, 'en')}`
+        }
+
+        for (const locale of SUPPORTED_HREFLANGS) {
+          const href = hreflangConfig[locale]
+          if (href) {
+            const fullHref = href.startsWith('http') ? href : `${BASE_URL}${href}`
+            setLinkTag('alternate', fullHref, locale)
+            const element = document.querySelector(`link[rel="alternate"][hreflang="${locale}"]`)
+            if (element) element.setAttribute('data-seo', 'true')
+          }
+        }
+
+        if (hreflangConfig['x-default']) {
+          const defaultHref = hreflangConfig['x-default']!
+          const fullDefaultHref = defaultHref.startsWith('http') ? defaultHref : `${BASE_URL}${defaultHref}`
+          setLinkTag('alternate', fullDefaultHref, 'x-default')
+          const element = document.querySelector('link[rel="alternate"][hreflang="x-default"]')
           if (element) element.setAttribute('data-seo', 'true')
         }
-      }
-
-      if (hreflangConfig['x-default']) {
-        const defaultHref = hreflangConfig['x-default']!
-        const fullDefaultHref = defaultHref.startsWith('http') ? defaultHref : `${BASE_URL}${defaultHref}`
-        setLinkTag('alternate', fullDefaultHref, 'x-default')
-        const element = document.querySelector('link[rel="alternate"][hreflang="x-default"]')
-        if (element) element.setAttribute('data-seo', 'true')
       }
     }
 
     // Open Graph
     setMetaTag('og:title', fullTitle || SITE_NAME, true)
-    if (description) {
-      setMetaTag('og:description', description, true)
+    if (mergedDescription) {
+      setMetaTag('og:description', mergedDescription, true)
     }
-    setMetaTag('og:type', type || 'website', true)
+    setMetaTag('og:type', mergedType || 'website', true)
     setMetaTag('og:site_name', SITE_NAME, true)
     const htmlLang = document.documentElement.lang || 'en'
     const currentOgLocale = OG_LOCALE_BY_HTML_LANG[htmlLang] || OG_LOCALE_BY_HTML_LANG.en
@@ -210,26 +288,27 @@ export function useSEO(config: SEOConfig = {}) {
     if (pageUrl) {
       setMetaTag('og:url', pageUrl, true)
     }
-    if (image) {
-      const imageUrl = image.startsWith('http') ? image : `${BASE_URL}${image}`
+    if (mergedImage) {
+      const imageUrl = mergedImage.startsWith('http') ? mergedImage : `${BASE_URL}${mergedImage}`
       setMetaTag('og:image', imageUrl, true)
       setMetaTag('og:image:width', '1200', true)
       setMetaTag('og:image:height', '630', true)
+      setMetaTag('og:image:type', getImageMimeType(imageUrl), true)
     }
 
     // Twitter Card
     setMetaTag('twitter:card', 'summary_large_image')
     setMetaTag('twitter:title', fullTitle || SITE_NAME)
-    if (description) {
-      setMetaTag('twitter:description', description)
+    if (mergedDescription) {
+      setMetaTag('twitter:description', mergedDescription)
     }
-    if (image) {
-      const imageUrl = image.startsWith('http') ? image : `${BASE_URL}${image}`
+    if (mergedImage) {
+      const imageUrl = mergedImage.startsWith('http') ? mergedImage : `${BASE_URL}${mergedImage}`
       setMetaTag('twitter:image', imageUrl)
     }
 
     // JSON-LD structured data
-    setJsonLd(config.structuredData)
+    setJsonLd(structuredData)
 
     // Cleanup function - reset to defaults when component unmounts
     return () => {
@@ -239,7 +318,7 @@ export function useSEO(config: SEOConfig = {}) {
       existingAlternates.forEach((element) => element.remove())
       setJsonLd(undefined)
     }
-  }, [config.title, config.description, config.keywords?.join(','), config.image, config.url, config.type, config.noindex, config.canonical, JSON.stringify(config.hreflang), JSON.stringify(config.structuredData)])
+  }, [canonical, description, hreflang, hreflangKey, image, keywords, keywordsKey, noindex, structuredData, structuredDataKey, title, type, url])
 }
 
 /**
@@ -273,31 +352,35 @@ export function getSeoPages(t: {
       description: t.landing.seo.description,
       keywords: t.landing.seo.keywords,
       canonical: '/',
-      image: '/og/landing.svg',
+      image: '/og/landing.png',
     },
     textToVideo: {
       title: t.textToVideo.seo.title,
       description: t.textToVideo.seo.description,
       keywords: t.textToVideo.seo.keywords,
-      image: '/og/text-to-video.svg',
+      image: '/og/text-to-video.png',
+      canonical: '/text-to-video',
     },
     imageToVideo: {
       title: t.imageToVideo.seo.title,
       description: t.imageToVideo.seo.description,
       keywords: t.imageToVideo.seo.keywords,
-      image: '/og/image-to-video.svg',
+      image: '/og/image-to-video.png',
+      canonical: '/image-to-video',
     },
     textToImage: {
       title: t.textToImage.seo.title,
       description: t.textToImage.seo.description,
       keywords: t.textToImage.seo.keywords,
-      image: '/og/text-to-image.svg',
+      image: '/og/text-to-image.png',
+      canonical: '/text-to-image',
     },
     imageToImage: {
       title: t.imageToImage.seo.title,
       description: t.imageToImage.seo.description,
       keywords: t.imageToImage.seo.keywords,
-      image: '/og/image-to-image.svg',
+      image: '/og/image-to-image.png',
+      canonical: '/image-to-image',
     },
     myVideos: {
       title: t.myVideos.seo.title,
@@ -317,7 +400,7 @@ export function getSeoPages(t: {
       description: t.pricing.seo.description,
       keywords: t.pricing.seo.keywords,
       canonical: '/plans',
-      image: '/og/plans.svg',
+      image: '/og/plans.png',
     },
     account: {
       title: t.myAccount.seo.title,
@@ -328,13 +411,13 @@ export function getSeoPages(t: {
       title: t.legal.privacy.seo.title,
       description: t.legal.privacy.seo.description,
       canonical: '/privacy',
-      image: '/og/privacy.svg',
+      image: '/og/privacy.png',
     },
     terms: {
       title: t.legal.terms.seo.title,
       description: t.legal.terms.seo.description,
       canonical: '/terms',
-      image: '/og/terms.svg',
+      image: '/og/terms.png',
     },
     auth: {
       title: t.auth.seo.title,

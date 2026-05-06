@@ -8,6 +8,7 @@ import { LanguageProvider, useLanguage } from './i18n'
 import ErrorBoundary from './components/ErrorBoundary'
 import { ToastProvider } from './components/Toast'
 import { trackEvent } from './services/analytics'
+import { getLanguageBasePath, getPathPrefixLanguage, stripLanguagePrefix } from './i18n/runtime'
 
 const MainLayout = lazy(() => import('./components/layout/MainLayout'))
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -31,6 +32,8 @@ const SecurityPage = lazy(() => import('./pages/SecurityPage'))
 const UsageHistoryPage = lazy(() => import('./pages/UsageHistoryPage'))
 const SupportPage = lazy(() => import('./pages/SupportPage'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const WorkflowsPage = lazy(() => import('./pages/WorkflowsPage'))
+const InspirationPage = lazy(() => import('./pages/InspirationPage'))
 
 function LoadingScreen() {
   const { t } = useLanguage()
@@ -106,6 +109,12 @@ function LegacyAuthRedirect({ targetPath }: { targetPath: string }) {
   return <Navigate to={`${targetPath}${location.search}${location.hash}`} replace />
 }
 
+function EnglishPrefixRedirect() {
+  const location = useLocation()
+  const targetPath = stripLanguagePrefix(location.pathname)
+  return <Navigate to={`${targetPath}${location.search}${location.hash}`} replace />
+}
+
 function RoutePageViewTracker() {
   const location = useLocation()
 
@@ -124,6 +133,8 @@ function AppRoutes() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
+        <Route path="/en/*" element={<EnglishPrefixRedirect />} />
+
         {/* Public Routes (No Auth Required) */}
         <Route path="/" element={<PageBoundary><LandingPage /></PageBoundary>} />
         <Route path="/landing" element={<Navigate to="/" />} />
@@ -137,6 +148,8 @@ function AppRoutes() {
           <Route path="/image-to-video" element={<PageBoundary><ImageToVideoPage /></PageBoundary>} />
           <Route path="/text-to-image" element={<PageBoundary><TextToImagePage /></PageBoundary>} />
           <Route path="/image-to-image" element={<PageBoundary><ImageToImagePage /></PageBoundary>} />
+          <Route path="/workflows" element={<PageBoundary><WorkflowsPage /></PageBoundary>} />
+          <Route path="/inspiration" element={<PageBoundary><InspirationPage /></PageBoundary>} />
         </Route>
         
         <Route path="/auth/callback" element={<PageBoundary><AuthCallbackPage /></PageBoundary>} />
@@ -194,8 +207,12 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const routerBasename = typeof window === 'undefined'
+    ? '/'
+    : getLanguageBasePath(getPathPrefixLanguage(window.location.pathname) ?? 'en') || '/'
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename}>
       <RoutePageViewTracker />
       <LanguageProvider>
         <AuthProvider>

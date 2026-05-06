@@ -2,58 +2,216 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://lumivids.com/</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/?lang=pt" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/?lang=en" />
-    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/" />
   </url>
   <url>
     <loc>https://lumivids.com/plans</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/plans?lang=pt" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/plans?lang=en" />
-    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/plans?lang=es" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/plans" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/plans" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es/plans" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id/plans" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/plans" />
   </url>
   <url>
     <loc>https://lumivids.com/text-to-video</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/text-to-video" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/text-to-video" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es/text-to-video" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id/text-to-video" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/text-to-video" />
   </url>
   <url>
     <loc>https://lumivids.com/image-to-video</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/image-to-video" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/image-to-video" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es/image-to-video" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id/image-to-video" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/image-to-video" />
   </url>
   <url>
     <loc>https://lumivids.com/text-to-image</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/text-to-image" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/text-to-image" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es/text-to-image" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id/text-to-image" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/text-to-image" />
   </url>
   <url>
     <loc>https://lumivids.com/image-to-image</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/image-to-image" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/image-to-image" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es/image-to-image" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id/image-to-image" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/image-to-image" />
   </url>
   <url>
     <loc>https://lumivids.com/privacy</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es/privacy" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/privacy" />
   </url>
   <url>
     <loc>https://lumivids.com/terms</loc>
-    <lastmod>2026-03-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://lumivids.com/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://lumivids.com/es/terms" />
+    <xhtml:link rel="alternate" hreflang="id" href="https://lumivids.com/id/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://lumivids.com/terms" />
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/ai-branding-creating-a-unique-visual-identity/</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/best-kling-ai-alternatives-2026/</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/category/ai-image-generator/</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/category/ai-video-generator/</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/category/comparisons-alternatives/</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/category/prompts-templates/</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/category/tutorials/</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/create-images-from-text-prompts-in-minutes/</loc>
+    <lastmod>2026-05-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/flux-2-pro-model-review/</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/gpt-image-2-features-and-guide/</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/home/</loc>
+    <lastmod>2026-04-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/how-to-create-cinematic-storyboards-with-ai/</loc>
+    <lastmod>2026-04-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/how-to-transform-an-image-into-a-video-with-ai-in-a-few-steps/</loc>
+    <lastmod>2026-05-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/how-to-write-better-prompts-for-ai-images/</loc>
+    <lastmod>2026-04-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/how-to-write-better-prompts-for-ai-videos/</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/nano-banana-ai-image-editor-guide/</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/organize-and-manage-your-ai-prompt-library/</loc>
+    <lastmod>2026-04-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/remove-kling-ai-watermark-guide/</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/text-to-video-vs-image-to-video-difference/</loc>
+    <lastmod>2026-04-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/what-is-an-ai-image-generator-how-does-it-work/</loc>
+    <lastmod>2026-04-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

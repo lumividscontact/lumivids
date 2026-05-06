@@ -8,6 +8,16 @@ import { deleteAccount } from '@/services/account'
 export default function SecurityPage() {
   const { t } = useLanguage()
   const { user, logout } = useAuth()
+  const securityTexts = t.settings.security as typeof t.settings.security & {
+    errorCurrentPasswordRequired?: string
+    errorCurrentPasswordWrong?: string
+    currentPasswordLabel?: string
+    currentPasswordPlaceholder?: string
+    deletePasswordRequired?: string
+    deletePasswordWrong?: string
+    deletePasswordLabel?: string
+    deletePasswordPlaceholder?: string
+  }
   const [currentPassword, setCurrentPassword] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -24,7 +34,7 @@ export default function SecurityPage() {
     setSuccess(null)
 
     if (!currentPassword || currentPassword.length < 1) {
-      setError(t.settings?.security?.errorCurrentPasswordRequired ?? 'Current password is required')
+      setError(securityTexts.errorCurrentPasswordRequired ?? 'Current password is required')
       return
     }
 
@@ -51,7 +61,7 @@ export default function SecurityPage() {
         password: currentPassword,
       })
       if (signInError) {
-        setError(t.settings?.security?.errorCurrentPasswordWrong ?? 'Current password is incorrect')
+        setError(securityTexts.errorCurrentPasswordWrong ?? 'Current password is incorrect')
         return
       }
 
@@ -103,7 +113,7 @@ export default function SecurityPage() {
     }
 
     if (!deletePassword || deletePassword.length < 1) {
-      setDeleteError(t.settings?.security?.deletePasswordRequired ?? 'Password is required to confirm account deletion')
+      setDeleteError(securityTexts.deletePasswordRequired ?? 'Password is required to confirm account deletion')
       return
     }
 
@@ -120,7 +130,7 @@ export default function SecurityPage() {
         password: deletePassword,
       })
       if (signInError) {
-        setDeleteError(t.settings?.security?.deletePasswordWrong ?? 'Incorrect password')
+        setDeleteError(securityTexts.deletePasswordWrong ?? 'Incorrect password')
         return
       }
 
@@ -154,13 +164,13 @@ export default function SecurityPage() {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-dark-300 mb-2">{t.settings?.security?.currentPasswordLabel ?? 'Current Password'}</label>
+                <label className="block text-sm text-dark-300 mb-2">{securityTexts.currentPasswordLabel ?? 'Current Password'}</label>
                 <input
                   type="password"
                   value={currentPassword}
                   onChange={(event) => setCurrentPassword(event.target.value)}
                   className="input-field w-full"
-                  placeholder={t.settings?.security?.currentPasswordPlaceholder ?? 'Enter your current password'}
+                  placeholder={securityTexts.currentPasswordPlaceholder ?? 'Enter your current password'}
                 />
               </div>
               <div>
@@ -236,14 +246,14 @@ export default function SecurityPage() {
               />
               <div>
                 <label className="block text-xs text-dark-400 mb-1">
-                  {t.settings?.security?.deletePasswordLabel ?? 'Confirm your password'}
+                  {securityTexts.deletePasswordLabel ?? 'Confirm your password'}
                 </label>
                 <input
                   type="password"
                   value={deletePassword}
                   onChange={(event) => setDeletePassword(event.target.value)}
                   className="input-field w-full"
-                  placeholder={t.settings?.security?.deletePasswordPlaceholder ?? 'Enter your password'}
+                  placeholder={securityTexts.deletePasswordPlaceholder ?? 'Enter your password'}
                 />
               </div>
               {deleteError && (

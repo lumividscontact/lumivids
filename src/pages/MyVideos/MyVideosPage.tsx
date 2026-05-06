@@ -265,10 +265,10 @@ export default function MyVideosPage() {
       return
     }
 
-    const reason = window.prompt('Motivo da denúncia:', 'Conteúdo impróprio')?.trim()
+    const reason = window.prompt(t.reporting.reasonPrompt, t.reporting.defaultReason)?.trim()
     if (!reason) return
 
-    const details = window.prompt('Detalhes (opcional):')?.trim() || undefined
+    const details = window.prompt(t.reporting.detailsPrompt)?.trim() || undefined
 
     try {
       await createContentFlag({
@@ -277,12 +277,12 @@ export default function MyVideosPage() {
         details,
         reporterUserId: user.id,
       })
-      toast.success('Denúncia enviada com sucesso.')
+      toast.success(t.reporting.success)
     } catch (error) {
       console.error('Report content error:', error)
-      toast.error('Falha ao enviar denúncia.')
+      toast.error(t.reporting.error)
     }
-  }, [user?.id, toast, t.toast.pleaseLogin])
+  }, [user?.id, toast, t.reporting.reasonPrompt, t.reporting.defaultReason, t.reporting.detailsPrompt, t.reporting.success, t.reporting.error, t.toast.pleaseLogin])
 
   return (
     <div className="space-y-6">
@@ -383,6 +383,7 @@ export default function MyVideosPage() {
               onReport={handleReport}
               dateLocale={dateLocale}
               translations={myVideos}
+              reportTitle={t.reporting.action}
             />
           ))}
         </div>
@@ -403,6 +404,7 @@ export default function MyVideosPage() {
               onReport={handleReport}
               dateLocale={dateLocale}
               translations={myVideos}
+              reportTitle={t.reporting.action}
             />
           ))}
         </div>

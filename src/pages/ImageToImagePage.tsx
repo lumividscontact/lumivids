@@ -9,10 +9,13 @@ import { useGenerations } from '@/contexts/GenerationsContext'
 import { useToast } from '@/components/Toast'
 import { addFavorite, fetchFavoriteIds, removeFavorite } from '@/services/favorites'
 import AuthModal from '@/components/AuthModal'
+import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
+import ModelLogo from '@/components/ModelLogo'
 import { 
   IMAGE_TO_IMAGE_MODELS, 
   ModelConfig,
   AspectRatio,
+  Resolution,
 } from '@/config/models'
 import ImageUpload from '@/components/ImageUpload'
 import { supabase } from '@/lib/supabase'
@@ -27,8 +30,21 @@ export default function ImageToImagePage() {
   const toast = useToast()
   
   // SEO meta tags
-  useSEO(getSeoPages(t).imageToImage)
-  
+  useSEO({
+    ...getSeoPages(t).imageToImage,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Lumivids – AI Image Editor',
+      url: 'https://lumivids.com/image-to-image',
+      description: t.imageToImage.seo.description,
+      applicationCategory: 'MultimediaApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      featureList: 'AI image editing, photo transformation, style transfer, background removal',
+    },
+  })
+
   const STYLE_PRESETS = useMemo(
     () => [
       { id: 'none', name: t.ui.none, description: t.ui.noAdditionalStyle },
@@ -43,11 +59,20 @@ export default function ImageToImagePage() {
   
   const getInitialInputImageUrl = () => searchParams.get('inputImageUrl') || null
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(getInitialInputImageUrl)
-  const [prompt, setPrompt] = useState('')
+  const [prompt, setPrompt] = useState(() => searchParams.get('prompt') || '')
   const [negativePrompt, setNegativePrompt] = useState('')
-  const [selectedModel, setSelectedModel] = useState<ModelConfig>(IMAGE_TO_IMAGE_MODELS[0])
-  const [resolution, setResolution] = useState(selectedModel.defaultResolution)
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(selectedModel.supportedAspectRatios[0])
+  const [selectedModel, setSelectedModel] = useState<ModelConfig>(() => {
+    const modelParam = searchParams.get('model')
+    return IMAGE_TO_IMAGE_MODELS.find((m) => m.id === modelParam) ?? IMAGE_TO_IMAGE_MODELS[0]
+  })
+  const [resolution, setResolution] = useState(() => {
+    const res = searchParams.get('resolution') as Resolution | null
+    return res ?? selectedModel.defaultResolution
+  })
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() => {
+    const ap = searchParams.get('aspect') as AspectRatio | null
+    return ap ?? selectedModel.supportedAspectRatios[0]
+  })
   const [selectedStyleId, setSelectedStyleId] = useState('none')
   const [strength, setStrength] = useState(70)
   const [currentGenerationDbId, setCurrentGenerationDbId] = useState<string | null>(null)
@@ -63,7 +88,7 @@ export default function ImageToImagePage() {
     [STYLE_PRESETS, selectedStyleId]
   )
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, restoreGeneration, predictionId } = useImageToImage()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium, restoreGeneration, predictionId } = useImageToImage()
 
   useEffect(() => {
     return () => {
@@ -160,6 +185,8 @@ export default function ImageToImagePage() {
     return getCost('image-to-image', selectedModel.id, resolution)
   }, [getCost, selectedModel, resolution])
 
+  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
+
   const handleModelChange = (model: ModelConfig) => {
     setSelectedModel(model)
     setResolution(model.defaultResolution)
@@ -245,18 +272,13 @@ export default function ImageToImagePage() {
     reset()
   }
 
-  const getModelIcon = (modelId: string) => {
-    if (modelId.includes('flux')) return '⚡'
-    if (modelId.includes('upscale') || modelId.includes('esrgan')) return '🔍'
-    if (modelId.includes('stable')) return '🎨'
-    return '🖼️'
-  }
-
   const getModelDescription = (modelId: string, fallback: string) => {
     const descriptions: Record<string, string> = {
       'flux-img2img': t.imageToImage.modelDescriptions.fluxImg2img,
       'nano-banana-pro': t.imageToImage.modelDescriptions.nanoBananaPro,
+      'nano-banana-2': t.imageToImage.modelDescriptions.nanoBanana2,
       'seedream-4.5': t.imageToImage.modelDescriptions.seedream45,
+      'seedream-5-lite': t.imageToImage.modelDescriptions.seedream5Lite,
     }
 
     return descriptions[modelId] || fallback
@@ -296,7 +318,7 @@ export default function ImageToImagePage() {
               className="w-full flex items-center justify-between p-3 bg-dark-800 rounded-xl hover:bg-dark-700 transition-colors disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{getModelIcon(selectedModel.id)}</span>
+                <ModelLogo modelId={selectedModel.id} />
                 <div className="text-left">
                   <p className="font-medium text-white">{selectedModel.name}</p>
                   <p className="text-xs text-dark-400">{selectedModel.credits.base} {t.ui.creditsLabel.toLowerCase()} {t.ui.perImage}</p>
@@ -319,7 +341,7 @@ export default function ImageToImagePage() {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{getModelIcon(model.id)}</span>
+                        <ModelLogo modelId={model.id} />
                         <div className="text-left">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-white text-sm">{model.name}</p>
@@ -520,6 +542,8 @@ export default function ImageToImagePage() {
               </div>
             )}
 
+            <FreemiumDailyStatus currentCost={currentCost} />
+
             {isGenerating ? (
               <button
                 onClick={cancel}
@@ -531,18 +555,12 @@ export default function ImageToImagePage() {
             ) : (
               <button
                 onClick={handleGenerate}
-                disabled={!uploadedImageUrl || isGenerating || (isAuthenticated && credits < currentCost)}
+                disabled={!uploadedImageUrl || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Wand2 className="w-5 h-5" />
                 {t.imageToImage.generateButton} | {currentCost} {t.ui.creditsLabel}
               </button>
-            )}
-
-            {isAuthenticated && credits < currentCost && !isGenerating && (
-              <p className="text-xs text-red-400 text-center">
-                {t.common.insufficientCredits}. {t.pricing.youHave} {credits} {t.ui.creditsLabel.toLowerCase()}.
-              </p>
             )}
           </div>
         </div>
@@ -561,7 +579,7 @@ export default function ImageToImagePage() {
                 disabled={!uploadedImageUrl || isGenerating}
                 className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t.common.retry}
+                {t.errorBoundary.retry}
               </button>
               <button onClick={reset} className="text-red-400 hover:text-red-300">
                 <X className="w-4 h-4" />
@@ -693,13 +711,13 @@ export default function ImageToImagePage() {
                           aria-label={t.common.delete}
                           onClick={(event) => {
                             event.stopPropagation()
-                            removeGeneration(item.id)
+                            removeGeneration(item.id, { persistHide: false })
                           }}
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' || event.key === ' ') {
                               event.preventDefault()
                               event.stopPropagation()
-                              removeGeneration(item.id)
+                              removeGeneration(item.id, { persistHide: false })
                             }
                           }}
                           className="absolute top-1.5 right-1.5 z-10 p-1 rounded-md bg-black/60 text-white/80 hover:text-white hover:bg-black/80 transition-colors"
@@ -802,13 +820,13 @@ export default function ImageToImagePage() {
                           aria-label={t.common.delete}
                           onClick={(event) => {
                             event.stopPropagation()
-                            removeGeneration(item.id)
+                            removeGeneration(item.id, { persistHide: false })
                           }}
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' || event.key === ' ') {
                               event.preventDefault()
                               event.stopPropagation()
-                              removeGeneration(item.id)
+                              removeGeneration(item.id, { persistHide: false })
                             }
                           }}
                           className="absolute top-1.5 right-1.5 z-10 p-1 rounded-md bg-black/60 text-white/80 hover:text-white hover:bg-black/80 transition-colors"

@@ -184,6 +184,8 @@ const MODELS = {
   // Text to Video
   'seedance-1-lite': 'bytedance/seedance-1-lite',
   'seedance-1.5-pro': 'bytedance/seedance-1.5-pro',
+  'seedance-2.0': 'bytedance/seedance-2.0',
+  'grok-imagine-video': 'xai/grok-imagine-video',
   'minimax': 'minimax/video-01',
   'kling': 'kwaivgi/kling-v1.6-pro',
   'luma-dream': 'luma/ray',
@@ -203,24 +205,47 @@ const MODELS = {
   'kling-v2.5-turbo-pro': 'kwaivgi/kling-v2.5-turbo-pro',
   'morph': 'luma/ray', // fallback
   'pixverse': 'luma/ray', // fallback
+  'p-video-standard': 'prunaai/p-video',
+  'p-video-draft': 'prunaai/p-video',
+  'kling-v3-omni': 'kwaivgi/kling-v3-omni-video',
+  'p-video-720p-standard': 'prunaai/p-video',
+  'p-video-720p-draft': 'prunaai/p-video',
+  'p-video-1080p-standard': 'prunaai/p-video',
+  'p-video-1080p-draft': 'prunaai/p-video',
+  'kling-v3-omni-standard': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-standard-audio': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-pro': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-pro-audio': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-4k': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-4k-audio': 'kwaivgi/kling-v3-omni-video',
 
   // Text to Image
-  'flux-pro': 'black-forest-labs/flux-1.1-pro',
+  'flux-2-pro': 'black-forest-labs/flux-2-pro',
+  'flux-pro': 'black-forest-labs/flux-2-pro', // legacy alias
   'flux-schnell': 'black-forest-labs/flux-schnell',
   'flux-dev': 'black-forest-labs/flux-dev',
   'stable-3.5': 'stability-ai/stable-diffusion-3.5-large',
   'nano-banana-pro': 'google/nano-banana-pro',
+  'nano-banana-2': 'google/nano-banana-2',
   'ideogram': 'ideogram-ai/ideogram-v2',
   'imagen-4-fast': 'google/imagen-4-fast',
   'imagen-4-ultra': 'google/imagen-4-ultra',
+  'gpt-image-2': 'openai/gpt-image-2',
+  'gpt-image-2-auto': 'openai/gpt-image-2',
+  'gpt-image-2-low': 'openai/gpt-image-2',
+  'gpt-image-2-medium': 'openai/gpt-image-2',
+  'gpt-image-2-high': 'openai/gpt-image-2',
   'seedream-4.5': 'bytedance/seedream-4.5',
-  'dall-e-3': 'black-forest-labs/flux-1.1-pro', // fallback to flux
-  'midjourney': 'black-forest-labs/flux-1.1-pro', // fallback to flux
+  'seedream-5-lite': 'bytedance/seedream-5-lite',
+  'dall-e-3': 'black-forest-labs/flux-2-pro', // fallback to flux
+  'midjourney': 'black-forest-labs/flux-2-pro', // fallback to flux
 
   // Image to Video
   'kling-v2.1': 'kwaivgi/kling-v2.1',
   'hailuo-2.3-img': 'minimax/hailuo-2.3',
   'hailuo-2.3-fast-img': 'minimax/hailuo-2.3-fast',
+  'seedance-2.0-img': 'bytedance/seedance-2.0',
+  'grok-imagine-video-img': 'xai/grok-imagine-video',
   'google-veo-3.1-fast-img': 'google/veo-3.1-fast',
   'openai-sora-2-img': 'openai/sora-2',
   'openai-sora-2-pro-img': 'openai/sora-2-pro',
@@ -230,9 +255,23 @@ const MODELS = {
   'luma-img': 'luma/ray',
   'minimax-img': 'minimax/video-01',
   'haiper-img': 'haiper-ai/haiper-video-2',
+  'p-video-standard-img': 'prunaai/p-video',
+  'p-video-draft-img': 'prunaai/p-video',
+  'kling-v3-omni-img': 'kwaivgi/kling-v3-omni-video',
+  'p-video-720p-standard-img': 'prunaai/p-video',
+  'p-video-720p-draft-img': 'prunaai/p-video',
+  'p-video-1080p-standard-img': 'prunaai/p-video',
+  'p-video-1080p-draft-img': 'prunaai/p-video',
+  'kling-v3-omni-standard-img': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-standard-audio-img': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-pro-img': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-pro-audio-img': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-4k-img': 'kwaivgi/kling-v3-omni-video',
+  'kling-v3-omni-4k-audio-img': 'kwaivgi/kling-v3-omni-video',
 
   // Image to Image
-  'img2img-flux': 'black-forest-labs/flux-1.1-pro',
+  'flux-2-pro-img2img': 'black-forest-labs/flux-2-pro',
+  'img2img-flux': 'black-forest-labs/flux-2-pro', // legacy alias
   'seedream-4.5': 'bytedance/seedream-4.5',
 }
 
@@ -302,16 +341,31 @@ app.post('/api/text-to-video', async (req, res) => {
 
     // Resolution mappings
     const resolutionMap = {
-      '480p': { '16:9': [854, 480], '9:16': [480, 854], '1:1': [480, 480], '4:3': [640, 480], '3:4': [480, 640] },
-      '576p': { '16:9': [1024, 576], '9:16': [576, 1024], '1:1': [576, 576], '4:3': [768, 576], '3:4': [576, 768] },
-      '720p': { '16:9': [1280, 720], '9:16': [720, 1280], '1:1': [720, 720], '4:3': [960, 720], '3:4': [720, 960] },
+      '480p': { '16:9': [854, 480], '9:16': [480, 854], '1:1': [480, 480], '4:3': [640, 480], '3:4': [480, 640], '21:9': [992, 432] },
+      '576p': { '16:9': [1024, 576], '9:16': [576, 1024], '1:1': [576, 576], '4:3': [768, 576], '3:4': [576, 768], '21:9': [1344, 576] },
+      '720p': { '16:9': [1280, 720], '9:16': [720, 1280], '1:1': [720, 720], '4:3': [960, 720], '3:4': [720, 960], '21:9': [1470, 630] },
       '768p': { '16:9': [1366, 768], '9:16': [768, 1366], '1:1': [768, 768], '4:3': [1024, 768], '3:4': [768, 1024] },
       '1080p': { '16:9': [1920, 1080], '9:16': [1080, 1920], '1:1': [1080, 1080], '4:3': [1440, 1080], '3:4': [1080, 1440] },
       '4k': { '16:9': [3840, 2160], '9:16': [2160, 3840], '1:1': [2160, 2160], '4:3': [2880, 2160], '3:4': [2160, 2880] },
     }
 
     // Model-specific configurations
-    if (modelId.includes('seedance')) {
+    if (model === 'grok-imagine-video') {
+      input = {
+        prompt,
+        duration: Math.min(Math.max(parseInt(duration) || 5, 1), 15),
+        resolution: resolution === '480p' ? '480p' : '720p',
+        aspect_ratio: aspectRatio,
+      }
+    } else if (model === 'seedance-2.0') {
+      input = {
+        prompt,
+        duration: Math.min(Math.max(parseInt(duration) || 5, 5), 15),
+        resolution: resolution === '480p' ? '480p' : '720p',
+        aspect_ratio: aspectRatio,
+        generate_audio: withAudio || false,
+      }
+    } else if (modelId.includes('seedance')) {
       // SeeDance configuration (Lite and Pro)
       const dims = resolutionMap[resolution]?.[aspectRatio] || resolutionMap['720p']['16:9']
       input = {
@@ -341,7 +395,7 @@ app.post('/api/text-to-video', async (req, res) => {
         prompt,
         aspect_ratio: aspectRatio,
       }
-    } else if (modelId.includes('kling')) {
+    } else if (modelId.includes('kling') && !modelId.includes('kling-v3-omni')) {
       // Kling v2.1 configuration
       input = {
         prompt,
@@ -428,6 +482,27 @@ app.post('/api/text-to-video', async (req, res) => {
       if (modelId.includes('sora-2-pro')) {
         input.quality = resolution === '1080p' ? 'high' : 'standard'
       }
+    } else if (model.startsWith('p-video-')) {
+      const pDraft = model.includes('-draft')
+      const pResolution = resolution === '1080p' ? '1080p' : '720p'
+      input = {
+        prompt,
+        resolution: pResolution,
+        draft: pDraft,
+        save_audio: withAudio || false,
+        duration: parseInt(duration) || 5,
+        aspect_ratio: aspectRatio,
+      }
+    } else if (model.startsWith('kling-v3-omni')) {
+      const klingMode = resolution === '4k' ? '4k' : resolution === '1080p' ? 'pro' : 'standard'
+      const klingDuration = Math.min(Math.max(parseInt(duration) || 5, 3), 15)
+      input = {
+        prompt,
+        mode: klingMode,
+        generate_audio: withAudio || false,
+        duration: klingDuration,
+        aspect_ratio: aspectRatio,
+      }
     }
 
     console.log(`[Text2Video] Model: ${modelId}, Resolution: ${resolution}, Duration: ${duration}s, Prompt: ${prompt.substring(0, 50)}...`)
@@ -462,7 +537,8 @@ app.post('/api/image-to-video', async (req, res) => {
       motionStrength = 50,
       aspectRatio = '16:9',
       duration = '5',
-      resolution = '720p'
+      resolution = '720p',
+      withAudio = false
     } = req.body
 
     if (!imageUrl) {
@@ -482,7 +558,23 @@ app.post('/api/image-to-video', async (req, res) => {
       '4k': { '16:9': [3840, 2160], '9:16': [2160, 3840], '1:1': [2160, 2160], '4:3': [2880, 2160], '3:4': [2160, 2880] },
     }
 
-    if (modelId.includes('luma')) {
+    if (model === 'grok-imagine-video-img') {
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        image: imageUrl,
+        duration: Math.min(Math.max(parseInt(duration) || 5, 1), 15),
+        resolution: resolution === '480p' ? '480p' : '720p',
+        aspect_ratio: aspectRatio,
+      }
+    } else if (model === 'seedance-2.0-img') {
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        image: imageUrl,
+        duration: Math.min(Math.max(parseInt(duration) || 5, 5), 15),
+        resolution: resolution === '480p' ? '480p' : '720p',
+        aspect_ratio: aspectRatio,
+      }
+    } else if (modelId.includes('luma')) {
       input = {
         prompt: prompt || 'animate this image with natural motion',
         start_image_url: imageUrl,
@@ -502,7 +594,7 @@ app.post('/api/image-to-video', async (req, res) => {
         height: dims[1],
         aspect_ratio: aspectRatio,
       }
-    } else if (modelId.includes('kling')) {
+    } else if (modelId.includes('kling') && !modelId.includes('kling-v3-omni')) {
       // Kling v2.1 configuration
       input = {
         prompt: prompt || 'animate this image with natural motion',
@@ -551,6 +643,29 @@ app.post('/api/image-to-video', async (req, res) => {
       if (modelId.includes('sora-2-pro')) {
         input.quality = 'standard' // default to standard for image-to-video
       }
+    } else if (model.startsWith('p-video-')) {
+      const pDraft = model.includes('-draft')
+      const pResolution = resolution === '1080p' ? '1080p' : '720p'
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        image: imageUrl,
+        resolution: pResolution,
+        draft: pDraft,
+        save_audio: withAudio || false,
+        duration: parseInt(duration) || 5,
+        aspect_ratio: aspectRatio,
+      }
+    } else if (model.startsWith('kling-v3-omni')) {
+      const klingMode = resolution === '4k' ? '4k' : resolution === '1080p' ? 'pro' : 'standard'
+      const klingDuration = Math.min(Math.max(parseInt(duration) || 5, 3), 15)
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        start_image: imageUrl,
+        mode: klingMode,
+        generate_audio: withAudio || false,
+        duration: klingDuration,
+        aspect_ratio: aspectRatio,
+      }
     }
 
     console.log(`[Image2Video] Model: ${modelId}`)
@@ -580,17 +695,18 @@ app.post('/api/text-to-image', async (req, res) => {
     const { 
       prompt, 
       negativePrompt,
-      model = 'flux-pro',
+      model = 'flux-2-pro',
       aspectRatio = '1:1',
       resolution,
-      numOutputs = 1
+      numOutputs = 1,
+      quality
     } = req.body
 
     if (!prompt) {
       return res.status(400).json({ error: 'Prompt is required' })
     }
 
-    const modelId = MODELS[model] || MODELS['flux-pro']
+    const modelId = MODELS[model] || MODELS['flux-2-pro']
     
     // Calculate dimensions based on aspect ratio
     const dimensions = {
@@ -602,10 +718,25 @@ app.post('/api/text-to-image', async (req, res) => {
     }
     
     const { width, height } = dimensions[aspectRatio] || dimensions['1:1']
+    const fluxResolutionMap = {
+      '1k': '1 MP',
+      '2k': '2 MP',
+      '4k': '4 MP',
+      '1080p': '2 MP',
+      '720p': '1 MP',
+    }
     
     let input = {}
 
-    if (modelId.includes('flux')) {
+    if (modelId.includes('flux-2-pro')) {
+      const fluxResolution = resolution ? (fluxResolutionMap[String(resolution).toLowerCase()] || '2 MP') : '2 MP'
+      input = {
+        prompt,
+        aspect_ratio: aspectRatio,
+        resolution: fluxResolution,
+        output_format: 'webp',
+      }
+    } else if (modelId.includes('flux')) {
       input = {
         prompt,
         aspect_ratio: aspectRatio,
@@ -613,7 +744,7 @@ app.post('/api/text-to-image', async (req, res) => {
         output_quality: 90,
         num_outputs: numOutputs,
       }
-    } else if (modelId.includes('nano-banana-pro')) {
+    } else if (modelId.includes('nano-banana')) {
       const nanoAspectRatio = aspectRatio === 'auto' ? 'match_input_image' : aspectRatio
       const nanoResolution = resolution ? String(resolution).toUpperCase() : '2K'
       input = {
@@ -642,7 +773,22 @@ app.post('/api/text-to-image', async (req, res) => {
         aspect_ratio: aspectRatio,
         output_format: 'jpg',
       }
-    } else if (modelId.includes('seedream-4.5')) {
+    } else if (modelId.includes('gpt-image-2')) {
+      const variant = model.startsWith('gpt-image-2-')
+        ? model.replace('gpt-image-2-', '')
+        : (['auto', 'low', 'medium', 'high'].includes(String(quality || '').toLowerCase())
+          ? String(quality).toLowerCase()
+          : 'auto')
+      const allowedVariant = ['auto', 'low', 'medium', 'high'].includes(variant) ? variant : 'auto'
+
+      input = {
+        prompt,
+        aspect_ratio: aspectRatio,
+        quality: allowedVariant,
+        output_format: 'webp',
+        number_of_images: numOutputs,
+      }
+    } else if (modelId.includes('seedream')) {
       const seedreamAspectRatio = aspectRatio === 'auto' ? 'match_input_image' : aspectRatio
       const seedreamSize = resolution ? String(resolution).toUpperCase() : '2K'
       input = {
@@ -690,7 +836,8 @@ app.post('/api/image-to-image', async (req, res) => {
       transformType = 'style-transfer',
       style,
       strength = 0.7,
-      resolution
+      resolution,
+      aspectRatio,
     } = req.body
 
     if (!imageUrl) {
@@ -709,7 +856,7 @@ app.post('/api/image-to-image', async (req, res) => {
       }
     } else {
       // Style transfer / variation using selected model
-      modelId = (model && MODELS[model]) ? MODELS[model] : MODELS['img2img-flux']
+      modelId = (model && MODELS[model]) ? MODELS[model] : MODELS['flux-2-pro-img2img']
       
       const stylePrompts = {
         'anime': 'anime style, vibrant colors, clean lines',
@@ -724,16 +871,24 @@ app.post('/api/image-to-image', async (req, res) => {
       
       const stylePrompt = style ? stylePrompts[style] || '' : ''
       const fullPrompt = prompt ? `${prompt}, ${stylePrompt}` : stylePrompt || 'transform this image'
+      const requestedAspectRatio = aspectRatio && aspectRatio !== 'auto' ? String(aspectRatio) : 'match_input_image'
+      const fluxResolutionMap = {
+        '1k': '1 MP',
+        '2k': '2 MP',
+        '4k': '4 MP',
+        '1080p': '2 MP',
+        '720p': '1 MP',
+      }
 
-      if (modelId.includes('nano-banana-pro')) {
+      if (modelId.includes('nano-banana')) {
         const nanoResolution = resolution ? String(resolution).toUpperCase() : '2K'
         input = {
           prompt: fullPrompt,
-          image: imageUrl,
-          prompt_strength: strength,
+          image_input: [imageUrl],
+          aspect_ratio: requestedAspectRatio,
           resolution: nanoResolution,
         }
-      } else if (modelId.includes('seedream-4.5')) {
+      } else if (modelId.includes('seedream')) {
         const seedreamSize = resolution ? String(resolution).toUpperCase() : '2K'
         input = {
           prompt: fullPrompt,
@@ -746,6 +901,15 @@ app.post('/api/image-to-image', async (req, res) => {
           negative_prompt: negativePrompt || '',
           image: imageUrl,
           strength,
+        }
+      } else if (modelId.includes('flux-2-pro')) {
+        const fluxResolution = resolution ? (fluxResolutionMap[String(resolution).toLowerCase()] || '2 MP') : '2 MP'
+        input = {
+          prompt: fullPrompt,
+          input_images: [imageUrl],
+          aspect_ratio: requestedAspectRatio,
+          resolution: fluxResolution,
+          output_format: 'webp',
         }
       } else {
         input = {

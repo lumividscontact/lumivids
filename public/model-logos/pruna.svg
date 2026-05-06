@@ -1,0 +1,11 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pruna-gradient" x1="16" y1="16" x2="112" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#0B1220"/>
+  <path d="M40 92V36H70C83.2548 36 94 46.7452 94 60C94 73.2548 83.2548 84 70 84H54V92H40Z" fill="url(#pruna-gradient)"/>
+  <path d="M54 70H70C75.5228 70 80 65.5228 80 60C80 54.4772 75.5228 50 70 50H54V70Z" fill="#E2E8F0" fill-opacity="0.9"/>
+</svg>

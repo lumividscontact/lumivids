@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Sparkles, ChevronDown, X, Image as ImageIcon, Download, AlertCircle, Monitor, Smartphone, Square, Grid, ZoomIn, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react'
 import { useTextToImage, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
@@ -6,16 +7,25 @@ import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/AuthModal'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
+import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
+import ModelLogo from '@/components/ModelLogo'
 import { 
   TEXT_TO_IMAGE_MODELS, 
   ModelConfig, 
   AspectRatio,
   Resolution,
 } from '@/config/models'
+import { calculateCreditCost } from '@/config/creditCosts'
 import { downloadFile, getGenerationFilename } from '@/utils/download'
 import { truncateAtWordBoundary } from '@/utils/text'
 
 const MAX_PROMPT_CHARS = 2000
+const GPT_IMAGE_2_QUALITY_COST: Record<'auto' | 'low' | 'medium' | 'high', number> = {
+  auto: 8,
+  low: 1,
+  medium: 3,
+  high: 8,
+}
 
 /* ── Image Gallery with lightbox ── */
 function ImageGallery({ images, onReset, newGenerationLabel }: { images: string[]; onReset: () => void; newGenerationLabel: string }) {
@@ -234,21 +244,45 @@ function ImageGallery({ images, onReset, newGenerationLabel }: { images: string[
 export default function TextToImagePage() {
   const { t } = useLanguage()
   const { isAuthenticated } = useAuth()
+  const [searchParams] = useSearchParams()
   
   // SEO meta tags
-  useSEO(getSeoPages(t).textToImage)
+  useSEO({
+    ...getSeoPages(t).textToImage,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Lumivids – AI Image Generator',
+      url: 'https://lumivids.com/text-to-image',
+      description: t.textToImage.seo.description,
+      applicationCategory: 'MultimediaApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      featureList: 'AI image generation, text to image, multiple AI models, free to try',
+    },
+  })
   const examplePrompts = t.textToImage.examplePrompts
-  const [prompt, setPrompt] = useState('')
+  const [prompt, setPrompt] = useState(() => searchParams.get('prompt') || '')
   const [negativePrompt, setNegativePrompt] = useState('')
-  const [selectedModel, setSelectedModel] = useState<ModelConfig>(TEXT_TO_IMAGE_MODELS[0])
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1')
-  const [resolution, setResolution] = useState<Resolution>(selectedModel.defaultResolution)
+  const [selectedModel, setSelectedModel] = useState<ModelConfig>(() => {
+    const modelParam = searchParams.get('model')
+    return TEXT_TO_IMAGE_MODELS.find((m) => m.id === modelParam) ?? TEXT_TO_IMAGE_MODELS[0]
+  })
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() => {
+    const ap = searchParams.get('aspect') as AspectRatio | null
+    return ap ?? '1:1'
+  })
+  const [resolution, setResolution] = useState<Resolution>(() => {
+    const res = searchParams.get('resolution') as Resolution | null
+    return res ?? selectedModel.defaultResolution
+  })
+  const [gptImageQuality, setGptImageQuality] = useState<'auto' | 'low' | 'medium' | 'high'>('auto')
   const [numImages, setNumImages] = useState(1)
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useTextToImage()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium } = useTextToImage()
 
   useEffect(() => {
     return () => {
@@ -280,14 +314,23 @@ export default function TextToImagePage() {
 
   // Calculate credit cost
   const currentCost = useMemo(() => {
-    return selectedModel.credits.base * numImages
-  }, [selectedModel, numImages])
+    const requestModel = selectedModel.id === 'gpt-image-2'
+      ? `gpt-image-2-${gptImageQuality}`
+      : selectedModel.id
+
+    return calculateCreditCost('text-to-image', requestModel, 5, resolution, false, numImages)
+  }, [selectedModel, gptImageQuality, resolution, numImages])
+
+  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
 
   const isPromptTooLong = prompt.length > MAX_PROMPT_CHARS
 
   const handleModelChange = (model: ModelConfig) => {
     setSelectedModel(model)
     setResolution(model.defaultResolution)
+    if (model.id !== 'gpt-image-2') {
+      setGptImageQuality('auto')
+    }
     setIsModelDropdownOpen(false)
     if (!model.supportedAspectRatios.includes(aspectRatio)) {
       setAspectRatio(model.supportedAspectRatios[0])
@@ -302,24 +345,22 @@ export default function TextToImagePage() {
     if (!prompt.trim() || isPromptTooLong) return
 
     try {
+      const requestModel = selectedModel.id === 'gpt-image-2'
+        ? `gpt-image-2-${gptImageQuality}`
+        : selectedModel.id
+
       await generate({
         prompt,
         negativePrompt: selectedModel.supportsNegativePrompt ? negativePrompt : undefined,
-        model: selectedModel.id,
+        model: requestModel,
         aspectRatio,
         resolution,
         numOutputs: numImages,
+        quality: selectedModel.id === 'gpt-image-2' ? gptImageQuality : undefined,
       })
     } catch (err) {
       console.error('Generation failed:', err)
     }
-  }
-
-  const getModelIcon = (modelId: string) => {
-    if (modelId.includes('flux')) return '⚡'
-    if (modelId.includes('stable')) return '🎨'
-    if (modelId.includes('ideogram')) return '✏️'
-    return '🖼️'
   }
 
   const getAspectRatioIcon = (ratio: AspectRatio) => {
@@ -361,7 +402,7 @@ export default function TextToImagePage() {
               className="w-full flex items-center justify-between p-3 bg-dark-800 rounded-xl hover:bg-dark-700 transition-colors disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{getModelIcon(selectedModel.id)}</span>
+                <ModelLogo modelId={selectedModel.id} />
                 <div className="text-left">
                   <p className="font-medium text-white">{selectedModel.name}</p>
                   <p className="text-xs text-dark-400">{selectedModel.credits.base}cr {t.ui.perImage}</p>
@@ -384,7 +425,7 @@ export default function TextToImagePage() {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-lg">{getModelIcon(model.id)}</span>
+                        <ModelLogo modelId={model.id} />
                         <div className="text-left">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-white text-sm">{model.name}</p>
@@ -504,6 +545,29 @@ export default function TextToImagePage() {
             </div>
           )}
 
+          {/* GPT Image 2 Quality */}
+          {selectedModel.id === 'gpt-image-2' && (
+            <div className="card">
+              <label className="block text-sm font-medium text-dark-400 mb-3">Qualidade</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['auto', 'low', 'medium', 'high'] as const).map((quality) => (
+                  <button
+                    key={quality}
+                    onClick={() => setGptImageQuality(quality)}
+                    disabled={isGenerating}
+                    className={`py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50 ${
+                      gptImageQuality === quality
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                    }`}
+                  >
+                    {quality === 'auto' ? 'Auto' : quality.charAt(0).toUpperCase() + quality.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Number of Images */}
           <div className="card">
             <div className="flex items-center justify-between mb-3">
@@ -548,23 +612,19 @@ export default function TextToImagePage() {
               progressBarGradientClassName="bg-gradient-to-r from-purple-500 to-pink-500"
             />
 
+            <FreemiumDailyStatus currentCost={currentCost} />
+
             <GenerationActionButtons
               isGenerating={isGenerating}
               onGenerate={handleGenerate}
               onCancel={cancel}
-              generateDisabled={!prompt.trim() || isPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost)}
+              generateDisabled={!prompt.trim() || isPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
               generateLabel={`${t.ui.createButton} | ${currentCost} ${t.ui.creditsLabel}`}
               generatingLabel={t.common.generating}
               cancelLabel={t.common.cancel}
               generateIcon={<Sparkles className="w-5 h-5" />}
               generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
-
-            {isAuthenticated && credits < currentCost && !isGenerating && (
-              <p className="text-xs text-red-400 text-center">
-                {t.ui.insufficientCreditsMessage} {credits} {t.common.credits}.
-              </p>
-            )}
           </div>
         </div>
 

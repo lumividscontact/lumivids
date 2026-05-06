@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react'
-import { Video, Image, Download, Heart, Trash2, RefreshCw, Flag } from 'lucide-react'
+import { Video, Image, Download, Heart, Trash2, RefreshCw, Flag, Zap } from 'lucide-react'
 import { MediaItem, MY_VIDEOS_FALLBACK, MyVideosTranslations, PLACEHOLDER_THUMB } from './types'
 import { getFriendlyFailureReason } from './errorMessages'
 
@@ -66,6 +66,7 @@ interface BaseMediaItemProps {
   onReport: (item: MediaItem) => void
   dateLocale?: string
   translations?: MyVideosTranslations
+  reportTitle?: string
 }
 
 type MediaCardProps = BaseMediaItemProps
@@ -83,6 +84,7 @@ export function MediaCard({
   onReport,
   dateLocale = 'en-US',
   translations = MY_VIDEOS_FALLBACK,
+  reportTitle = 'Report',
 }: MediaCardProps) {
   const t = translations
   const failedReason = item.status === 'failed' ? getFriendlyFailureReason(item.errorMessage, t) : null
@@ -204,7 +206,7 @@ export function MediaCard({
             type="button"
             onClick={(e) => { e.stopPropagation(); onReport(item) }}
             className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-            title="Reportar"
+            title={reportTitle}
           >
             <Flag className="w-5 h-5 text-white" />
           </button>
@@ -219,7 +221,15 @@ export function MediaCard({
           {t.failedReasonLabel}: {failedReason}
         </p>
       )}
-      <p className="text-xs text-dark-500 mt-2">{formatMediaDate(item.createdAt, dateLocale)} • {item.model} • {item.aspectRatio}</p>
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-xs text-dark-500 truncate">{formatMediaDate(item.createdAt, dateLocale)} • {item.model}</p>
+        {item.cost > 0 && (
+          <span className="flex items-center gap-0.5 text-xs text-primary-400 flex-shrink-0 ml-2">
+            <Zap className="w-3 h-3" />
+            {item.cost} {t.creditsLabel}
+          </span>
+        )}
+      </div>
     </div>
   )
 }
@@ -239,6 +249,7 @@ export function MediaListItem({
   onReport,
   dateLocale = 'en-US',
   translations = MY_VIDEOS_FALLBACK,
+  reportTitle = 'Report',
 }: MediaListItemProps) {
   const t = translations
   const failedReason = item.status === 'failed' ? getFriendlyFailureReason(item.errorMessage, t) : null
@@ -316,6 +327,14 @@ export function MediaListItem({
         )}
       </div>
 
+      {/* Cost */}
+      {item.cost > 0 && (
+        <span className="flex items-center gap-1 text-xs text-primary-400 flex-shrink-0">
+          <Zap className="w-3 h-3" />
+          {item.cost} {t.creditsLabel}
+        </span>
+      )}
+
       {/* Date */}
       <span className="text-sm text-dark-400 hidden md:block">{formatMediaDate(item.createdAt, dateLocale)}</span>
 
@@ -368,7 +387,7 @@ export function MediaListItem({
           type="button"
           onClick={(e) => { e.stopPropagation(); onReport(item) }}
           className="p-2 rounded-lg hover:bg-dark-700 transition-colors"
-          title="Reportar"
+          title={reportTitle}
         >
           <Flag className="w-5 h-5 text-dark-400" />
         </button>

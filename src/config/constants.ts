@@ -15,6 +15,11 @@
 export const INITIAL_CREDITS = 10
 
 /**
+ * Daily free credits for freemium users
+ */
+export const FREE_DAILY_CREDITS = 10
+
+/**
  * Minimum credits percentage to show "low credits" warning
  */
 export const LOW_CREDITS_THRESHOLD_PERCENT = 10

@@ -9,6 +9,12 @@ interface CreditsCardProps {
   creditsPercentage: number
   buyMoreLabel: string
   onBuyMore: () => void
+  freemiumBonusDaysLabel?: string
+  freemiumBonusCapReachedLabel?: string
+  isFreemium?: boolean
+  bonusDaysUsed?: number
+  bonusDaysMax?: number
+  bonusCapReached?: boolean
 }
 
 export function CreditsCard({
@@ -20,6 +26,12 @@ export function CreditsCard({
   creditsPercentage,
   buyMoreLabel,
   onBuyMore,
+  freemiumBonusDaysLabel,
+  freemiumBonusCapReachedLabel,
+  isFreemium,
+  bonusDaysUsed,
+  bonusDaysMax,
+  bonusCapReached,
 }: CreditsCardProps) {
   return (
     <div className={`card border-primary-500/30 ${isLowCredits ? 'bg-gradient-to-br from-red-500/20 to-orange-500/20' : 'bg-gradient-to-br from-primary-500/20 to-accent-500/20'}`}>
@@ -37,6 +49,29 @@ export function CreditsCard({
           <p className="text-xs text-dark-300 mt-1">{creditsRemainingLabel}</p>
         </div>
       </div>
+
+      {/* Freemium bonus days progress */}
+      {isFreemium && bonusDaysUsed != null && bonusDaysMax != null && (
+        <div className="mb-3">
+          {/* Day dots */}
+          <div className="flex items-center gap-1.5 mb-1.5">
+            {Array.from({ length: bonusDaysMax }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 flex-1 rounded-full ${i < bonusDaysUsed ? 'bg-primary-500' : 'bg-dark-700'}`}
+              />
+            ))}
+          </div>
+          <p className={`text-xs ${bonusCapReached ? 'text-amber-400' : 'text-dark-400'}`}>
+            {bonusCapReached
+              ? freemiumBonusCapReachedLabel
+              : freemiumBonusDaysLabel
+                  ?.replace('{used}', String(bonusDaysUsed))
+                  .replace('{max}', String(bonusDaysMax))}
+          </p>
+        </div>
+      )}
+
       {isLowCredits && (
         <p className="text-sm text-red-400 mb-3 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4" />

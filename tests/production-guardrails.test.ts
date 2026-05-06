@@ -3,16 +3,20 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 describe('production guardrails', () => {
-  const storageSetup = readFileSync(join(process.cwd(), 'supabase', 'SETUP_STORAGE.sql'), 'utf8')
+  const storageGuide = readFileSync(join(process.cwd(), 'supabase', 'STORAGE_SETUP_GUIDE.md'), 'utf8')
   const schema = readFileSync(join(process.cwd(), 'supabase', 'schema.sql'), 'utf8')
   const pricingPage = readFileSync(join(process.cwd(), 'src', 'pages', 'PricingPage.tsx'), 'utf8')
+  const imageUploadSource = readFileSync(join(process.cwd(), 'src', 'components', 'ImageUpload.tsx'), 'utf8')
   const checkPredictionSource = readFileSync(join(process.cwd(), 'supabase', 'functions', 'check-prediction', 'index.ts'), 'utf8')
 
-  it('enforces server-side storage file limits and mime types', () => {
-    expect(storageSetup).toContain('file_size_limit')
-    expect(storageSetup).toContain('allowed_mime_types')
-    expect(storageSetup).toContain('104857600')
-    expect(storageSetup).toContain('10485760')
+  it('documents storage limits and enforces upload guardrails in code', () => {
+    expect(storageGuide).toContain('File size limit')
+    expect(storageGuide).toContain('100 MB')
+    expect(storageGuide).toContain('Allowed MIME types')
+    expect(storageGuide).toContain('video/*')
+    expect(checkPredictionSource).toContain('const VIDEO_UPLOAD_MAX_BYTES = 100 * 1024 * 1024')
+    expect(imageUploadSource).toContain("maxSizeMB = 10")
+    expect(imageUploadSource).toContain("acceptedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']")
   })
 
   it('uses i18n for per-month pricing label', () => {
@@ -29,6 +33,20 @@ describe('production guardrails', () => {
   it('contains index optimized for stale generation cleanup scan', () => {
     expect(schema).toContain('CREATE INDEX IF NOT EXISTS idx_generations_stale_cleanup')
     expect(schema).toContain("WHERE status IN ('starting', 'processing');")
+  })
+
+  it('contains generations audit trail for inserts updates and deletes', () => {
+    expect(schema).toContain('CREATE TABLE IF NOT EXISTS public.generations_audit (')
+    expect(schema).toContain("event_type TEXT NOT NULL CHECK (event_type IN ('insert', 'update', 'delete'))")
+    expect(schema).toContain('CREATE OR REPLACE FUNCTION public.audit_generations_changes()')
+    expect(schema).toContain('CREATE TRIGGER audit_generations_changes')
+    expect(schema).toContain('AFTER INSERT OR UPDATE OR DELETE ON public.generations')
+  })
+
+  it('uses soft-hide for generations instead of user delete policy', () => {
+    expect(schema).toContain('ALTER TABLE public.generations ADD COLUMN IF NOT EXISTS hidden_at TIMESTAMPTZ;')
+    expect(schema).toContain('CREATE INDEX IF NOT EXISTS idx_generations_user_hidden_created_at')
+    expect(schema).not.toContain('CREATE POLICY "Users can delete their own generations"')
   })
 
   it('contains edge rate limit cleanup rpc and service_role grant', () => {

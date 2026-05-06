@@ -28,7 +28,7 @@ interface GenerationsContextType {
   activeGenerations: Generation[]
   addGeneration: (gen: Omit<Generation, 'id' | 'createdAt'>) => string
   updateGeneration: (id: string, updates: Partial<Generation>) => void
-  removeGeneration: (id: string) => void
+  removeGeneration: (id: string, options?: { persistHide?: boolean }) => void
   getGeneration: (id: string) => Generation | undefined
   pollGeneration: (id: string) => Promise<void>
   clearCompleted: () => void
@@ -41,6 +41,7 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
 
   const pollingRefs = useRef<Map<string, boolean>>(new Map())
   const generationsRef = useRef<Generation[]>([])
+  const dbRestoreRef = useRef(false)
 
   // Track DB insert completion so updateGeneration can wait for the row to exist
   // before attempting an UPDATE (prevents race condition where UPDATE runs before INSERT)
@@ -51,19 +52,6 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
   useLayoutEffect(() => {
     generationsRef.current = generations
   }, [generations])
-
-  // Resume polling for active generations on mount
-  useEffect(() => {
-    const activeGens = generations.filter(
-      g => g.status === 'starting' || g.status === 'processing'
-    )
-    
-    activeGens.forEach(gen => {
-      if (!pollingRefs.current.get(gen.id)) {
-        pollGeneration(gen.id)
-      }
-    })
-  }, []) // Only on mount
 
   const activeGenerations = useMemo(
     () => generations.filter(g => g.status === 'starting' || g.status === 'processing'),
@@ -270,8 +258,9 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
     })()
   }, [])
 
-  const removeGeneration = useCallback((id: string) => {
+  const removeGeneration = useCallback((id: string, options?: { persistHide?: boolean }) => {
     pollingRefs.current.delete(id)
+    const persistHide = options?.persistHide ?? true
 
     // Capture predictionId BEFORE removing from state/ref,
     // otherwise generationsRef won't contain the entry anymore.
@@ -280,9 +269,9 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
 
     setGenerations(prev => prev.filter(g => g.id !== id))
     
-    if (!predictionId) return
+    if (!persistHide || !predictionId) return
 
-    // Remove from Supabase
+    // Soft-hide in Supabase so the record remains auditable.
     ;(async () => {
       try {
         let userId: string | null = null
@@ -298,19 +287,38 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
         }
         if (!userId) return
 
+        // Hide only one row (latest visible for this prediction) to avoid
+        // accidentally hiding historical records that share prediction_id.
+        const { data: targetRow, error: findError } = await supabase
+          .from('generations')
+          .select('id')
+          .eq('replicate_prediction_id', predictionId)
+          .eq('user_id', userId)
+          .is('hidden_at', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (findError) {
+          console.error('Error finding generation to hide:', findError)
+          return
+        }
+
+        if (!targetRow?.id) return
+
         const { error } = await supabase
           .from('generations')
-          .delete()
-          .eq('replicate_prediction_id', predictionId)
+          .update({ hidden_at: new Date().toISOString() })
+          .eq('id', targetRow.id)
           .eq('user_id', userId)
 
         if (error) {
-          console.error('Error deleting generation from database:', error)
+          console.error('Error hiding generation from database:', error)
         } else {
-          console.log('Generation deleted from database:', id)
+          console.log('Generation hidden in database:', id)
         }
       } catch (error) {
-        console.error('Error in removeGeneration database delete:', error)
+        console.error('Error in removeGeneration database hide:', error)
       }
     })()
   }, [])
@@ -421,6 +429,87 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
       pollingRefs.current.delete(id)
     }
   }, [updateGeneration])
+
+  // Restore recent/pending generations from DB on first mount so pages can
+  // show results when the user navigates away and comes back.
+  useEffect(() => {
+    if (dbRestoreRef.current) return
+    dbRestoreRef.current = true
+
+    ;(async () => {
+      try {
+        let userId: string | null = null
+        try {
+          const { data } = await supabase.auth.getUser()
+          userId = data.user?.id ?? null
+        } catch { /* ignore */ }
+        if (!userId) {
+          try {
+            const { data: { session } } = await supabase.auth.getSession()
+            userId = session?.user?.id ?? null
+          } catch { /* ignore */ }
+        }
+        if (!userId) return
+
+        // Fetch in-progress + recently succeeded generations (last 24 h)
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const { data: rows, error } = await supabase
+          .from('generations')
+          .select('id, replicate_prediction_id, type, status, output_url, error_message, model_id, model_name, prompt, credits_used, settings, thumbnail_url, created_at')
+          .eq('user_id', userId)
+          .is('hidden_at', null)
+          .in('status', ['starting', 'processing', 'succeeded'])
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(20)
+
+        if (error || !rows?.length) return
+
+        setGenerations(prev => {
+          const existingIds = new Set(prev.map(g => g.predictionId))
+          const toAdd: Generation[] = []
+
+          for (const row of rows) {
+            if (!row.replicate_prediction_id) continue
+            if (existingIds.has(row.replicate_prediction_id)) continue
+
+            const settings = (row.settings as { duration?: number; aspectRatio?: string } | null) ?? {}
+            const outputVal = row.output_url ? [row.output_url] : null
+            toAdd.push({
+              id: `restored_${row.id}`,
+              predictionId: row.replicate_prediction_id,
+              type: row.type as GenerationType,
+              status: row.status as Generation['status'],
+              output: outputVal,
+              error: row.error_message ?? null,
+              progress: row.status === 'succeeded' ? 100 : 10,
+              creditsUsed: row.credits_used ?? 0,
+              createdAt: new Date(row.created_at).getTime(),
+              modelName: row.model_name ?? row.model_id ?? 'unknown',
+              prompt: row.prompt ?? undefined,
+              thumbnail: row.thumbnail_url ?? undefined,
+              durationSec: settings.duration,
+              aspectRatio: settings.aspectRatio,
+            })
+          }
+
+          return toAdd.length === 0 ? prev : [...toAdd, ...prev]
+        })
+      } catch (e) {
+        console.error('[Generations] Failed to restore from DB:', e)
+      }
+    })()
+  }, [])
+
+  // Resume polling for any active generation (including ones restored from DB).
+  // pollingRefs deduplicates — safe to run on every activeGenerations change.
+  useEffect(() => {
+    activeGenerations.forEach((gen) => {
+      if (!pollingRefs.current.get(gen.id)) {
+        void pollGeneration(gen.id)
+      }
+    })
+  }, [activeGenerations, pollGeneration])
 
   const clearCompleted = useCallback(() => {
     setGenerations(prev =>

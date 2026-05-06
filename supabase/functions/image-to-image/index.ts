@@ -93,7 +93,7 @@ serve(async (req) => {
     }
 
     // Calculate credit cost
-    const modelForCost = model || 'img2img-flux'
+    const modelForCost = model || 'flux-2-pro-img2img'
     try {
       await ensureModelEnabled(isUpscaleRequest ? 'upscale' : modelForCost)
     } catch {
@@ -111,9 +111,10 @@ serve(async (req) => {
     // Deduct credits BEFORE starting generation
     const deductResult = await deductCredits(userId, cost, `Image to Image: ${modelForCost}`)
     if (!deductResult.success) {
+      const isDailyLimit = deductResult.error === 'DAILY_LIMIT_REACHED'
       return new Response(JSON.stringify({ 
-        error: 'INSUFFICIENT_CREDITS',
-        code: 'INSUFFICIENT_CREDITS',
+        error: isDailyLimit ? 'Daily free limit reached' : 'INSUFFICIENT_CREDITS',
+        code: isDailyLimit ? 'DAILY_LIMIT_REACHED' : 'INSUFFICIENT_CREDITS',
         required: cost,
       }), {
         status: 402,
@@ -136,7 +137,7 @@ serve(async (req) => {
         face_enhance: true,
       }
     } else {
-      modelId = (model && MODELS[model]) ? MODELS[model] : MODELS['img2img-flux']
+      modelId = (model && MODELS[model]) ? MODELS[model] : MODELS['flux-2-pro-img2img']
       
       const stylePrompts: Record<string, string> = {
         'anime': 'anime style, vibrant colors, clean lines',
@@ -156,8 +157,15 @@ serve(async (req) => {
       const stylePrompt = style ? stylePrompts[style] || '' : ''
       const fullPrompt = prompt ? `${prompt}, ${stylePrompt}` : stylePrompt || 'transform this image'
       const requestedAspectRatio = aspectRatio && aspectRatio !== 'auto' ? String(aspectRatio) : 'match_input_image'
+      const fluxResolutionMap: Record<string, string> = {
+        '1k': '1 MP',
+        '2k': '2 MP',
+        '4k': '4 MP',
+        '1080p': '2 MP',
+        '720p': '1 MP',
+      }
 
-      if (modelId.includes('nano-banana-pro')) {
+      if (modelId.includes('nano-banana')) {
         const nanoResolution = resolution ? String(resolution).toUpperCase() : '2K'
         input = {
           prompt: fullPrompt,
@@ -165,7 +173,7 @@ serve(async (req) => {
           aspect_ratio: requestedAspectRatio,
           resolution: nanoResolution,
         }
-      } else if (modelId.includes('seedream-4.5')) {
+      } else if (modelId.includes('seedream')) {
         const seedreamSize = resolution ? String(resolution).toUpperCase() : '2K'
         input = {
           prompt: fullPrompt,
@@ -180,8 +188,17 @@ serve(async (req) => {
           image: imageUrl,
           strength,
         }
+      } else if (modelId.includes('flux-2-pro')) {
+        const fluxResolution = resolution ? (fluxResolutionMap[String(resolution).toLowerCase()] || '2 MP') : '2 MP'
+        input = {
+          prompt: fullPrompt,
+          input_images: [imageUrl],
+          aspect_ratio: requestedAspectRatio,
+          resolution: fluxResolution,
+          output_format: 'webp',
+        }
       } else if (modelId.includes('flux')) {
-        // FLUX 1.1 Pro uses image_prompt for Redux-style image conditioning
+        // Legacy Flux fallback
         input = {
           prompt: fullPrompt,
           image_prompt: imageUrl,

@@ -11,6 +11,7 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const STRIPE_DEFAULT_LOCALE = (Deno.env.get('STRIPE_DEFAULT_LOCALE') || 'en').toLowerCase()
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -87,6 +88,7 @@ serve(async (req) => {
     // Create portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,
+      locale: STRIPE_DEFAULT_LOCALE as Stripe.BillingPortal.SessionCreateParams.Locale,
       return_url: returnUrl || `${Deno.env.get('APP_URL')}/my-account`,
     })
 

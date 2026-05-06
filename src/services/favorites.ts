@@ -45,7 +45,7 @@ export async function fetchFavoriteGenerations(userId: string): Promise<Favorite
   if (error) throw error
 
   return (data || [])
-    .map((row) => row.generation as FavoriteGeneration | null)
+    .map((row) => row.generation as unknown as FavoriteGeneration | null)
     .filter((item): item is FavoriteGeneration => !!item)
 }
 

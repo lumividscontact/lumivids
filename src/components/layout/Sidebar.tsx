@@ -16,6 +16,8 @@ import {
   X,
   Shield,
   LifeBuoy,
+  Workflow,
+  Sparkles,
 } from 'lucide-react'
 import { memo, useEffect, useMemo, useState } from 'react'
 import BrandLogo from '@/components/BrandLogo'
@@ -24,7 +26,7 @@ import { useCredits } from '@/contexts/CreditsContext'
 import { useFeatureFlags } from '@/contexts/FeatureFlagsContext'
 import { useLanguage } from '@/i18n'
 
-type NavKey = 'home' | 'textToVideo' | 'imageToVideo' | 'textToImage' | 'imageToImage' | 'myVideos' | 'myFavorites' | 'myAccount' | 'pricing' | 'support'
+type NavKey = 'home' | 'textToVideo' | 'imageToVideo' | 'textToImage' | 'imageToImage' | 'inspiration' | 'myVideos' | 'myFavorites' | 'myAccount' | 'pricing' | 'support' | 'workflows'
 
 const navigation: { key: NavKey; href: string; icon: typeof Home }[] = [
   { key: 'home', href: '/home', icon: Home },
@@ -32,6 +34,8 @@ const navigation: { key: NavKey; href: string; icon: typeof Home }[] = [
   { key: 'imageToVideo', href: '/image-to-video', icon: Layers },
   { key: 'textToImage', href: '/text-to-image', icon: ImagePlus },
   { key: 'imageToImage', href: '/image-to-image', icon: Image },
+  { key: 'workflows', href: '/workflows', icon: Workflow },
+  { key: 'inspiration', href: '/inspiration', icon: Sparkles },
   { key: 'myVideos', href: '/my-videos', icon: FolderOpen },
   { key: 'myFavorites', href: '/my-favorites', icon: Heart },
   { key: 'myAccount', href: '/my-account', icon: User },
@@ -110,8 +114,9 @@ const SidebarUserSection = memo(function SidebarUserSection({
   onClose: () => void
 }) {
   const { user, logout } = useAuth()
-  const { credits, currentPlan } = useCredits()
+  const { credits, currentPlan, freemium } = useCredits()
   const { t } = useLanguage()
+  const currentPlanName = currentPlan.id === null ? t.settings.payment.planFallback : currentPlan.name
 
   return (
     <div className="p-3 border-t border-dark-800 flex-none">
@@ -125,13 +130,20 @@ const SidebarUserSection = memo(function SidebarUserSection({
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-dark-400 uppercase tracking-wide">{t.common.credits}</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-400 font-medium">
-              {currentPlan.name}
+              {currentPlanName}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary-400" />
             <span className="text-2xl font-bold text-white">{credits}</span>
           </div>
+          {freemium?.isEligible && (
+            <div className="mt-1 text-xs text-dark-300">
+              {t.freemium.dailyRemaining
+                .replace('{remaining}', String(freemium.remainingToday))
+                .replace('{limit}', String(freemium.dailyLimit))}
+            </div>
+          )}
           <div className="mt-2 text-xs text-primary-400 flex items-center gap-1">
             <span>{t.common.upgradeAvailable}</span>
             <ChevronRight className="w-3 h-3" />

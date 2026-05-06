@@ -101,12 +101,6 @@ export default function AuthPage() {
   const seoPages = getSeoPages(t)
   useSEO({
     ...seoPages.auth,
-    hreflang: {
-      'pt-BR': '/auth?lang=pt',
-      en: '/auth?lang=en',
-      es: '/auth?lang=es',
-      'x-default': '/auth',
-    },
     structuredData: {
       '@context': 'https://schema.org',
       '@type': 'WebPage',

@@ -1,19 +1,26 @@
-import { Check, Sparkles, Zap, Crown, Building2, ArrowLeft } from 'lucide-react'
+import { Check, Sparkles, Zap, Crown, Building2, Rocket, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import BrandLogo from '@/components/BrandLogo'
 import { useLanguage } from '@/i18n'
 import { useSEO, getSeoPages } from '@/hooks'
-import { PLANS } from '@/contexts/CreditsContext'
+import { PLANS, type Plan } from '@/contexts/CreditsContext'
 
 const planIcons: Record<string, typeof Zap> = {
+  starter: Rocket,
   creator: Zap,
   studio: Crown,
   director: Building2,
 }
 
+type PaidPlan = Plan & { id: Exclude<Plan['id'], null> }
+
+function isPaidPlan(plan: Plan): plan is PaidPlan {
+  return plan.id !== null
+}
+
 // Use centralized plans from CreditsContext
-const publicPlans = PLANS
+const publicPlans = PLANS.filter(isPaidPlan)
 
 export default function PublicPricingPage() {
   const { t } = useLanguage()
@@ -46,9 +53,10 @@ export default function PublicPricingPage() {
     canonical: getSeoPages(t).publicPricing.canonical,
     image: getSeoPages(t).publicPricing.image,
     hreflang: {
-      'pt-BR': '/plans?lang=pt',
-      en: '/plans?lang=en',
-      es: '/plans?lang=es',
+      'pt-BR': '/pt/plans',
+      en: '/plans',
+      es: '/es/plans',
+      id: '/id/plans',
       'x-default': '/plans',
     },
     structuredData: [
@@ -139,8 +147,9 @@ export default function PublicPricingPage() {
           {publicPlans.map((planItem) => {
             const Icon = planIcons[planItem.id] ?? Sparkles
             const isPopular = planItem.popular
+            const annualMonthlyPrice = planItem.annualMonthlyPrice ?? planItem.price
             const hasAnnualMonthlyPrice = typeof planItem.annualMonthlyPrice === 'number'
-            const effectivePrice = billingPeriod === 'annual' && hasAnnualMonthlyPrice ? planItem.annualMonthlyPrice : planItem.price
+            const effectivePrice = billingPeriod === 'annual' ? annualMonthlyPrice : planItem.price
             const showStruckMonthlyPrice = billingPeriod === 'annual' && hasAnnualMonthlyPrice && planItem.price > effectivePrice
             const discountPercent = showStruckMonthlyPrice
               ? Math.round(((planItem.price - effectivePrice) / planItem.price) * 100)

@@ -42,18 +42,7 @@ export default function MyFavoritesPage() {
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set())
   const dateLocale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : 'en-US'
 
-  useEffect(() => {
-    if (user) {
-      loadFavorites()
-    }
-  }, [user])
-
-  useEffect(() => {
-    const title = t.myFavorites.title
-    document.title = `${title} | Lumivids`
-  }, [t])
-
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
     if (!user) return
     
     setLoading(true)
@@ -66,7 +55,18 @@ export default function MyFavoritesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast, t.toast.errorLoadingData, user])
+
+  useEffect(() => {
+    if (user) {
+      void loadFavorites()
+    }
+  }, [user, loadFavorites])
+
+  useEffect(() => {
+    const title = t.myFavorites.title
+    document.title = `${title} | Lumivids`
+  }, [t])
 
   const filteredFavorites = favorites.filter((item) => {
     const itemType = item.type === 'text-to-video' || item.type === 'image-to-video' ? 'video' : 'image'
@@ -419,10 +419,10 @@ export default function MyFavoritesPage() {
       return
     }
 
-    const reason = window.prompt('Motivo da denúncia:', 'Conteúdo impróprio')?.trim()
+    const reason = window.prompt(t.reporting.reasonPrompt, t.reporting.defaultReason)?.trim()
     if (!reason) return
 
-    const details = window.prompt('Detalhes (opcional):')?.trim() || undefined
+    const details = window.prompt(t.reporting.detailsPrompt)?.trim() || undefined
 
     try {
       await createContentFlag({
@@ -431,12 +431,12 @@ export default function MyFavoritesPage() {
         details,
         reporterUserId: user.id,
       })
-      showToast('Denúncia enviada com sucesso.', 'success')
+      showToast(t.reporting.success, 'success')
     } catch (error) {
       console.error('Error reporting favorite generation:', error)
-      showToast('Falha ao enviar denúncia.', 'error')
+      showToast(t.reporting.error, 'error')
     }
-  }, [user?.id, showToast, t.toast.pleaseLogin])
+  }, [user?.id, showToast, t.reporting.reasonPrompt, t.reporting.defaultReason, t.reporting.detailsPrompt, t.reporting.success, t.reporting.error, t.toast.pleaseLogin])
 
   if (loading) {
     return (

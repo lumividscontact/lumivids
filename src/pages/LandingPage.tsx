@@ -1,7 +1,6 @@
 import { 
   Sparkles, 
   Video, 
-  ImagePlus, 
   ArrowRight, 
   Play,
   Menu,
@@ -15,6 +14,7 @@ import LanguageSelector from '@/components/LanguageSelector'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSEO, getSeoPages } from '@/hooks'
 import { PLANS } from '@/contexts/CreditsContext'
+import { trackEvent } from '@/services/analytics'
 import {
   RESOLUTIONS,
   TEXT_TO_VIDEO_MODELS,
@@ -30,26 +30,46 @@ const SOCIAL_LINKS = [
   'https://instagram.com/lumivids',
   'https://youtube.com/@lumivids',
 ]
+const RESOLUTION_PRIORITY = {
+  '480p': 0,
+  '576p': 1,
+  '720p': 2,
+  '768p': 3,
+  '1080p': 4,
+  '1k': 5,
+  '2k': 6,
+  '3k': 7,
+  '4k': 8,
+} as const
+
 const DEMO_VIDEOS = [
   {
     src: 'https://lumivids.com/videos/city.mp4',
     title: 'AI City Demo',
     description: 'Demo reel showing AI-generated city footage created with Lumivids.',
+    thumbnailUrl: 'https://lumivids.com/og/landing.png',
+    uploadDate: '2026-01-15T00:00:00Z',
   },
   {
     src: 'https://lumivids.com/videos/lp/space.mp4',
     title: 'AI Space Demo',
     description: 'Demo reel showing AI-generated space footage created with Lumivids.',
+    thumbnailUrl: 'https://lumivids.com/og/landing.png',
+    uploadDate: '2026-01-15T00:00:00Z',
   },
   {
     src: 'https://lumivids.com/videos/lp/pets.mp4',
     title: 'AI Pets Demo',
     description: 'Demo reel showing AI-generated pet footage created with Lumivids.',
+    thumbnailUrl: 'https://lumivids.com/og/landing.png',
+    uploadDate: '2026-01-15T00:00:00Z',
   },
   {
     src: 'https://lumivids.com/videos/lp/paisagem.mp4',
     title: 'AI Landscape Demo',
     description: 'Demo reel showing AI-generated landscape footage created with Lumivids.',
+    thumbnailUrl: 'https://lumivids.com/og/landing.png',
+    uploadDate: '2026-01-15T00:00:00Z',
   },
 ]
 
@@ -57,7 +77,7 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [isProcessingAuth, setIsProcessingAuth] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { isAuthenticated, isLoading } = useAuth()
   const landingSeo = t.landing.seo
   const faqStructuredData = useMemo(
@@ -78,7 +98,7 @@ export default function LandingPage() {
         },
       }
     }),
-    [t.pricing.faq],
+    [t],
   )
 
   const landingStructuredData = useMemo(() => {
@@ -147,6 +167,8 @@ export default function LandingPage() {
         '@type': 'VideoObject',
         name: video.title,
         description: video.description,
+        thumbnailUrl: video.thumbnailUrl,
+        uploadDate: video.uploadDate,
         contentUrl: video.src,
         embedUrl: video.src,
         publisher: {
@@ -169,9 +191,10 @@ export default function LandingPage() {
     canonical: getSeoPages(t).landing.canonical,
     image: getSeoPages(t).landing.image,
     hreflang: {
-      'pt-BR': '/?lang=pt',
-      en: '/?lang=en',
-      es: '/?lang=es',
+      'pt-BR': '/pt',
+      en: '/',
+      es: '/es',
+      id: '/id',
       'x-default': '/',
     },
     structuredData: landingStructuredData,
@@ -191,7 +214,7 @@ export default function LandingPage() {
     } else {
       setIsProcessingAuth(false)
     }
-  }, [])
+  }, [landingSeo.description, t])
 
   const stats = useMemo(() => {
     const models = [
@@ -209,6 +232,13 @@ export default function LandingPage() {
     const maxResolution = models
       .flatMap((model) => model.supportedResolutions)
       .reduce((bestResolution, candidateResolution) => {
+        const bestPriority = RESOLUTION_PRIORITY[bestResolution] ?? 0
+        const candidatePriority = RESOLUTION_PRIORITY[candidateResolution] ?? 0
+
+        if (candidatePriority !== bestPriority) {
+          return candidatePriority > bestPriority ? candidateResolution : bestResolution
+        }
+
         const bestPixels = RESOLUTIONS[bestResolution].width * RESOLUTIONS[bestResolution].height
         const candidatePixels = RESOLUTIONS[candidateResolution].width * RESOLUTIONS[candidateResolution].height
         return candidatePixels > bestPixels ? candidateResolution : bestResolution
@@ -243,6 +273,15 @@ export default function LandingPage() {
     { key: 'canUpgrade' },
     { key: 'canCancel' },
   ]
+
+  const trackHeroCtaClick = (ctaType: 'primary' | 'secondary', destination: string) => {
+    trackEvent('landing_hero_cta_click', {
+      cta_type: ctaType,
+      destination,
+      language,
+      page_path: '/',
+    })
+  }
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -368,44 +407,75 @@ export default function LandingPage() {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              {t.home.title.split(' ').slice(0, 3).join(' ')}{' '}
-              <span className="gradient-text">{t.home.title.split(' ').slice(3).join(' ')}</span>
+              {t.landing.hero.titlePrefix}{' '}
+              <span className="gradient-text">{t.landing.hero.titleHighlight}</span>
             </h1>
-            
+
             <p className="text-xl text-dark-300 mb-10 max-w-2xl mx-auto">
-              {t.home.subtitle}
+              {t.landing.hero.subtitle}
             </p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-              <Link to="/text-to-video" className="btn-primary text-lg px-8 py-4 flex items-center gap-2 group">
+              <Link
+                to="/text-to-video"
+                onClick={() => trackHeroCtaClick('primary', '/text-to-video')}
+                className="btn-primary text-lg px-8 py-4 flex items-center gap-2 group"
+              >
                 <Video className="w-5 h-5" />
-                {t.nav.textToVideo}
+                {t.landing.hero.primaryCta}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link to="/image-to-video" className="btn-secondary text-lg px-8 py-4 flex items-center gap-2 group border-2 border-dark-600 hover:border-primary-500">
-                <ImagePlus className="w-5 h-5" />
-                {t.nav.imageToVideo}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Link
+                to="/plans"
+                onClick={() => trackHeroCtaClick('secondary', '/plans')}
+                className="text-sm sm:text-base text-dark-300 hover:text-white transition-colors underline decoration-dark-600 hover:decoration-white underline-offset-4"
+              >
+                {t.landing.hero.secondaryCta}
               </Link>
+            </div>
+
+            <p className="text-sm text-dark-400 mb-16 -mt-10">
+              {t.landing.hero.ctaMicrocopy}
+            </p>
+
+            <p className="text-sm text-primary-300 mb-12 -mt-10 font-medium">
+              {t.landing.hero.ctaProof}
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+              <span className="px-3 py-1.5 rounded-full border border-dark-700 bg-dark-900/60 text-xs text-dark-200">
+                {t.landing.hero.trustNoCard}
+              </span>
+              <span className="px-3 py-1.5 rounded-full border border-dark-700 bg-dark-900/60 text-xs text-dark-200">
+                {t.landing.hero.trustCancelAnytime}
+              </span>
+              <span className="px-3 py-1.5 rounded-full border border-dark-700 bg-dark-900/60 text-xs text-dark-200">
+                {t.landing.hero.trustSupport}
+              </span>
             </div>
 
             {/* Video Gallery Preview */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 max-w-4xl mx-auto">
               {DEMO_VIDEOS.map((item, i) => (
-                <div 
-                  key={i} 
-                  className="relative aspect-video rounded-xl overflow-hidden border border-dark-700 group cursor-pointer hover:border-primary-500 transition-all hover:scale-105"
-                  onMouseEnter={(e) => {
-                    const video = e.currentTarget.querySelector('video')
-                    video?.play()
-                  }}
-                  onMouseLeave={(e) => {
-                    const video = e.currentTarget.querySelector('video')
-                    if (video) {
-                      video.pause()
-                      video.currentTime = 0
-                    }
+                <div
+                  key={i}
+                  className="relative aspect-video rounded-xl overflow-hidden border border-dark-700 hover:border-primary-500 transition-all hover:scale-105"
+                  ref={(el) => {
+                    if (!el) return
+                    const video = el.querySelector('video')
+                    if (!video) return
+                    const observer = new IntersectionObserver(
+                      ([entry]) => {
+                        if (entry.isIntersecting) {
+                          video.play().catch(() => {})
+                        } else {
+                          video.pause()
+                        }
+                      },
+                      { threshold: 0.3 },
+                    )
+                    observer.observe(el)
                   }}
                 >
                   <video
@@ -414,17 +484,9 @@ export default function LandingPage() {
                     muted
                     loop
                     playsInline
-                    preload="none"
+                    preload="metadata"
                     aria-label={item.title}
                   />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                      <Play className="w-5 h-5 text-white fill-white" />
-                    </div>
-                  </div>
-                  <div className="absolute bottom-2 left-2 w-6 h-6 rounded-full bg-dark-900/80 flex items-center justify-center">
-                    <Play className="w-3 h-3 text-white fill-white" />
-                  </div>
                 </div>
               ))}
             </div>

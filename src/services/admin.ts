@@ -423,19 +423,21 @@ async function callAdminRpc<T>(rpc: string, params?: Record<string, unknown>): P
 }
 
 const PLAN_MONTHLY_MRR: Record<PaidPlanType, number> = {
+  starter: 7.9,
   creator: 14.9,
   studio: 29.9,
   director: 69.9,
 }
 
 const PLAN_ANNUAL_MONTHLY_MRR: Record<PaidPlanType, number> = {
+  starter: 6.3,
   creator: 11.9,
   studio: 23.9,
   director: 55.9,
 }
 
 function isPaidPlan(plan: PlanType): plan is PaidPlanType {
-  return plan === 'creator' || plan === 'studio' || plan === 'director'
+  return plan === 'starter' || plan === 'creator' || plan === 'studio' || plan === 'director'
 }
 
 /**

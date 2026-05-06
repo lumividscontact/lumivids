@@ -11,6 +11,7 @@ const API_BASE_URL = SUPABASE_URL
 interface ImageUploadProps {
   value: string | null
   onChange: (url: string | null) => void
+  onDimensionsDetected?: (width: number, height: number) => void
   disabled?: boolean
   className?: string
   aspectRatio?: '16:9' | '9:16' | '1:1' | 'auto'
@@ -28,6 +29,7 @@ interface UploadResponse {
 export default function ImageUpload({
   value,
   onChange,
+  onDimensionsDetected,
   disabled = false,
   className = '',
   aspectRatio = 'auto',
@@ -51,7 +53,7 @@ export default function ImageUpload({
     }
   }
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     // Check file type
     if (!acceptedFormats.includes(file.type)) {
       return t.errors.invalidFile
@@ -64,9 +66,9 @@ export default function ImageUpload({
     }
 
     return null
-  }
+  }, [acceptedFormats, maxSizeMB, t.errors.fileTooLarge, t.errors.invalidFile])
 
-  const uploadFile = async (file: File): Promise<string> => {
+  const uploadFile = useCallback(async (file: File): Promise<string> => {
     // In production (Supabase), upload directly to Storage to avoid CORS issues
     if (SUPABASE_URL) {
       setUploadProgress(20)
@@ -121,7 +123,7 @@ export default function ImageUpload({
       xhr.open('POST', `${API_BASE_URL}/api/upload`)
       xhr.send(formData)
     })
-  }
+  }, [t.errors.generic, t.errors.network, t.status.canceled])
 
   const handleFile = useCallback(async (file: File) => {
     setError(null)
@@ -136,6 +138,13 @@ export default function ImageUpload({
     // Create local preview immediately
     const localPreview = URL.createObjectURL(file)
     setPreviewUrl(localPreview)
+
+    // Read image dimensions before upload
+    if (onDimensionsDetected) {
+      const img = new Image()
+      img.onload = () => onDimensionsDetected(img.naturalWidth, img.naturalHeight)
+      img.src = localPreview
+    }
 
     // Upload to server
     setIsUploading(true)
@@ -155,7 +164,7 @@ export default function ImageUpload({
       // Clean up local preview URL
       URL.revokeObjectURL(localPreview)
     }
-  }, [onChange, acceptedFormats, maxSizeMB, t])
+  }, [onChange, onDimensionsDetected, uploadFile, validateFile, t.imageUpload.uploadError])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

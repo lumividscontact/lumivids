@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode, useRef, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import type { PlanType, UserRole } from '@/lib/database.types'
 import { INITIAL_CREDITS, USER_CREDITS_CACHE_KEY } from '@/config/constants'
@@ -196,7 +196,7 @@ function useSupabaseAuth() {
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const isAuthenticatingRef = useRef(false)
 
-  const withTimeout = async <T,>(
+  const withTimeout = useCallback(async <T,>(
     promise: Promise<T>,
     timeoutMs: number,
     timeoutMessage: string
@@ -217,7 +217,7 @@ function useSupabaseAuth() {
         window.clearTimeout(timeoutId)
       }
     }
-  }
+  }, [])
 
   const ensureProfile = async (userId: string, email?: string, name?: string | null, avatarUrl?: string | null) => {
     const preferredLanguage = getStoredRuntimeLanguage() ?? detectRuntimeLanguage()
@@ -285,7 +285,7 @@ function useSupabaseAuth() {
   }
 
   // Create user instantly from auth data (no DB calls) - uses cache for credits
-  const createUserFromAuth = (authUser: { id: string; email?: string | null; user_metadata?: Record<string, any>; created_at?: string }): User => {
+  const createUserFromAuth = useCallback((authUser: { id: string; email?: string | null; user_metadata?: Record<string, any>; created_at?: string }): User => {
     const email = authUser.email ?? ''
     const nameFromMetadata =
       authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.user_metadata?.display_name
@@ -304,10 +304,10 @@ function useSupabaseAuth() {
       role: (cached?.role as UserRole) || ('user' as UserRole),
       createdAt: authUser.created_at,
     }
-  }
+  }, [])
 
   // Load user data from DB and return updates for safe hydration
-  const loadUserDataFromDB = async (userId: string): Promise<Partial<User>> => {
+  const loadUserDataFromDB = useCallback(async (userId: string): Promise<Partial<User>> => {
     try {
       const [profileResult, creditsResult, subscriptionResult] = await Promise.all([
         supabase.from('profiles').select('display_name, email, avatar_url, role, is_suspended, must_reset_password, force_logout_at').eq('user_id', userId).maybeSingle(),
@@ -371,9 +371,9 @@ function useSupabaseAuth() {
       console.warn('[Auth] Failed to load user data from DB:', err)
       return {}
     }
-  }
+  }, [])
 
-  const createHydratedUserFromAuth = async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, any>; created_at?: string }): Promise<User> => {
+  const createHydratedUserFromAuth = useCallback(async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, any>; created_at?: string }): Promise<User> => {
     const baseUser = createUserFromAuth(authUser)
     const updates = await withTimeout(
       loadUserDataFromDB(authUser.id),
@@ -385,9 +385,9 @@ function useSupabaseAuth() {
     setCachedCredits(hydratedUser.id, hydratedUser.credits, hydratedUser.plan, hydratedUser.role)
 
     return hydratedUser
-  }
+  }, [createUserFromAuth, loadUserDataFromDB, withTimeout])
 
-  const enforceAccountState = async (userId: string, lastSignInAt?: string | null): Promise<boolean> => {
+  const enforceAccountState = useCallback(async (userId: string, lastSignInAt?: string | null): Promise<boolean> => {
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('is_suspended, force_logout_at')
@@ -418,7 +418,7 @@ function useSupabaseAuth() {
     }
 
     return false
-  }
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -554,7 +554,7 @@ function useSupabaseAuth() {
       isMounted = false
       authListener.subscription.unsubscribe()
     }
-  }, [])
+  }, [createHydratedUserFromAuth, createUserFromAuth, enforceAccountState, withTimeout])
 
   const login = async (email: string, password: string) => {
     setIsAuthenticating(true)
@@ -608,7 +608,7 @@ function useSupabaseAuth() {
     return () => {
       window.clearInterval(interval)
     }
-  }, [user?.id])
+  }, [enforceAccountState, user?.id])
 
   const register = async (name: string, email: string, password: string) => {
     setIsAuthenticating(true)

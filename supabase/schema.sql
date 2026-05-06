@@ -184,6 +184,7 @@ CREATE TABLE IF NOT EXISTS public.user_credits (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
   credits INTEGER DEFAULT 10 NOT NULL CHECK (credits >= 0),
   lifetime_credits INTEGER DEFAULT 10 NOT NULL,
+  free_bonus_days_used INTEGER DEFAULT 1 NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -267,8 +268,11 @@ CREATE TABLE IF NOT EXISTS public.generations (
   view_count INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  completed_at TIMESTAMPTZ
+  completed_at TIMESTAMPTZ,
+  hidden_at TIMESTAMPTZ
 );
+
+ALTER TABLE public.generations ADD COLUMN IF NOT EXISTS hidden_at TIMESTAMPTZ;
 
 ALTER TABLE public.generations ENABLE ROW LEVEL SECURITY;
 
@@ -299,9 +303,6 @@ CREATE POLICY "Admins can update all generations"
   WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS "Users can delete their own generations" ON public.generations;
-CREATE POLICY "Users can delete their own generations"
-  ON public.generations FOR DELETE
-  USING (auth.uid() = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_generations_user_id ON public.generations(user_id);
 CREATE INDEX IF NOT EXISTS idx_generations_status ON public.generations(status);
@@ -311,9 +312,42 @@ CREATE INDEX IF NOT EXISTS idx_generations_replicate_id ON public.generations(re
 CREATE INDEX IF NOT EXISTS idx_generations_model_id ON public.generations(model_id);
 CREATE INDEX IF NOT EXISTS idx_generations_user_created_at ON public.generations(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_generations_user_replicate_id ON public.generations(user_id, replicate_prediction_id);
+CREATE INDEX IF NOT EXISTS idx_generations_user_hidden_created_at ON public.generations(user_id, hidden_at, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_generations_stale_cleanup
   ON public.generations(status, updated_at)
   WHERE status IN ('starting', 'processing');
+
+-- =============================================
+-- GENERATIONS_AUDIT
+-- =============================================
+CREATE TABLE IF NOT EXISTS public.generations_audit (
+  id BIGSERIAL PRIMARY KEY,
+  generation_id UUID,
+  user_id UUID,
+  replicate_prediction_id TEXT,
+  event_type TEXT NOT NULL CHECK (event_type IN ('insert', 'update', 'delete')),
+  actor_user_id UUID,
+  actor_role TEXT,
+  row_before JSONB,
+  row_after JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_generations_audit_generation_id
+  ON public.generations_audit(generation_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_generations_audit_prediction_id
+  ON public.generations_audit(replicate_prediction_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_generations_audit_user_id
+  ON public.generations_audit(user_id, created_at DESC);
+
+ALTER TABLE public.generations_audit ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins can view generations audit" ON public.generations_audit;
+CREATE POLICY "Admins can view generations audit"
+  ON public.generations_audit FOR SELECT
+  USING (public.is_admin());
 
 -- =============================================
 -- GENERATED_VIDEOS
@@ -350,7 +384,7 @@ CREATE POLICY "Users can delete their own videos"
   USING (auth.uid() = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_generated_videos_user_id ON public.generated_videos(user_id);
-CREATE INDEX IF NOT EXISTS idx_generated_videos_generation_id ON public.generated_videos(generation_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_generated_videos_generation_id ON public.generated_videos(generation_id);
 
 -- =============================================
 -- FAVORITES
@@ -779,6 +813,84 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+CREATE OR REPLACE FUNCTION public.audit_generations_changes()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO public.generations_audit (
+      generation_id,
+      user_id,
+      replicate_prediction_id,
+      event_type,
+      actor_user_id,
+      actor_role,
+      row_before,
+      row_after
+    )
+    VALUES (
+      NEW.id,
+      NEW.user_id,
+      NEW.replicate_prediction_id,
+      'insert',
+      auth.uid(),
+      auth.role(),
+      NULL,
+      to_jsonb(NEW)
+    );
+
+    RETURN NEW;
+  ELSIF TG_OP = 'UPDATE' THEN
+    INSERT INTO public.generations_audit (
+      generation_id,
+      user_id,
+      replicate_prediction_id,
+      event_type,
+      actor_user_id,
+      actor_role,
+      row_before,
+      row_after
+    )
+    VALUES (
+      NEW.id,
+      NEW.user_id,
+      COALESCE(NEW.replicate_prediction_id, OLD.replicate_prediction_id),
+      'update',
+      auth.uid(),
+      auth.role(),
+      to_jsonb(OLD),
+      to_jsonb(NEW)
+    );
+
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    INSERT INTO public.generations_audit (
+      generation_id,
+      user_id,
+      replicate_prediction_id,
+      event_type,
+      actor_user_id,
+      actor_role,
+      row_before,
+      row_after
+    )
+    VALUES (
+      OLD.id,
+      OLD.user_id,
+      OLD.replicate_prediction_id,
+      'delete',
+      auth.uid(),
+      auth.role(),
+      to_jsonb(OLD),
+      NULL
+    );
+
+    RETURN OLD;
+  END IF;
+
+  RETURN NULL;
+END;
+$$ language 'plpgsql' SECURITY DEFINER SET search_path = public;
+
 DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON public.profiles
@@ -802,6 +914,12 @@ CREATE TRIGGER update_generations_updated_at
   BEFORE UPDATE ON public.generations
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS audit_generations_changes ON public.generations;
+CREATE TRIGGER audit_generations_changes
+  AFTER INSERT OR UPDATE OR DELETE ON public.generations
+  FOR EACH ROW
+  EXECUTE FUNCTION public.audit_generations_changes();
 
 DROP TRIGGER IF EXISTS update_saved_prompts_updated_at ON public.saved_prompts;
 CREATE TRIGGER update_saved_prompts_updated_at
@@ -1685,6 +1803,7 @@ BEGIN
       date_trunc('month', COALESCE(s.current_period_start, s.created_at))::DATE AS month_start,
       SUM(
         CASE
+          WHEN s.plan = 'starter' THEN CASE WHEN COALESCE(s.stripe_price_id, '') ~* '(annual|year)' THEN 6.3 ELSE 7.9 END
           WHEN s.plan = 'creator' THEN CASE WHEN COALESCE(s.stripe_price_id, '') ~* '(annual|year)' THEN 11.9 ELSE 14.9 END
           WHEN s.plan = 'studio' THEN CASE WHEN COALESCE(s.stripe_price_id, '') ~* '(annual|year)' THEN 23.9 ELSE 29.9 END
           WHEN s.plan = 'director' THEN CASE WHEN COALESCE(s.stripe_price_id, '') ~* '(annual|year)' THEN 55.9 ELSE 69.9 END

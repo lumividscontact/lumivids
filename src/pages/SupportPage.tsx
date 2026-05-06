@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { LifeBuoy, Loader2, MessageSquare, Send } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/i18n'
 import {
   createSupportTicketByUser,
   fetchMySupportTickets,
@@ -14,6 +15,9 @@ type TicketStatusFilter = 'all' | 'open' | 'in_progress' | 'resolved' | 'closed'
 
 export default function SupportPage() {
   const { user } = useAuth()
+  const { t, language } = useLanguage()
+  const supportT = t.supportPage
+  const locale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : 'en-US'
 
   const [tickets, setTickets] = useState<SupportTicketRow[]>([])
   const [statusFilter, setStatusFilter] = useState<TicketStatusFilter>('all')
@@ -29,6 +33,19 @@ export default function SupportPage() {
 
   const [reply, setReply] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
+
+  const statusLabels: Record<Exclude<TicketStatusFilter, 'all'>, string> = {
+    open: supportT.statusOpen,
+    in_progress: supportT.statusInProgress,
+    resolved: supportT.statusResolved,
+    closed: supportT.statusClosed,
+  }
+
+  const senderLabels: Record<SupportMessageRow['sender_role'], string> = {
+    admin: supportT.senderAdmin,
+    user: supportT.senderUser,
+    system: supportT.senderSystem,
+  }
 
   const loadTickets = useCallback(async () => {
     setLoadingTickets(true)
@@ -97,7 +114,7 @@ export default function SupportPage() {
       if (created) setSelectedTicket(created)
     } catch (error) {
       console.error('[SupportPage] Failed to create ticket:', error)
-      window.alert(error instanceof Error ? error.message : 'Falha ao criar ticket')
+      window.alert(supportT.createTicketError)
     } finally {
       setCreatingTicket(false)
     }
@@ -118,7 +135,7 @@ export default function SupportPage() {
       await Promise.all([loadMessages(selectedTicket.id), loadTickets()])
     } catch (error) {
       console.error('[SupportPage] Failed to send message:', error)
-      window.alert(error instanceof Error ? error.message : 'Falha ao enviar mensagem')
+      window.alert(supportT.sendMessageError)
     } finally {
       setSendingReply(false)
     }
@@ -129,21 +146,21 @@ export default function SupportPage() {
       <div className="rounded-2xl border border-dark-700 bg-dark-800/40 p-4">
         <h2 className="text-lg font-semibold text-white inline-flex items-center gap-2">
           <LifeBuoy className="w-5 h-5 text-primary-400" />
-          Suporte
+          {supportT.title}
         </h2>
-        <p className="text-sm text-dark-400 mt-1">Abra tickets e converse com nossa equipe.</p>
+        <p className="text-sm text-dark-400 mt-1">{supportT.subtitle}</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mt-4">
           <input
             value={newSubject}
             onChange={(e) => setNewSubject(e.target.value)}
-            placeholder="Assunto"
+            placeholder={supportT.subjectPlaceholder}
             className="px-3 py-2 rounded-xl bg-dark-900 border border-dark-700 text-white text-sm"
           />
           <input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Mensagem inicial"
+            placeholder={supportT.messagePlaceholder}
             className="px-3 py-2 rounded-xl bg-dark-900 border border-dark-700 text-white text-sm lg:col-span-2"
           />
         </div>
@@ -153,24 +170,24 @@ export default function SupportPage() {
           disabled={creatingTicket || !newSubject.trim() || !newMessage.trim()}
           className="mt-3 btn-primary text-sm px-4 py-2 disabled:opacity-40"
         >
-          {creatingTicket ? 'Criando...' : 'Criar ticket'}
+          {creatingTicket ? supportT.creatingTicket : supportT.createTicket}
         </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-dark-700 bg-dark-800/40 overflow-hidden">
           <div className="p-4 border-b border-dark-700 flex items-center justify-between gap-2">
-            <h3 className="text-white font-semibold">Meus tickets</h3>
+            <h3 className="text-white font-semibold">{supportT.myTickets}</h3>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as TicketStatusFilter)}
               className="px-2 py-1.5 rounded-lg bg-dark-900 border border-dark-700 text-xs text-white"
             >
-              <option value="all">Todos</option>
-              <option value="open">Abertos</option>
-              <option value="in_progress">Em andamento</option>
-              <option value="resolved">Resolvidos</option>
-              <option value="closed">Fechados</option>
+              <option value="all">{supportT.filterAll}</option>
+              <option value="open">{supportT.statusOpen}</option>
+              <option value="in_progress">{supportT.statusInProgress}</option>
+              <option value="resolved">{supportT.statusResolved}</option>
+              <option value="closed">{supportT.statusClosed}</option>
             </select>
           </div>
 
@@ -180,7 +197,7 @@ export default function SupportPage() {
                 <Loader2 className="w-5 h-5 animate-spin text-primary-400" />
               </div>
             ) : tickets.length === 0 ? (
-              <p className="p-4 text-sm text-dark-500">Você ainda não tem tickets.</p>
+              <p className="p-4 text-sm text-dark-500">{supportT.emptyTickets}</p>
             ) : (
               tickets.map((ticket) => (
                 <button
@@ -189,7 +206,7 @@ export default function SupportPage() {
                   className={`w-full text-left p-3 transition-colors ${selectedTicket?.id === ticket.id ? 'bg-dark-700/50' : 'hover:bg-dark-800/40'}`}
                 >
                   <p className="text-sm text-white truncate">{ticket.subject}</p>
-                  <p className="text-xs text-dark-400 mt-1">{ticket.status} · {new Date(ticket.updated_at).toLocaleString()}</p>
+                  <p className="text-xs text-dark-400 mt-1">{statusLabels[ticket.status]} · {new Date(ticket.updated_at).toLocaleString(locale)}</p>
                 </button>
               ))
             )}
@@ -199,26 +216,26 @@ export default function SupportPage() {
         <div className="rounded-2xl border border-dark-700 bg-dark-800/40 overflow-hidden xl:col-span-2">
           <div className="p-4 border-b border-dark-700 flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-primary-400" />
-            <h3 className="text-white font-semibold">{selectedTicket ? selectedTicket.subject : 'Conversa'}</h3>
+            <h3 className="text-white font-semibold">{selectedTicket ? selectedTicket.subject : supportT.conversation}</h3>
           </div>
 
           <div className="max-h-[24rem] overflow-y-auto divide-y divide-dark-800">
             {!selectedTicket ? (
-              <p className="p-4 text-sm text-dark-500">Selecione um ticket para ver as mensagens.</p>
+              <p className="p-4 text-sm text-dark-500">{supportT.selectTicket}</p>
             ) : loadingMessages ? (
               <div className="p-6 flex items-center justify-center">
                 <Loader2 className="w-5 h-5 animate-spin text-primary-400" />
               </div>
             ) : messages.length === 0 ? (
-              <p className="p-4 text-sm text-dark-500">Sem mensagens ainda.</p>
+              <p className="p-4 text-sm text-dark-500">{supportT.emptyMessages}</p>
             ) : (
               messages.map((message) => (
                 <div key={message.id} className="p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className={`text-xs ${message.sender_role === 'admin' ? 'text-primary-300' : 'text-dark-400'}`}>
-                      {message.sender_role}
+                      {senderLabels[message.sender_role]}
                     </span>
-                    <span className="text-xs text-dark-500">{new Date(message.created_at).toLocaleString()}</span>
+                    <span className="text-xs text-dark-500">{new Date(message.created_at).toLocaleString(locale)}</span>
                   </div>
                   <p className="text-sm text-white mt-1 whitespace-pre-wrap">{message.message}</p>
                 </div>
@@ -230,7 +247,7 @@ export default function SupportPage() {
             <input
               value={reply}
               onChange={(e) => setReply(e.target.value)}
-              placeholder="Escreva sua mensagem..."
+              placeholder={supportT.replyPlaceholder}
               disabled={!selectedTicket || sendingReply}
               className="flex-1 px-3 py-2 rounded-xl bg-dark-900 border border-dark-700 text-white text-sm disabled:opacity-50"
             />
@@ -240,7 +257,7 @@ export default function SupportPage() {
               className="btn-primary text-sm px-3 py-2 disabled:opacity-40 inline-flex items-center gap-1"
             >
               <Send className="w-4 h-4" />
-              {sendingReply ? 'Enviando...' : 'Enviar'}
+              {sendingReply ? supportT.sending : supportT.send}
             </button>
           </div>
         </div>

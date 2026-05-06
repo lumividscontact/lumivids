@@ -9,11 +9,11 @@ export type Json =
 // Enums
 export type GenerationType = 'text-to-video' | 'image-to-video' | 'text-to-image' | 'image-to-image'
 export type GenerationStatus = 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled'
-export type PlanType = 'creator' | 'studio' | 'director' | null
+export type PlanType = 'starter' | 'creator' | 'studio' | 'director' | null
 export type PaidPlanType = Exclude<PlanType, null>
 export type AdminTargetPlan = 'all' | 'free' | PaidPlanType
 export type TransactionType = 'purchase' | 'usage' | 'refund' | 'bonus' | 'subscription'
-export type LanguageType = 'pt' | 'en' | 'es'
+export type LanguageType = 'pt' | 'en' | 'es' | 'id'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete'
 export type NotificationType = 'generation_complete' | 'generation_failed' | 'credits_low' | 'subscription' | 'system'
 export type UserRole = 'user' | 'admin'
@@ -234,6 +234,7 @@ export interface Database {
           created_at: string
           updated_at: string
           completed_at: string | null
+          hidden_at: string | null
         }
         Insert: {
           id?: string
@@ -256,6 +257,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
           completed_at?: string | null
+          hidden_at?: string | null
         }
         Update: {
           id?: string
@@ -278,6 +280,52 @@ export interface Database {
           created_at?: string
           updated_at?: string
           completed_at?: string | null
+          hidden_at?: string | null
+        }
+      }
+
+      // =============================================
+      // GENERATED_VIDEOS
+      // =============================================
+      generated_videos: {
+        Row: {
+          id: string
+          user_id: string
+          generation_id: string
+          video_url: string
+          thumbnail_url: string | null
+          duration_seconds: number | null
+          resolution: string | null
+          aspect_ratio: string | null
+          file_size_bytes: number | null
+          format: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          generation_id: string
+          video_url: string
+          thumbnail_url?: string | null
+          duration_seconds?: number | null
+          resolution?: string | null
+          aspect_ratio?: string | null
+          file_size_bytes?: number | null
+          format?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          generation_id?: string
+          video_url?: string
+          thumbnail_url?: string | null
+          duration_seconds?: number | null
+          resolution?: string | null
+          aspect_ratio?: string | null
+          file_size_bytes?: number | null
+          format?: string | null
+          created_at?: string
         }
       }
 

@@ -2,30 +2,34 @@ import { createContext, useContext, useState, useCallback, ReactNode, useEffect,
 import { pt } from './translations/pt'
 import { en } from './translations/en'
 import { es } from './translations/es'
-import { detectRuntimeLanguage, getStoredRuntimeLanguage, setStoredRuntimeLanguage } from './runtime'
+import { id } from './translations/id'
+import { buildPathForLanguage, getRuntimeLanguage, getStoredRuntimeLanguage, setStoredRuntimeLanguage } from './runtime'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
-export type Language = 'pt' | 'en' | 'es'
+export type Language = 'pt' | 'en' | 'es' | 'id'
 
 export const languages: { code: Language; name: string; flag: string }[] = [
   { code: 'pt', name: 'Português', flag: '🇧🇷' },
   { code: 'en', name: 'English', flag: '🇺🇸' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
 ]
 
-type AnyRecord = Record<string, unknown> | unknown[]
+type AnyRecord = Record<string, unknown>
+
+function isPlainObject(value: unknown): value is AnyRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 function mergeTranslations(base: AnyRecord, target: AnyRecord): AnyRecord {
-  const result: AnyRecord = Array.isArray(base) ? [] : {}
+  const result: AnyRecord = {}
   const keys = new Set([...Object.keys(base), ...Object.keys(target)])
   keys.forEach((key) => {
     const baseValue = base[key]
     const targetValue = target[key]
-    if (baseValue && typeof baseValue === 'object' && !Array.isArray(baseValue)) {
-      const targetObject = (targetValue && typeof targetValue === 'object' && !Array.isArray(targetValue))
-        ? (targetValue as AnyRecord)
-        : {}
-      result[key] = mergeTranslations(baseValue as AnyRecord, targetObject)
+    if (isPlainObject(baseValue)) {
+      const targetObject = isPlainObject(targetValue) ? targetValue : {}
+      result[key] = mergeTranslations(baseValue, targetObject)
       return
     }
     result[key] = targetValue === undefined ? baseValue : targetValue
@@ -39,6 +43,7 @@ const TRANSLATIONS: Record<Language, TranslationKeys> = {
   pt,
   en: mergeTranslations(pt as AnyRecord, en as AnyRecord) as TranslationKeys,
   es: mergeTranslations(pt as AnyRecord, es as AnyRecord) as TranslationKeys,
+  id: mergeTranslations(pt as AnyRecord, id as AnyRecord) as TranslationKeys,
 }
 
 interface LanguageContextType {
@@ -55,14 +60,15 @@ const HTML_LANG_BY_APP_LANGUAGE: Record<Language, string> = {
   pt: 'pt-BR',
   en: 'en',
   es: 'es',
+  id: 'id',
 }
 
 function isLanguage(value: string | null | undefined): value is Language {
-  return value === 'pt' || value === 'en' || value === 'es'
+  return value === 'pt' || value === 'en' || value === 'es' || value === 'id'
 }
 
 function getInitialLanguage(): Language {
-  return getStoredRuntimeLanguage() ?? detectRuntimeLanguage()
+  return getRuntimeLanguage()
 }
 
 function getTranslation(language: Language): TranslationKeys {
@@ -91,6 +97,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLanguageState(lang)
     setStoredRuntimeLanguage(lang)
 
+    if (typeof window !== 'undefined') {
+      const targetPath = buildPathForLanguage(window.location.pathname, lang)
+      const currentPath = window.location.pathname
+      if (targetPath !== currentPath) {
+        const targetUrl = `${targetPath}${window.location.search}${window.location.hash}`
+        window.location.assign(targetUrl)
+        return
+      }
+    }
+
     const authenticatedUserId = authenticatedUserIdRef.current
     if (isSupabaseConfigured && authenticatedUserId) {
       void persistProfileLanguage(authenticatedUserId, lang)
@@ -117,7 +133,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       }
 
       const storedLanguage = getStoredRuntimeLanguage()
-      const detectedLanguage = detectRuntimeLanguage()
+      const detectedLanguage = getRuntimeLanguage()
       const fallbackLanguage = storedLanguage ?? detectedLanguage
 
       const { data, error } = await supabase

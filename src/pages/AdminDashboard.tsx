@@ -301,6 +301,7 @@ function UserRow({
       case 'director': return 'bg-yellow-500/20 text-yellow-400'
       case 'studio': return 'bg-purple-500/20 text-purple-400'
       case 'creator': return 'bg-blue-500/20 text-blue-400'
+      case 'starter': return 'bg-green-500/20 text-green-400'
       default: return 'bg-dark-700 text-dark-400'
     }
   })()
@@ -345,6 +346,7 @@ function UserRow({
             disabled={busyAction === 'plan'}
           >
             <option value="">free</option>
+            <option value="starter">starter</option>
             <option value="creator">creator</option>
             <option value="studio">studio</option>
             <option value="director">director</option>
@@ -1316,11 +1318,11 @@ export default function AdminDashboard() {
     csvLines.push(`kpi,conversion_rate_percent,${reportsData.conversionRate}`)
 
     reportsData.topModels.forEach((row) => {
-      csvLines.push(`top_models,${row.model.replaceAll(',', ' ')},${row.count}`)
+      csvLines.push(`top_models,${row.model.replace(/,/g, ' ')},${row.count}`)
     })
 
     reportsData.topUsersByCredits.forEach((row) => {
-      csvLines.push(`top_users_credits,${(row.name || '—').replaceAll(',', ' ')}|${(row.email || '—').replaceAll(',', ' ')},${row.creditsUsed}`)
+      csvLines.push(`top_users_credits,${(row.name || '—').replace(/,/g, ' ')}|${(row.email || '—').replace(/,/g, ' ')},${row.creditsUsed}`)
     })
 
     const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' })
@@ -1920,6 +1922,7 @@ export default function AdminDashboard() {
                     <select value={bulkCreditsPlan} onChange={(e) => setBulkCreditsPlan(e.target.value as AdminTargetPlan)} className="px-3 py-2 rounded-xl bg-dark-900 border border-dark-700 text-white text-sm">
                       <option value="all">Todos planos</option>
                       <option value="free">Free</option>
+                      <option value="starter">Starter</option>
                       <option value="creator">Creator</option>
                       <option value="studio">Studio</option>
                       <option value="director">Director</option>
@@ -1948,6 +1951,7 @@ export default function AdminDashboard() {
                       <select value={notifyPlan} onChange={(e) => setNotifyPlan(e.target.value as AdminTargetPlan)} className="px-3 py-2 rounded-xl bg-dark-900 border border-dark-700 text-white text-sm">
                         <option value="all">Todos planos</option>
                         <option value="free">Free</option>
+                        <option value="starter">Starter</option>
                         <option value="creator">Creator</option>
                         <option value="studio">Studio</option>
                         <option value="director">Director</option>

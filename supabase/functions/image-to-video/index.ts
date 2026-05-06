@@ -15,6 +15,8 @@ serve(async (req) => {
   // Track for potential refund
   let userId: string | null = null
   let creditsDeducted = 0
+  let predictionId: string | null = null
+  let generationPersisted = false
 
   try {
     // Authenticate user
@@ -52,7 +54,8 @@ serve(async (req) => {
       aspectRatio = '16:9',
       duration = '5',
       resolution = '720p',
-      motionStrength = 50
+      motionStrength = 50,
+      withAudio = false
     } = await req.json()
 
     if (!imageUrl) {
@@ -119,15 +122,17 @@ serve(async (req) => {
       model,
       duration: billingDuration,
       resolution: billingResolution,
+      withAudio,
     })
 
     // Deduct credits BEFORE starting generation
     const deductResult = await deductCredits(userId, cost, `Image to Video: ${model}`)
     if (!deductResult.success) {
       const balanceCheck = await checkCredits(userId, cost)
+        const isDailyLimit = deductResult.error === 'DAILY_LIMIT_REACHED'
       return new Response(JSON.stringify({ 
-        error: deductResult.error || 'Insufficient credits',
-        code: 'INSUFFICIENT_CREDITS',
+          error: isDailyLimit ? 'Daily free limit reached' : (deductResult.error || 'Insufficient credits'),
+          code: isDailyLimit ? 'DAILY_LIMIT_REACHED' : 'INSUFFICIENT_CREDITS',
         required: cost,
         current: balanceCheck.currentBalance,
         billing: {
@@ -149,7 +154,23 @@ serve(async (req) => {
     let input: Record<string, any> = {}
     const dims = resolutionMap[billingResolution]?.[aspectRatio] || resolutionMap['720p']['16:9']
 
-    if (modelId.includes('luma')) {
+    if (model === 'grok-imagine-video-img') {
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        image: imageUrl,
+        duration: Math.min(Math.max(requestedDuration, 1), 15),
+        resolution: billingResolution === '480p' ? '480p' : '720p',
+        aspect_ratio: aspectRatio,
+      }
+    } else if (model === 'seedance-2.0-img') {
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        image: imageUrl,
+        duration: Math.min(Math.max(requestedDuration, 5), 15),
+        resolution: billingResolution === '480p' ? '480p' : '720p',
+        aspect_ratio: aspectRatio,
+      }
+    } else if (modelId.includes('luma')) {
       input = {
         prompt: prompt || 'animate this image with natural motion',
         start_image_url: imageUrl,
@@ -175,7 +196,7 @@ serve(async (req) => {
         height: dims[1],
         aspect_ratio: aspectRatio,
       }
-    } else if (modelId.includes('kling')) {
+    } else if (modelId.includes('kling') && !modelId.includes('kling-v3-omni')) {
       const isKlingV2 = modelId.includes('kling-v2.')
       const isKlingV21 = model === 'kling-v2.1' || modelId.includes('kling-v2.1')
       input = {
@@ -199,6 +220,13 @@ serve(async (req) => {
         resolution: billingResolution,
         generate_audio: false,
       }
+    } else if (modelId.includes('runwayml/gen-4.5')) {
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        image: imageUrl,
+        duration: Math.min(Math.max(requestedDuration, 5), 10),
+        aspect_ratio: aspectRatio,
+      }
     } else if (modelId.includes('openai') && modelId.includes('sora')) {
       const soraAspect = aspectRatio === '1:1' ? '16:9' : aspectRatio
       input = {
@@ -210,6 +238,28 @@ serve(async (req) => {
       if (modelId.includes('sora-2-pro')) {
         input.quality = billingResolution === '1080p' ? 'high' : 'standard'
       }
+    } else if (model.startsWith('p-video-')) {
+      const pDraft = model.includes('-draft')
+      const pResolution = requestedResolution === '1080p' ? '1080p' : '720p'
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        image: imageUrl,
+        resolution: pResolution,
+        draft: pDraft,
+        save_audio: withAudio || false,
+        duration: requestedDuration,
+        aspect_ratio: aspectRatio,
+      }
+    } else if (model.startsWith('kling-v3-omni')) {
+      const klingMode = billingResolution === '4k' ? '4k' : billingResolution === '1080p' ? 'pro' : 'standard'
+      input = {
+        prompt: prompt || 'animate this image with natural motion',
+        start_image: imageUrl,
+        mode: klingMode,
+        generate_audio: withAudio || false,
+        duration: Math.min(Math.max(requestedDuration, 3), 15),
+        aspect_ratio: aspectRatio,
+      }
     }
 
     console.log(`[Image2Video] Model: ${modelId}`)
@@ -218,6 +268,7 @@ serve(async (req) => {
       model: modelId,
       input,
     })
+    predictionId = prediction.id
 
     await persistGenerationStart({
       userId,
@@ -234,9 +285,11 @@ serve(async (req) => {
         aspectRatio,
         duration: billingDuration,
         resolution: billingResolution,
+        withAudio,
         motionStrength,
       },
     })
+    generationPersisted = true
 
     return new Response(JSON.stringify({
       id: prediction.id,
@@ -251,8 +304,26 @@ serve(async (req) => {
     
     // Refund credits if generation failed before starting
     if (userId && creditsDeducted > 0) {
-      console.log(`[Image2Video] Refunding ${creditsDeducted} credits to user ${userId}`)
-      await refundCredits(userId, creditsDeducted, 'Image to Video failed')
+      let canRefund = true
+
+      if (predictionId && !generationPersisted) {
+        try {
+          const replicate = getReplicate()
+          await replicate.predictions.cancel(predictionId)
+          console.warn(`[Image2Video] Canceled orphaned prediction ${predictionId} after persistence failure`)
+        } catch (cancelError) {
+          canRefund = false
+          console.error(
+            `[Image2Video] Failed to cancel orphaned prediction ${predictionId}; skipping refund to avoid free delivery`,
+            cancelError,
+          )
+        }
+      }
+
+      if (canRefund) {
+        console.log(`[Image2Video] Refunding ${creditsDeducted} credits to user ${userId}`)
+        await refundCredits(userId, creditsDeducted, 'Image to Video failed')
+      }
     }
     
     return new Response(JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' }), {
