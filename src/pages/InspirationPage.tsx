@@ -13,6 +13,24 @@ function generationTypeToMediaType(type: string): 'video' | 'image' {
   return type === 'text-to-image' || type === 'image-to-image' ? 'image' : 'video'
 }
 
+function isReplicateUrl(url: string | null | undefined): boolean {
+  return typeof url === 'string' && (url.includes('replicate.delivery') || url.includes('replicate.com'))
+}
+
+function pickBestUrl(...candidates: (string | null | undefined)[]): string {
+  const permanent = candidates.find((u) => typeof u === 'string' && u.length > 0 && !isReplicateUrl(u))
+  if (permanent) return permanent
+
+  const any = candidates.find((u) => typeof u === 'string' && u.length > 0)
+  return any ?? ''
+}
+
+function getMobileFriendlyVideoSrc(url: string) {
+  // iOS/Safari often shows preview more reliably with a tiny seek hint.
+  if (url.includes('#')) return url
+  return `${url}#t=0.1`
+}
+
 function useInspirationGallery() {
   const [items, setItems] = useState<InspirationItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -25,7 +43,7 @@ function useInspirationGallery() {
       try {
         const { data, error: dbError } = await supabase
           .from('generations')
-          .select('id, type, prompt, output_url, thumbnail_url, model_name, generated_videos(video_url, thumbnail_url)')
+          .select('id, type, prompt, output_url, thumbnail_url, model_name, settings, generated_videos(video_url, thumbnail_url)')
           .eq('is_public', true)
           .eq('status', 'succeeded')
           .is('hidden_at', null)
@@ -39,8 +57,28 @@ function useInspirationGallery() {
               ? row.generated_videos[0]
               : null
 
-            const mediaUrl = (gv?.video_url ?? row.output_url ?? '') as string
-            const rawThumb = (gv?.thumbnail_url ?? row.thumbnail_url ?? '') as string
+            const settings = (row.settings ?? {}) as Record<string, unknown>
+            const settingsOutput = typeof settings.outputUrl === 'string'
+              ? settings.outputUrl
+              : typeof settings.output_url === 'string'
+                ? settings.output_url
+                : null
+            const settingsThumb = typeof settings.thumbnailUrl === 'string'
+              ? settings.thumbnailUrl
+              : typeof settings.thumbnail_url === 'string'
+                ? settings.thumbnail_url
+                : null
+
+            const mediaUrl = pickBestUrl(
+              row.output_url as string | null | undefined,
+              gv?.video_url as string | null | undefined,
+              settingsOutput,
+            )
+            const rawThumb = pickBestUrl(
+              row.thumbnail_url as string | null | undefined,
+              gv?.thumbnail_url as string | null | undefined,
+              settingsThumb,
+            )
             const mediaType = generationTypeToMediaType(row.type as string)
             // Para imagens sem thumbnail, usa a própria imagem como thumb
             const thumbnailUrl = rawThumb || (mediaType === 'image' ? mediaUrl : '')
@@ -79,6 +117,7 @@ export default function InspirationPage() {
   const [selectedType, setSelectedType] = useState<TypeFilter>('all')
   const [selectedItem, setSelectedItem] = useState<InspirationItem | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [thumbFallbackIds, setThumbFallbackIds] = useState<Set<string>>(new Set())
 
   const { items, isLoading, error } = useInspirationGallery()
 
@@ -181,29 +220,26 @@ export default function InspirationPage() {
               {/* Thumbnail */}
               <div className="relative w-full aspect-video bg-dark-900 overflow-hidden">
                 {item.type === 'video' ? (
-                  item.thumbnailUrl ? (
+                  item.thumbnailUrl && !thumbFallbackIds.has(item.id) ? (
                     <img
                       src={item.thumbnailUrl}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       onError={(e) => {
-                        // fallback to video element if thumb fails
-                        const video = document.createElement('video')
-                        video.src = item.mediaUrl
-                        video.muted = true
-                        video.autoplay = true
-                        video.loop = true
-                        video.playsInline = true
-                        video.className = e.currentTarget.className
-                        e.currentTarget.replaceWith(video)
+                        e.currentTarget.src = PLACEHOLDER_THUMB
+                        setThumbFallbackIds((prev) => {
+                          const next = new Set(prev)
+                          next.add(item.id)
+                          return next
+                        })
                       }}
                     />
                   ) : (
                     <video
-                      src={item.mediaUrl}
-                      autoPlay
+                      src={getMobileFriendlyVideoSrc(item.mediaUrl)}
+                      preload="metadata"
+                      poster={PLACEHOLDER_THUMB}
                       muted
-                      loop
                       playsInline
                       className="w-full h-full object-cover"
                     />
@@ -296,9 +332,10 @@ export default function InspirationPage() {
             <div className="w-full aspect-video bg-dark-900 relative">
               {selectedItem.type === 'video' ? (
                 <video
-                  src={selectedItem.mediaUrl}
+                  src={getMobileFriendlyVideoSrc(selectedItem.mediaUrl)}
+                  preload="metadata"
                   controls
-                  autoPlay
+                  playsInline
                   className="w-full h-full object-contain"
                 />
               ) : (
