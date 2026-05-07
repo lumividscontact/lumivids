@@ -141,6 +141,9 @@ serve(async (req: Request) => {
       .update({
         welcome_email_pending: false,
         welcome_email_sent_at: new Date().toISOString(),
+        welcome_email_event_name: RESEND_WELCOME_EVENT,
+        welcome_email_last_status: 'triggered',
+        welcome_email_last_error: null,
       })
       .eq('user_id', authData.user.id)
       .is('welcome_email_sent_at', null)

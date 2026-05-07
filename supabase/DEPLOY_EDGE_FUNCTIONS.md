@@ -27,6 +27,7 @@ supabase login
 | `cleanup-stale-generations` | Finaliza gerações travadas e reembolsa créditos automaticamente |
 | `admin-rpc` | Proxy server-side para RPCs administrativas com validação de admin |
 | `send-welcome-email` | Envia e-mail de boas-vindas para novos usuários via Resend |
+| `resend-webhook` | Recebe webhooks do Resend para auditoria e alertas de falha/bounce |
 
 ## Deploy
 
@@ -55,12 +56,13 @@ supabase functions deploy cancel-prediction
 supabase functions deploy cleanup-stale-generations
 supabase functions deploy admin-rpc
 supabase functions deploy send-welcome-email
+supabase functions deploy resend-webhook
 ```
 
 ### 4. Ou deploy em lote (PowerShell):
 
 ```powershell
-$functions = @("text-to-video", "text-to-image", "image-to-video", "image-to-image", "check-prediction", "cancel-prediction", "cleanup-stale-generations", "admin-rpc", "send-welcome-email")
+$functions = @("text-to-video", "text-to-image", "image-to-video", "image-to-image", "check-prediction", "cancel-prediction", "cleanup-stale-generations", "admin-rpc", "send-welcome-email", "resend-webhook")
 foreach ($fn in $functions) {
     Write-Host "Deploying $fn..."
     supabase functions deploy $fn
@@ -81,6 +83,7 @@ https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/cancel-prediction
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/cleanup-stale-generations
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/admin-rpc
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/send-welcome-email
+https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/resend-webhook
 ```
 
 ## Agendar cleanup automático (Scheduler)
@@ -116,7 +119,8 @@ supabase secrets list
 - `CORS_ALLOWED_ORIGIN`: origem única (legado/alternativo quando não usar lista)
 - `RATE_LIMIT_FALLBACK_MODE`: `fail-closed` (recomendado em produção) ou `memory` (útil em dev/local)
 - `RESEND_API_KEY`: chave da API do Resend
-- `RESEND_FROM_EMAIL`: remetente verificado no Resend (ex.: `Lumivids <hello@lumivids.com>`)
+- `RESEND_WELCOME_EVENT`: nome do evento customizado que dispara a automação (ex.: `cadastro_lumivids`)
+- `RESEND_WEBHOOK_SECRET`: secret de assinatura do webhook do Resend (Svix)
 - `APP_URL`: URL pública da aplicação usada no CTA do e-mail (ex.: `https://lumivids.com`)
 
 ## Logs das Funções

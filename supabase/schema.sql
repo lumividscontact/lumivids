@@ -26,6 +26,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   force_logout_at TIMESTAMPTZ,
   welcome_email_pending BOOLEAN NOT NULL DEFAULT false,
   welcome_email_sent_at TIMESTAMPTZ,
+  welcome_email_event_name TEXT,
+  welcome_email_event_id TEXT,
+  welcome_email_provider_email_id TEXT,
+  welcome_email_last_status TEXT,
+  welcome_email_last_error TEXT,
+  welcome_email_last_webhook_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -37,6 +43,12 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS must_reset_password BOOLEAN
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS force_logout_at TIMESTAMPTZ;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_pending BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_sent_at TIMESTAMPTZ;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_event_name TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_event_id TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_provider_email_id TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_last_status TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_last_error TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS welcome_email_last_webhook_at TIMESTAMPTZ;
 ALTER TABLE public.profiles ALTER COLUMN language SET DEFAULT 'en';
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;

@@ -55,6 +55,12 @@ export interface Database {
           force_logout_at: string | null
           welcome_email_pending: boolean
           welcome_email_sent_at: string | null
+          welcome_email_event_name: string | null
+          welcome_email_event_id: string | null
+          welcome_email_provider_email_id: string | null
+          welcome_email_last_status: string | null
+          welcome_email_last_error: string | null
+          welcome_email_last_webhook_at: string | null
           created_at: string
           updated_at: string
         }
@@ -74,6 +80,12 @@ export interface Database {
           force_logout_at?: string | null
           welcome_email_pending?: boolean
           welcome_email_sent_at?: string | null
+          welcome_email_event_name?: string | null
+          welcome_email_event_id?: string | null
+          welcome_email_provider_email_id?: string | null
+          welcome_email_last_status?: string | null
+          welcome_email_last_error?: string | null
+          welcome_email_last_webhook_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -93,6 +105,12 @@ export interface Database {
           force_logout_at?: string | null
           welcome_email_pending?: boolean
           welcome_email_sent_at?: string | null
+          welcome_email_event_name?: string | null
+          welcome_email_event_id?: string | null
+          welcome_email_provider_email_id?: string | null
+          welcome_email_last_status?: string | null
+          welcome_email_last_error?: string | null
+          welcome_email_last_webhook_at?: string | null
           created_at?: string
           updated_at?: string
         }
