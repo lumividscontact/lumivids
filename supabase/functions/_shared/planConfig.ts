@@ -7,8 +7,6 @@ export const PLAN_CREDITS: Record<PlanId, number> = {
   director: 2700,
 }
 
-export const FREE_DAILY_CREDITS = 10
-
 export function isPlanId(value: string): value is PlanId {
   return value in PLAN_CREDITS
 }

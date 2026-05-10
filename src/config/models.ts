@@ -3,7 +3,7 @@
 
 export type ModelCategory = 'text-to-video' | 'image-to-video' | 'text-to-image' | 'image-to-image'
 export type Resolution = '480p' | '576p' | '720p' | '768p' | '1080p' | '1k' | '2k' | '3k' | '4k'
-export type AspectRatio = 'auto' | '16:9' | '9:16' | '1:1' | '4:3' | '3:4' | '2:3' | '3:2' | '21:9'
+export type AspectRatio = 'auto' | '16:9' | '9:16' | '1:1' | '4:3' | '3:4' | '2:3' | '3:2' | '21:9' | '9:21'
 
 export interface CreditCost {
   perSecond?: number // Credits per second of video
@@ -111,28 +111,28 @@ export const TEXT_TO_VIDEO_MODELS: ModelConfig[] = [
     category: 'text-to-video',
     replicateId: 'bytedance/seedance-1.5-pro',
     minDuration: 5,
-    maxDuration: 10,
+    maxDuration: 12,
     defaultDuration: 5,
-    supportedAspectRatios: ['16:9', '9:16', '1:1'],
-    supportedResolutions: ['720p'],
+    supportedAspectRatios: ['16:9', '4:3', '1:1', '3:4', '9:16', '21:9', '9:21'],
+    supportedResolutions: ['480p', '720p', '1080p'],
     defaultResolution: '720p',
     credits: {
       base: 0,
       perSecond: {
-        '480p': 2,
-        '576p': 2,
+        '480p': 1,
+        '576p': 1,
         '720p': 2,
         '768p': 2,
-        '1080p': 2,
-        '4k': 2,
+        '1080p': 5,
+        '4k': 5,
       },
       perSecondWithAudio: {
-        '480p': 3,
-        '576p': 3,
-        '720p': 3,
-        '768p': 3,
-        '1080p': 3,
-        '4k': 3,
+        '480p': 2,
+        '576p': 2,
+        '720p': 4,
+        '768p': 4,
+        '1080p': 10,
+        '4k': 10,
       },
     },
     supportsNegativePrompt: true,
@@ -1185,17 +1185,47 @@ export function calculateCredits(
   resolution?: Resolution,
   withAudio?: boolean
 ): number {
+  let effectiveDuration = duration
+  let effectiveResolution = resolution
+
+  // Keep frontend pricing aligned with edge-function billing normalization.
+  if (model.category === 'text-to-video' || model.category === 'image-to-video') {
+    const modelRef = model.replicateId.toLowerCase()
+    const rawDuration = typeof duration === 'number' && Number.isFinite(duration) && duration > 0 ? duration : undefined
+    const rawResolution = resolution ?? model.defaultResolution
+
+    if (rawDuration && rawResolution) {
+      if (modelRef.includes('hailuo')) {
+        const normalizedDuration = rawDuration <= 6 ? 6 : 10
+        effectiveDuration = normalizedDuration
+        effectiveResolution = rawResolution === '1080p' && normalizedDuration === 6 ? '1080p' : '768p'
+      } else if (modelRef.includes('wan')) {
+        effectiveDuration = rawDuration <= 5 ? 5 : rawDuration <= 10 ? 10 : 15
+        effectiveResolution = rawResolution === '1080p' ? '1080p' : '720p'
+      } else if (modelRef.includes('google') && modelRef.includes('veo')) {
+        effectiveDuration = rawDuration <= 6 ? 6 : 8
+        effectiveResolution = rawResolution === '1080p' ? '1080p' : '720p'
+      } else if (modelRef.includes('openai') && modelRef.includes('sora')) {
+        let normalizedDuration = rawDuration
+        if (normalizedDuration < 8) normalizedDuration = 8
+        else if (normalizedDuration > 12) normalizedDuration = 12
+        else if (normalizedDuration === 9 || normalizedDuration === 11) normalizedDuration = 10
+        effectiveDuration = normalizedDuration
+      }
+    }
+  }
+
   // If model has per-second pricing
-  if (duration && resolution) {
+  if (effectiveDuration && effectiveResolution) {
     // Use audio pricing if available and enabled
     if (withAudio && model.credits.perSecondWithAudio) {
-      const costPerSecond = model.credits.perSecondWithAudio[resolution] || 1
-      return costPerSecond * duration
+      const costPerSecond = model.credits.perSecondWithAudio[effectiveResolution] || 1
+      return costPerSecond * effectiveDuration
     }
     // Use regular per-second pricing
     if (model.credits.perSecond) {
-      const costPerSecond = model.credits.perSecond[resolution] || 1
-      return costPerSecond * duration
+      const costPerSecond = model.credits.perSecond[effectiveResolution] || 1
+      return costPerSecond * effectiveDuration
     }
   }
   

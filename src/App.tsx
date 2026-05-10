@@ -7,7 +7,7 @@ import { FeatureFlagsProvider, useFeatureFlags } from './contexts/FeatureFlagsCo
 import { LanguageProvider, useLanguage } from './i18n'
 import ErrorBoundary from './components/ErrorBoundary'
 import { ToastProvider } from './components/Toast'
-import { trackEvent } from './services/analytics'
+import { syncStoredBingAdConsent, trackEvent } from './services/analytics'
 import { getLanguageBasePath, getPathPrefixLanguage, stripLanguagePrefix } from './i18n/runtime'
 
 const MainLayout = lazy(() => import('./components/layout/MainLayout'))
@@ -210,6 +210,10 @@ export default function App() {
   const routerBasename = typeof window === 'undefined'
     ? '/'
     : getLanguageBasePath(getPathPrefixLanguage(window.location.pathname) ?? 'en') || '/'
+
+  useEffect(() => {
+    syncStoredBingAdConsent()
+  }, [])
 
   return (
     <BrowserRouter basename={routerBasename}>

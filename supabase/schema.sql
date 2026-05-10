@@ -200,7 +200,8 @@ CREATE TABLE IF NOT EXISTS public.user_credits (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
   credits INTEGER DEFAULT 10 NOT NULL CHECK (credits >= 0),
   lifetime_credits INTEGER DEFAULT 10 NOT NULL,
-  free_bonus_days_used INTEGER DEFAULT 1 NOT NULL,
+  free_daily_used INTEGER NOT NULL DEFAULT 0,
+  free_daily_date DATE NOT NULL DEFAULT (timezone('utc', now())::date),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -960,21 +961,39 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
     NEW.email,
     true
-  );
+  )
+  ON CONFLICT (user_id) DO NOTHING;
 
-  INSERT INTO public.user_credits (user_id, credits, lifetime_credits)
-  VALUES (NEW.id, 10, 10);
+  INSERT INTO public.user_credits (
+    user_id,
+    credits,
+    lifetime_credits,
+    free_daily_used,
+    free_daily_date
+  )
+  VALUES (NEW.id, 10, 10, 0, timezone('utc', now())::date)
+  ON CONFLICT (user_id) DO NOTHING;
 
-  INSERT INTO public.credit_transactions (user_id, type, amount, balance_after, description)
-  VALUES (NEW.id, 'bonus', 10, 10, 'Welcome bonus - 10 credits');
+  BEGIN
+    INSERT INTO public.credit_transactions (user_id, type, amount, balance_after, description)
+    VALUES (NEW.id, 'bonus', 10, 10, 'Free credits granted - 10 credits');
+  EXCEPTION WHEN OTHERS THEN
+    NULL;
+  END;
 
-  INSERT INTO public.notifications (user_id, type, title, message)
-  VALUES (
-    NEW.id,
-    'system',
-    'Welcome to Lumivids! 🎉',
-    'You received 10 bonus credits to start creating amazing AI videos and images!'
-  );
+  BEGIN
+    IF to_regclass('public.notifications') IS NOT NULL THEN
+      INSERT INTO public.notifications (user_id, type, title, message)
+      VALUES (
+        NEW.id,
+        'system',
+        'Welcome to Lumivids! 🎉',
+        'You have 10 free credits to get started. Once used, upgrade to keep creating.'
+      );
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    NULL;
+  END;
 
   RETURN NEW;
 END;

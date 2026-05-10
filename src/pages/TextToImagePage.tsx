@@ -7,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/AuthModal'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
-import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
 import ModelLogo from '@/components/ModelLogo'
 import { 
   TEXT_TO_IMAGE_MODELS, 
@@ -282,7 +281,7 @@ export default function TextToImagePage() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium } = useTextToImage()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useTextToImage()
 
   useEffect(() => {
     return () => {
@@ -320,8 +319,6 @@ export default function TextToImagePage() {
 
     return calculateCreditCost('text-to-image', requestModel, 5, resolution, false, numImages)
   }, [selectedModel, gptImageQuality, resolution, numImages])
-
-  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
 
   const isPromptTooLong = prompt.length > MAX_PROMPT_CHARS
 
@@ -612,13 +609,11 @@ export default function TextToImagePage() {
               progressBarGradientClassName="bg-gradient-to-r from-purple-500 to-pink-500"
             />
 
-            <FreemiumDailyStatus currentCost={currentCost} />
-
             <GenerationActionButtons
               isGenerating={isGenerating}
               onGenerate={handleGenerate}
               onCancel={cancel}
-              generateDisabled={!prompt.trim() || isPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
+              generateDisabled={!prompt.trim() || isPromptTooLong || isGenerating}
               generateLabel={`${t.ui.createButton} | ${currentCost} ${t.ui.creditsLabel}`}
               generatingLabel={t.common.generating}
               cancelLabel={t.common.cancel}

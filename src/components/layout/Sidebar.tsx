@@ -114,7 +114,7 @@ const SidebarUserSection = memo(function SidebarUserSection({
   onClose: () => void
 }) {
   const { user, logout } = useAuth()
-  const { credits, currentPlan, freemium } = useCredits()
+  const { credits, currentPlan } = useCredits()
   const { t } = useLanguage()
   const currentPlanName = currentPlan.id === null ? t.settings.payment.planFallback : currentPlan.name
 
@@ -137,13 +137,6 @@ const SidebarUserSection = memo(function SidebarUserSection({
             <Zap className="w-5 h-5 text-primary-400" />
             <span className="text-2xl font-bold text-white">{credits}</span>
           </div>
-          {freemium?.isEligible && (
-            <div className="mt-1 text-xs text-dark-300">
-              {t.freemium.dailyRemaining
-                .replace('{remaining}', String(freemium.remainingToday))
-                .replace('{limit}', String(freemium.dailyLimit))}
-            </div>
-          )}
           <div className="mt-2 text-xs text-primary-400 flex items-center gap-1">
             <span>{t.common.upgradeAvailable}</span>
             <ChevronRight className="w-3 h-3" />

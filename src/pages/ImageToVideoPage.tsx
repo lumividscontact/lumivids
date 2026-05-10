@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Layers, ChevronDown, X, Volume2, VolumeX } from 'lucide-react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { Layers, ChevronDown, X, Volume2, VolumeX, Zap } from 'lucide-react'
 import { useImageToVideo, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCredits } from '@/contexts/CreditsContext'
+import { FREE_DAILY_CREDITS } from '@/config/constants'
 import AuthModal from '@/components/AuthModal'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
 import GenerationVideoPreview from '@/components/GenerationVideoPreview'
-import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
 import ModelLogo from '@/components/ModelLogo'
 import { 
   IMAGE_TO_VIDEO_MODELS, 
@@ -27,6 +28,8 @@ const MAX_PROMPT_CHARS = 2000
 export default function ImageToVideoPage() {
   const { t } = useLanguage()
   const { isAuthenticated } = useAuth()
+  const { plan } = useCredits()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const examplePrompts = t.imageToVideo.examplePrompts
   
@@ -149,7 +152,7 @@ export default function ImageToVideoPage() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium } = useImageToVideo()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useImageToVideo()
 
   useEffect(() => {
     return () => {
@@ -195,7 +198,8 @@ export default function ImageToVideoPage() {
     return selectedModel.credits.base
   }, [selectedModel, duration, resolution, withAudio])
 
-  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
+  const isFreemium = plan === null
+  const creditsAfter = credits - currentCost
 
   const handleModelChange = (model: ModelConfig) => {
     setSelectedModel(model)
@@ -577,21 +581,38 @@ export default function ImageToVideoPage() {
               costColorClassName="text-purple-400"
               progressColorClassName="text-purple-400"
               progressBarGradientClassName="bg-gradient-to-r from-purple-500 to-pink-500"
+              creditsAfter={creditsAfter}
+              creditsAfterLabel={t.myAccount.subscription.creditsRemaining}
             />
 
-            <FreemiumDailyStatus currentCost={currentCost} />
-
-            <GenerationActionButtons
-              isGenerating={isGenerating}
-              onGenerate={handleGenerate}
-              onCancel={cancel}
-              generateDisabled={!uploadedImageUrl || isPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
-              generateLabel={`${t.imageToVideo.generateButton} | ${currentCost} ${t.ui.creditsLabel}`}
-              generatingLabel={t.common.generating}
-              cancelLabel={t.common.cancel}
-              generateIcon={<Layers className="w-5 h-5" />}
-              generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            />
+            {isFreemium && credits < currentCost && !isGenerating ? (
+              <div className="rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 p-4 space-y-3 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Zap className="w-4 h-4 text-orange-400" />
+                  <p className="text-sm text-dark-200 font-medium">
+                    {t.freemium.bonusCapReachedHint.replace('{max}', String(FREE_DAILY_CREDITS))}
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
+                >
+                  {t.freemium.upgradeToContinue} →
+                </button>
+              </div>
+            ) : (
+              <GenerationActionButtons
+                isGenerating={isGenerating}
+                onGenerate={handleGenerate}
+                onCancel={cancel}
+                generateDisabled={!uploadedImageUrl || isPromptTooLong || isGenerating}
+                generateLabel={`${t.imageToVideo.generateButton} | ${currentCost} ${t.ui.creditsLabel}`}
+                generatingLabel={t.common.generating}
+                cancelLabel={t.common.cancel}
+                generateIcon={<Layers className="w-5 h-5" />}
+                generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            )}
           </div>
         </div>
 

@@ -4,13 +4,8 @@
  * Centralized configuration values used across the application.
  * This file is the single source of truth for magic numbers and strings.
  */
-
-// ============================================
-// CREDITS CONFIGURATION
-// ============================================
-
 /**
- * Initial credits given to new users (welcome bonus)
+ * Initial credits given to new trial users
  */
 export const INITIAL_CREDITS = 10
 

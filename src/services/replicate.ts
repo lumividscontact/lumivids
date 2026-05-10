@@ -178,6 +178,24 @@ class ReplicateAPI {
 
     if (!response.ok) {
       const error = await response.json()
+
+      if (response.status === 403 && error?.code === 'DAILY_LIMIT_REACHED') {
+        throw new Error('DAILY_LIMIT_REACHED')
+      }
+
+      if (response.status === 402 && error?.code === 'INSUFFICIENT_CREDITS') {
+        const required = typeof error?.required === 'number' ? error.required : null
+        const current = typeof error?.current === 'number' ? error.current : null
+
+        if (required !== null && current !== null) {
+          throw new Error(`Insufficient credits. You need ${required} credits, you have ${current}.`)
+        }
+
+        if (required !== null) {
+          throw new Error(`Insufficient credits. You need ${required} credits.`)
+        }
+      }
+
       throw new Error(error.code || error.error || 'Failed to create prediction')
     }
 
@@ -195,6 +213,10 @@ class ReplicateAPI {
 
     if (!response.ok) {
       const error = await response.json()
+      if (response.status === 403 && error?.code === 'DAILY_LIMIT_REACHED') {
+        throw new Error('DAILY_LIMIT_REACHED')
+      }
+
       if (response.status === 402 && error?.code === 'INSUFFICIENT_CREDITS') {
         const required = typeof error?.required === 'number' ? error.required : null
         const current = typeof error?.current === 'number' ? error.current : null
@@ -206,10 +228,6 @@ class ReplicateAPI {
         if (required !== null) {
           throw new Error(`Insufficient credits. You need ${required} credits.`)
         }
-      }
-
-      if (response.status === 402 && error?.code === 'DAILY_LIMIT_REACHED') {
-        throw new Error('DAILY_LIMIT_REACHED')
       }
 
       throw new Error(error.code || error.error || 'Failed to create prediction')
@@ -229,9 +247,10 @@ class ReplicateAPI {
 
     if (!response.ok) {
       const error = await response.json()
-      if (response.status === 402 && error?.code === 'DAILY_LIMIT_REACHED') {
+      if (response.status === 403 && error?.code === 'DAILY_LIMIT_REACHED') {
         throw new Error('DAILY_LIMIT_REACHED')
       }
+
       throw new Error(error.code || error.error || 'Failed to create prediction')
     }
 
@@ -249,9 +268,10 @@ class ReplicateAPI {
 
     if (!response.ok) {
       const error = await response.json()
-      if (response.status === 402 && error?.code === 'DAILY_LIMIT_REACHED') {
+      if (response.status === 403 && error?.code === 'DAILY_LIMIT_REACHED') {
         throw new Error('DAILY_LIMIT_REACHED')
       }
+
       throw new Error(error.code || error.error || 'Failed to create prediction')
     }
 

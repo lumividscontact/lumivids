@@ -259,28 +259,28 @@ export default function HomePage() {
             </button>
 
             {/* Content Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 mb-4">
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 mb-3 sm:mb-4">
                 <Sparkles className="w-4 h-4 text-accent-400" />
                 <span className="text-sm text-white/90 font-medium">{t.home.sections.featuredCreation}</span>
               </div>
 
-              <h2 className="text-2xl md:text-4xl font-bold text-white mb-2">
+              <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white leading-tight line-clamp-2 max-w-[90%] sm:max-w-2xl mb-2">
                 {activeVideo.title}
               </h2>
-              <p className="text-white/70 max-w-2xl mb-4 text-sm md:text-base">
+              <p className="text-white/70 max-w-[95%] sm:max-w-2xl mb-3 sm:mb-4 text-xs sm:text-sm md:text-base leading-relaxed line-clamp-2 md:line-clamp-3 break-words">
                 {activeVideo.prompt}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 mb-5">
-                <span className="px-3 py-1 rounded-full bg-white/10 text-white text-sm">{activeVideo.model}</span>
-                <span className="flex items-center gap-2 text-white/80 text-sm">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-5">
+                <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs sm:text-sm">{activeVideo.model}</span>
+                <span className="flex items-center gap-2 text-white/80 text-xs sm:text-sm">
                   <Heart className="w-4 h-4 text-pink-400" />
                   {activeVideo.likes}
                 </span>
               </div>
 
-              <Link to={`/text-to-video?model=${activeVideo.modelId}`} className="btn-primary inline-flex items-center gap-2">
+              <Link to={`/text-to-video?model=${activeVideo.modelId}`} className="btn-primary inline-flex items-center gap-2 text-sm sm:text-base">
                 <Sparkles className="w-4 h-4" />
                 {t.home.sections.createSimilar}
               </Link>

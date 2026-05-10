@@ -7,6 +7,7 @@ import { useLanguage } from '@/i18n'
 import { supabase } from '@/lib/supabase'
 import { trackEvent } from '@/services/analytics'
 import { findPromptBlacklistMatch, getMaintenanceMode } from '@/services/admin'
+import { FREE_DAILY_CREDITS } from '@/config/constants'
 
 interface GenerationState<TOutput> {
   isGenerating: boolean
@@ -71,7 +72,7 @@ function getRequestedOutputCount(input: unknown): number {
 const defaultMapGenerationOutput = <TOutput,>(output: Generation['output']) => output as TOutput | null
 
 export function useGeneration<TInput, TOutput>(config: UseGenerationConfig<TInput, TOutput>) {
-  const { credits, freemium, refreshCredits } = useCredits()
+  const { credits, refreshCredits } = useCredits()
   const { user, isAdmin } = useAuth()
   const { t } = useLanguage()
   const { addGeneration, updateGeneration, getGeneration, activeGenerations, generations } = useGenerations()
@@ -245,9 +246,9 @@ export function useGeneration<TInput, TOutput>(config: UseGenerationConfig<TInpu
         throw new Error('Insufficient credits')
       }
 
-      if (freemium?.isEligible && freemium.remainingToday < cost) {
+      if (!isAdmin && !user?.plan && cost > FREE_DAILY_CREDITS) {
         const dailyLimitError = t.errors.dailyLimitReached
-        setState((prev) => ({ ...prev, error: dailyLimitError }))
+        setState((prev) => ({ ...prev, error: dailyLimitError, isGenerating: false, status: 'failed' }))
         throw new Error('DAILY_LIMIT_REACHED')
       }
 
@@ -327,11 +328,9 @@ export function useGeneration<TInput, TOutput>(config: UseGenerationConfig<TInpu
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         const formattedError = errorMessage.includes('DAILY_LIMIT_REACHED')
           ? t.errors.dailyLimitReached
-          : (
-            config.formatFailureError
-              ? config.formatFailureError({ errorMessage, cost })
-              : errorMessage
-          )
+          : config.formatFailureError
+            ? config.formatFailureError({ errorMessage, cost })
+            : errorMessage
 
         trackEvent('generation_failed', {
           generation_type: config.generationType,
@@ -362,7 +361,7 @@ export function useGeneration<TInput, TOutput>(config: UseGenerationConfig<TInpu
     } finally {
       inFlightGenerationRef.current = false
     }
-  }, [credits, freemium, user?.id, user?.plan, isAdmin, refreshCredits, addGeneration, updateGeneration, config, t])
+  }, [credits, user?.id, user?.plan, isAdmin, refreshCredits, addGeneration, updateGeneration, config, t])
 
   const cancel = useCallback(async () => {
     if (!state.predictionId) return
@@ -435,7 +434,6 @@ export function useGeneration<TInput, TOutput>(config: UseGenerationConfig<TInpu
   return {
     ...state,
     credits,
-    freemium,
     generate,
     cancel,
     reset,

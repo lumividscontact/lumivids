@@ -13,10 +13,6 @@ export default function SecurityPage() {
     errorCurrentPasswordWrong?: string
     currentPasswordLabel?: string
     currentPasswordPlaceholder?: string
-    deletePasswordRequired?: string
-    deletePasswordWrong?: string
-    deletePasswordLabel?: string
-    deletePasswordPlaceholder?: string
   }
   const [currentPassword, setCurrentPassword] = useState('')
   const [password, setPassword] = useState('')
@@ -25,7 +21,6 @@ export default function SecurityPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [deletePhrase, setDeletePhrase] = useState('')
-  const [deletePassword, setDeletePassword] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -112,11 +107,6 @@ export default function SecurityPage() {
       return
     }
 
-    if (!deletePassword || deletePassword.length < 1) {
-      setDeleteError(securityTexts.deletePasswordRequired ?? 'Password is required to confirm account deletion')
-      return
-    }
-
     if (!isSupabaseConfigured) {
       setDeleteError(t.settings.security.deleteSupabaseRequired)
       return
@@ -124,20 +114,10 @@ export default function SecurityPage() {
 
     setDeleting(true)
     try {
-      // Re-authenticate to verify identity before destructive action
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email ?? '',
-        password: deletePassword,
-      })
-      if (signInError) {
-        setDeleteError(securityTexts.deletePasswordWrong ?? 'Incorrect password')
-        return
-      }
-
       await deleteAccount()
     } catch (err) {
       console.error('Delete account error:', err)
-      setDeleteError(t.settings.security.deleteFailed)
+      setDeleteError(err instanceof Error ? err.message : t.settings.security.deleteFailed)
     } finally {
       setDeleting(false)
     }
@@ -244,18 +224,6 @@ export default function SecurityPage() {
                 className="input-field w-full"
                 placeholder={t.settings.security.deletePlaceholder}
               />
-              <div>
-                <label className="block text-xs text-dark-400 mb-1">
-                  {securityTexts.deletePasswordLabel ?? 'Confirm your password'}
-                </label>
-                <input
-                  type="password"
-                  value={deletePassword}
-                  onChange={(event) => setDeletePassword(event.target.value)}
-                  className="input-field w-full"
-                  placeholder={securityTexts.deletePasswordPlaceholder ?? 'Enter your password'}
-                />
-              </div>
               {deleteError && (
                 <p className="text-sm text-red-400">{deleteError}</p>
               )}

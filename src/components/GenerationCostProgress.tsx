@@ -10,6 +10,8 @@ interface GenerationCostProgressProps {
   costColorClassName: string
   progressColorClassName: string
   progressBarGradientClassName: string
+  creditsAfter?: number
+  creditsAfterLabel?: string
 }
 
 export default function GenerationCostProgress({
@@ -22,7 +24,18 @@ export default function GenerationCostProgress({
   costColorClassName,
   progressColorClassName,
   progressBarGradientClassName,
+  creditsAfter,
+  creditsAfterLabel,
 }: GenerationCostProgressProps) {
+  const creditsAfterColorClass =
+    creditsAfter === undefined
+      ? ''
+      : creditsAfter <= 0
+        ? 'text-red-400 font-bold'
+        : creditsAfter <= 3
+          ? 'text-orange-400 font-bold'
+          : 'text-dark-300'
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -33,6 +46,16 @@ export default function GenerationCostProgress({
           <span className="text-dark-400 text-sm">{creditsLabel}</span>
         </div>
       </div>
+
+      {creditsAfter !== undefined && creditsAfterLabel && !isGenerating && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-dark-400">{creditsAfterLabel}</span>
+          <div className="flex items-center gap-1">
+            <Zap className={`w-3.5 h-3.5 ${creditsAfterColorClass}`} />
+            <span className={`text-sm ${creditsAfterColorClass}`}>{Math.max(0, creditsAfter)}</span>
+          </div>
+        </div>
+      )}
 
       {isGenerating && (
         <div>

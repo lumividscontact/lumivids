@@ -76,7 +76,7 @@ export async function calculateCreditCost(
 export async function getUserFromAuth(req: Request): Promise<{ userId: string | null; error: string | null }> {
   const authHeader = req.headers.get('Authorization')
   const xSupabaseAuth = req.headers.get('x-supabase-auth')
-  const finalAuthHeader = authHeader || xSupabaseAuth
+  const finalAuthHeader = xSupabaseAuth || authHeader
 
   if (!finalAuthHeader) {
     return { userId: null, error: 'Not authenticated' }
@@ -116,9 +116,6 @@ export async function deductCredits(
 
   if (error) {
     console.error('[Credits] Deduction error:', error)
-    if (error.message?.includes('DAILY_LIMIT_REACHED')) {
-      return { success: false, error: 'DAILY_LIMIT_REACHED' }
-    }
     return { success: false, error: error.message }
   }
 

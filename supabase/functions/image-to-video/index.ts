@@ -128,11 +128,46 @@ serve(async (req) => {
     // Deduct credits BEFORE starting generation
     const deductResult = await deductCredits(userId, cost, `Image to Video: ${model}`)
     if (!deductResult.success) {
+      if (deductResult.error === 'DAILY_LIMIT_REACHED') {
+        const balanceCheck = await checkCredits(userId, cost)
+        return new Response(JSON.stringify({
+          error: 'Daily limit reached',
+          code: 'DAILY_LIMIT_REACHED',
+          required: cost,
+          current: balanceCheck.currentBalance,
+          billing: {
+            model,
+            duration: billingDuration,
+            resolution: billingResolution,
+          },
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       const balanceCheck = await checkCredits(userId, cost)
-        const isDailyLimit = deductResult.error === 'DAILY_LIMIT_REACHED'
+      const isInsufficient = deductResult.error === 'Insufficient credits' || !deductResult.error
+      if (!isInsufficient) {
+        return new Response(JSON.stringify({
+          error: deductResult.error || 'Failed to deduct credits',
+          code: 'CREDITS_DEDUCTION_FAILED',
+          required: cost,
+          current: balanceCheck.currentBalance,
+          billing: {
+            model,
+            duration: billingDuration,
+            resolution: billingResolution,
+          },
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
       return new Response(JSON.stringify({ 
-          error: isDailyLimit ? 'Daily free limit reached' : (deductResult.error || 'Insufficient credits'),
-          code: isDailyLimit ? 'DAILY_LIMIT_REACHED' : 'INSUFFICIENT_CREDITS',
+          error: deductResult.error || 'Insufficient credits',
+          code: 'INSUFFICIENT_CREDITS',
         required: cost,
         current: balanceCheck.currentBalance,
         billing: {

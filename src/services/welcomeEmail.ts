@@ -1,7 +1,5 @@
 import { supabase } from '@/lib/supabase'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-
 export async function requestWelcomeEmail(): Promise<void> {
   let { data: { session } } = await supabase.auth.getSession()
   if (!session?.access_token) {
@@ -13,19 +11,25 @@ export async function requestWelcomeEmail(): Promise<void> {
     return
   }
 
-  const response = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-      'x-supabase-auth': session.access_token,
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-    },
-    body: JSON.stringify({}),
+  const { error } = await supabase.functions.invoke('send-welcome-email', {
+    body: {},
   })
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({})) as { error?: string }
-    throw new Error(error.error || 'Failed to request welcome email')
+  if (!error) {
+    return
   }
+
+  const message = (error.message || '').toLowerCase()
+  const isTransientOrAuthIssue =
+    message.includes('failed to send a request to the edge function') ||
+    message.includes('failed to fetch') ||
+    message.includes('refused_stream') ||
+    message.includes('unauthorized') ||
+    message.includes('invalid token')
+
+  if (isTransientOrAuthIssue) {
+    return
+  }
+
+  throw new Error(error.message || 'Failed to request welcome email')
 }

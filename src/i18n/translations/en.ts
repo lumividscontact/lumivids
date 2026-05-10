@@ -657,8 +657,8 @@ export const en = {
       remaining: '{current} of {max} credits remaining',
       buyMore: 'Buy More Credits',
       lowCreditsWarning: 'Low credits! Consider upgrading.',
-      freemiumBonusDays: 'Day {used} of {max} · come back tomorrow for +10 free credits',
-      freemiumBonusCapReached: 'Free bonus ended · upgrade to keep generating',
+      freemiumBonusDays: '{used} of {max} free credits used',
+      freemiumBonusCapReached: 'Free credits used up · upgrade to keep generating',
     },
     settings: {
       title: 'Settings',
@@ -940,8 +940,8 @@ export const en = {
     limitReachedHint: 'You reached the free daily limit.',
     resetsDaily: 'Resets daily (UTC)',
     upgradeToContinue: 'Upgrade',
-    bonusDaysInfo: 'Bonus day {used} of {max}',
-    bonusCapReachedHint: 'You used all {max} free bonus days. Upgrade to keep generating.',
+    bonusDaysInfo: '{used} of {max} free credits used',
+    bonusCapReachedHint: 'You used all {max} free credits. Upgrade to keep generating.',
   },
 
   // Status messages
@@ -999,7 +999,7 @@ export const en = {
       primaryCta: 'Create my first video for free',
       secondaryCta: 'See plans and pricing',
       ctaMicrocopy: 'No credit card required. Free credits to get started.',
-      ctaProof: 'Up to 50 free credits to get started · 10 per day for 5 days, no card required.',
+      ctaProof: 'Get 10 free credits to start, no card required.',
       trustNoCard: 'No credit card required',
       trustCancelAnytime: 'Cancel anytime',
       trustSupport: '24/7 support',

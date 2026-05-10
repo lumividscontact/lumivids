@@ -657,8 +657,8 @@ export const pt = {
       remaining: '{current} de {max} créditos restantes',
       buyMore: 'Comprar Mais Créditos',
       lowCreditsWarning: 'Créditos baixos! Considere fazer upgrade.',
-      freemiumBonusDays: 'Dia {used} de {max} · volte amanhã para +10 créditos grátis',
-      freemiumBonusCapReached: 'Bônus grátis encerrado · faça upgrade para continuar gerando',
+      freemiumBonusDays: '{used} de {max} créditos grátis usados',
+      freemiumBonusCapReached: 'Créditos grátis esgotados · faça upgrade para continuar gerando',
     },
     settings: {
       title: 'Configurações',
@@ -940,8 +940,8 @@ export const pt = {
     limitReachedHint: 'Você atingiu o limite diário do plano grátis.',
     resetsDaily: 'Reinicia diariamente (UTC)',
     upgradeToContinue: 'Fazer upgrade',
-    bonusDaysInfo: 'Dia {used} de {max} de bônus grátis',
-    bonusCapReachedHint: 'Você usou todos os {max} dias de créditos grátis. Faça upgrade para continuar.',
+    bonusDaysInfo: '{used} de {max} créditos grátis usados',
+    bonusCapReachedHint: 'Você usou todos os {max} créditos grátis. Faça upgrade para continuar.',
   },
 
   // Status messages
@@ -999,7 +999,7 @@ export const pt = {
       primaryCta: 'Criar meu primeiro vídeo grátis',
       secondaryCta: 'Ver planos e preços',
       ctaMicrocopy: 'Sem cartão de crédito. Créditos grátis para começar.',
-      ctaProof: 'Até 50 créditos grátis para começar · 10 por dia durante 5 dias, sem cartão.',
+      ctaProof: 'Ganhe 10 créditos grátis para começar, sem cartão.',
       trustNoCard: 'Sem cartão de crédito',
       trustCancelAnytime: 'Cancele quando quiser',
       trustSupport: 'Suporte 24/7',

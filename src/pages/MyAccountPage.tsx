@@ -41,7 +41,7 @@ export default function MyAccountPage() {
     userPlan: user?.plan,
   })
 
-  const { credits: contextCredits, freemium } = useCredits()
+  const { credits: contextCredits } = useCredits()
   const currentPlan = [...PLANS, FREE_PLAN].find((plan) => plan.id === user?.plan) || FREE_PLAN
   const currentPlanName = currentPlan.id === null ? t.settings.payment.planFallback : currentPlan.name
   const isProfileLoading = !user
@@ -216,12 +216,6 @@ export default function MyAccountPage() {
             creditsPercentage={creditsPercentage}
             buyMoreLabel={t.myAccount.credits.buyMore}
             onBuyMore={() => navigate('/pricing')}
-            isFreemium={freemium?.isEligible}
-            bonusDaysUsed={freemium?.bonusDaysUsed}
-            bonusDaysMax={freemium?.bonusDaysMax}
-            bonusCapReached={freemium?.bonusCapReached}
-            freemiumBonusDaysLabel={t.myAccount.credits.freemiumBonusDays}
-            freemiumBonusCapReachedLabel={t.myAccount.credits.freemiumBonusCapReached}
           />
 
           <div className="card">

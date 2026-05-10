@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://lumivids.com/</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt" />
@@ -13,7 +13,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/plans</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/plans" />
@@ -24,7 +24,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/text-to-video</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/text-to-video" />
@@ -35,7 +35,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/image-to-video</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/image-to-video" />
@@ -46,7 +46,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/text-to-image</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/text-to-image" />
@@ -57,7 +57,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/image-to-image</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/image-to-image" />
@@ -68,7 +68,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/privacy</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/privacy" />
@@ -79,7 +79,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/terms</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://lumivids.com/pt/terms" />
@@ -90,7 +90,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/blog/</loc>
-    <lastmod>2026-05-06</lastmod>
+    <lastmod>2026-05-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -108,7 +108,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/blog/category/ai-image-generator/</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -126,7 +126,7 @@
   </url>
   <url>
     <loc>https://lumivids.com/blog/category/prompts-templates/</loc>
-    <lastmod>2026-04-29</lastmod>
+    <lastmod>2026-05-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -145,6 +145,12 @@
   <url>
     <loc>https://lumivids.com/blog/flux-2-pro-model-review/</loc>
     <lastmod>2026-05-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/google-imagen-4-guide/</loc>
+    <lastmod>2026-05-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -199,6 +205,12 @@
   <url>
     <loc>https://lumivids.com/blog/remove-kling-ai-watermark-guide/</loc>
     <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lumivids.com/blog/seedream-5-prompts-guide/</loc>
+    <lastmod>2026-05-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

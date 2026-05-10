@@ -9,7 +9,6 @@ import { useGenerations } from '@/contexts/GenerationsContext'
 import { useToast } from '@/components/Toast'
 import { addFavorite, fetchFavoriteIds, removeFavorite } from '@/services/favorites'
 import AuthModal from '@/components/AuthModal'
-import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
 import ModelLogo from '@/components/ModelLogo'
 import { 
   IMAGE_TO_IMAGE_MODELS, 
@@ -88,7 +87,7 @@ export default function ImageToImagePage() {
     [STYLE_PRESETS, selectedStyleId]
   )
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium, restoreGeneration, predictionId } = useImageToImage()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, restoreGeneration, predictionId } = useImageToImage()
 
   useEffect(() => {
     return () => {
@@ -184,8 +183,6 @@ export default function ImageToImagePage() {
   const currentCost = useMemo(() => {
     return getCost('image-to-image', selectedModel.id, resolution)
   }, [getCost, selectedModel, resolution])
-
-  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
 
   const handleModelChange = (model: ModelConfig) => {
     setSelectedModel(model)
@@ -542,8 +539,6 @@ export default function ImageToImagePage() {
               </div>
             )}
 
-            <FreemiumDailyStatus currentCost={currentCost} />
-
             {isGenerating ? (
               <button
                 onClick={cancel}
@@ -555,7 +550,7 @@ export default function ImageToImagePage() {
             ) : (
               <button
                 onClick={handleGenerate}
-                disabled={!uploadedImageUrl || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
+                disabled={!uploadedImageUrl || isGenerating}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Wand2 className="w-5 h-5" />

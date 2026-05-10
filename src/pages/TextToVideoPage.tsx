@@ -1,14 +1,15 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Video, ChevronDown, X, Volume2, VolumeX, Monitor, Smartphone, Square } from 'lucide-react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { Video, ChevronDown, X, Volume2, VolumeX, Monitor, Smartphone, Square, Zap } from 'lucide-react'
 import { useTextToVideo, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCredits } from '@/contexts/CreditsContext'
+import { FREE_DAILY_CREDITS } from '@/config/constants'
 import AuthModal from '@/components/AuthModal'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
 import GenerationVideoPreview from '@/components/GenerationVideoPreview'
-import FreemiumDailyStatus from '@/components/FreemiumDailyStatus'
 import ModelLogo from '@/components/ModelLogo'
 import { 
   TEXT_TO_VIDEO_MODELS, 
@@ -65,6 +66,8 @@ const MAX_PROMPT_CHARS = 2000
 export default function TextToVideoPage() {
   const { t } = useLanguage()
   const { isAuthenticated } = useAuth()
+  const { plan } = useCredits()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const examplePrompts = t.textToVideo.examplePrompts
   
@@ -152,7 +155,8 @@ export default function TextToVideoPage() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits, freemium } = useTextToVideo()
+  const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useTextToVideo()
+  const isFreemium = plan === null
 
   useEffect(() => {
     return () => {
@@ -199,7 +203,7 @@ export default function TextToVideoPage() {
     return calculateCredits(selectedModel, duration, resolution, withAudio)
   }, [selectedModel, duration, resolution, withAudio])
 
-  const isDailyLimitBlocked = isAuthenticated && !!freemium?.isEligible && freemium.remainingToday < currentCost
+  const creditsAfter = credits - currentCost
 
   const selectedStylePreset = useMemo(() => {
     return STYLE_PRESETS.find((item) => item.id === stylePresetId) || null
@@ -552,21 +556,38 @@ export default function TextToVideoPage() {
               costColorClassName="text-primary-400"
               progressColorClassName="text-primary-400"
               progressBarGradientClassName="bg-gradient-to-r from-primary-500 to-accent-500"
+              creditsAfter={creditsAfter}
+              creditsAfterLabel={t.myAccount.subscription.creditsRemaining}
             />
 
-            <FreemiumDailyStatus currentCost={currentCost} />
-
-            <GenerationActionButtons
-              isGenerating={isGenerating}
-              onGenerate={handleGenerate}
-              onCancel={cancel}
-              generateDisabled={!prompt.trim() || isFinalPromptTooLong || isGenerating || (isAuthenticated && credits < currentCost) || isDailyLimitBlocked}
-              generateLabel={`${t.ui.createButton} | ${currentCost} ${t.ui.creditsLabel}`}
-              generatingLabel={t.common.generating}
-              cancelLabel={t.common.cancel}
-              generateIcon={<Video className="w-5 h-5" />}
-              generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium flex items-center justify-center gap-2 hover:from-primary-600 hover:to-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            />
+            {isFreemium && credits < currentCost && !isGenerating ? (
+              <div className="rounded-xl bg-gradient-to-br from-primary-500/10 to-accent-500/10 border border-primary-500/30 p-4 space-y-3 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Zap className="w-4 h-4 text-orange-400" />
+                  <p className="text-sm text-dark-200 font-medium">
+                    {t.freemium.bonusCapReachedHint.replace('{max}', String(FREE_DAILY_CREDITS))}
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold hover:from-primary-600 hover:to-accent-600 transition-all"
+                >
+                  {t.freemium.upgradeToContinue} →
+                </button>
+              </div>
+            ) : (
+              <GenerationActionButtons
+                isGenerating={isGenerating}
+                onGenerate={handleGenerate}
+                onCancel={cancel}
+                generateDisabled={!prompt.trim() || isFinalPromptTooLong || isGenerating}
+                generateLabel={`${t.ui.createButton} | ${currentCost} ${t.ui.creditsLabel}`}
+                generatingLabel={t.common.generating}
+                cancelLabel={t.common.cancel}
+                generateIcon={<Video className="w-5 h-5" />}
+                generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium flex items-center justify-center gap-2 hover:from-primary-600 hover:to-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            )}
           </div>
         </div>
 

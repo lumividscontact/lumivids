@@ -10,6 +10,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 320, height: 480 },
     '3:2': { width: 720, height: 480 },
     '21:9': { width: 1120, height: 480 },
+    '9:21': { width: 480, height: 1120 },
     auto: { width: 480, height: 480 },
   },
   '576p': {
@@ -21,6 +22,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 384, height: 576 },
     '3:2': { width: 864, height: 576 },
     '21:9': { width: 1344, height: 576 },
+    '9:21': { width: 576, height: 1344 },
     auto: { width: 576, height: 576 },
   },
   '720p': {
@@ -32,6 +34,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 480, height: 720 },
     '3:2': { width: 1080, height: 720 },
     '21:9': { width: 1680, height: 720 },
+    '9:21': { width: 720, height: 1680 },
     auto: { width: 720, height: 720 },
   },
   '768p': {
@@ -43,6 +46,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 512, height: 768 },
     '3:2': { width: 1152, height: 768 },
     '21:9': { width: 1792, height: 768 },
+    '9:21': { width: 768, height: 1792 },
     auto: { width: 768, height: 768 },
   },
   '1080p': {
@@ -54,6 +58,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 720, height: 1080 },
     '3:2': { width: 1620, height: 1080 },
     '21:9': { width: 2520, height: 1080 },
+    '9:21': { width: 1080, height: 2520 },
     auto: { width: 1080, height: 1080 },
   },
   '1k': {
@@ -65,6 +70,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 683, height: 1024 },
     '3:2': { width: 1024, height: 683 },
     '21:9': { width: 1024, height: 439 },
+    '9:21': { width: 439, height: 1024 },
     auto: { width: 1024, height: 1024 },
   },
   '2k': {
@@ -76,6 +82,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 1365, height: 2048 },
     '3:2': { width: 2048, height: 1365 },
     '21:9': { width: 2048, height: 877 },
+    '9:21': { width: 877, height: 2048 },
     auto: { width: 2048, height: 2048 },
   },
   '3k': {
@@ -87,6 +94,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 2048, height: 3072 },
     '3:2': { width: 3072, height: 2048 },
     '21:9': { width: 3072, height: 1317 },
+    '9:21': { width: 1317, height: 3072 },
     auto: { width: 3072, height: 3072 },
   },
   '4k': {
@@ -98,6 +106,7 @@ export const RESOLUTION_DIMENSIONS: Record<Resolution, Record<AspectRatio, { wid
     '2:3': { width: 1440, height: 2160 },
     '3:2': { width: 3240, height: 2160 },
     '21:9': { width: 5040, height: 2160 },
+    '9:21': { width: 2160, height: 5040 },
     auto: { width: 2160, height: 2160 },
   },
 }

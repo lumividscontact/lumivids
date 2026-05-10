@@ -3,7 +3,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import type { PlanType, UserRole } from '@/lib/database.types'
 import { INITIAL_CREDITS, USER_CREDITS_CACHE_KEY } from '@/config/constants'
 import { detectRuntimeLanguage, getRuntimeMessage, getStoredRuntimeLanguage } from '@/i18n/runtime'
-import { trackEvent } from '@/services/analytics'
+import { setBingEnhancedConversionIdentifiers, trackEvent, trackSignUp } from '@/services/analytics'
 import { requestWelcomeEmail } from '@/services/welcomeEmail'
 
 // ============================================
@@ -55,6 +55,8 @@ const AUTH_ACCOUNT_SUSPENDED = {
   es: 'Tu cuenta está suspendida. Contacta con soporte.',
 } as const
 
+const OAUTH_SIGNUP_WINDOW_MS = 2 * 60 * 1000
+
 function getCachedCredits(userId: string): CachedCredits | null {
   try {
     const cached = localStorage.getItem(USER_CREDITS_CACHE_KEY)
@@ -93,6 +95,21 @@ function clearCachedCredits(): void {
   } catch {
     // Ignore
   }
+}
+
+function isRecentSignUp(createdAt?: string | null, lastSignInAt?: string | null): boolean {
+  if (!createdAt || !lastSignInAt) {
+    return false
+  }
+
+  const createdAtMs = new Date(createdAt).getTime()
+  const lastSignInAtMs = new Date(lastSignInAt).getTime()
+
+  if (Number.isNaN(createdAtMs) || Number.isNaN(lastSignInAtMs)) {
+    return false
+  }
+
+  return Math.abs(lastSignInAtMs - createdAtMs) <= OAUTH_SIGNUP_WINDOW_MS
 }
 
 interface User {
@@ -378,8 +395,8 @@ function useSupabaseAuth() {
     const baseUser = createUserFromAuth(authUser)
     const updates = await withTimeout(
       loadUserDataFromDB(authUser.id),
-      4_000,
-      '[Auth] loadUserDataFromDB timed out after 4 s; using base user data'
+      8_000,
+      '[Auth] loadUserDataFromDB timed out after 8 s; using base user data'
     )
     const hydratedUser: User = { ...baseUser, ...(updates ?? {}) }
 
@@ -549,6 +566,11 @@ function useSupabaseAuth() {
             setUser(hydratedUser)
           }
 
+          const authProvider = (session.user.app_metadata as Record<string, unknown> | undefined)?.provider
+          if (event === 'SIGNED_IN' && authProvider === 'google' && isRecentSignUp(session.user.created_at, session.user.last_sign_in_at)) {
+            trackSignUp('google', session.user.id)
+          }
+
           triggerWelcomeEmail()
 
           // Enforce account state in background – never blocks auth state change
@@ -607,6 +629,8 @@ function useSupabaseAuth() {
       return
     }
 
+    setBingEnhancedConversionIdentifiers(user.email)
+
     const interval = window.setInterval(async () => {
       try {
         const { data } = await supabase.auth.getSession()
@@ -655,7 +679,7 @@ function useSupabaseAuth() {
         const hydratedUser = await createHydratedUserFromAuth(data.user)
         setUser(hydratedUser)
         triggerWelcomeEmail()
-        trackEvent('sign_up', { method: 'email' })
+        trackSignUp('email', data.user.id)
       }
     } finally {
       setIsAuthenticating(false)

@@ -657,8 +657,8 @@
       remaining: '{current} dari {max} kredit tersisa',
       buyMore: 'Beli Lebih Banyak Kredit',
       lowCreditsWarning: 'Kredit rendah! Pertimbangkan untuk meningkatkan versi.',
-      freemiumBonusDays: 'Hari {used} dari {max} · kembali besok untuk +10 kredit gratis',
-      freemiumBonusCapReached: 'Bonus gratis habis · upgrade untuk terus membuat konten',
+      freemiumBonusDays: '{used} dari {max} kredit gratis digunakan',
+      freemiumBonusCapReached: 'Kredit gratis habis · upgrade untuk terus membuat konten',
     },
     settings: {
       title: 'Pengaturan',
@@ -940,8 +940,8 @@
     limitReachedHint: 'Anda telah mencapai batas harian paket gratis.',
     resetsDaily: 'Di-reset setiap hari (UTC)',
     upgradeToContinue: 'Upgrade',
-    bonusDaysInfo: 'Hari bonus {used} dari {max}',
-    bonusCapReachedHint: 'Anda telah menggunakan semua {max} hari kredit gratis. Upgrade untuk melanjutkan.',
+    bonusDaysInfo: '{used} dari {max} kredit gratis digunakan',
+    bonusCapReachedHint: 'Anda telah menggunakan semua {max} kredit gratis. Upgrade untuk melanjutkan.',
   },
 
   // Status messages
@@ -999,7 +999,7 @@
       primaryCta: 'Buat video pertama saya secara gratis',
       secondaryCta: 'Lihat paket dan harga',
       ctaMicrocopy: 'Tidak diperlukan kartu kredit. Kredit gratis untuk memulai.',
-      ctaProof: 'Hingga 50 kredit gratis untuk memulai · 10 per hari selama 5 hari, tanpa kartu.',
+      ctaProof: 'Dapatkan 10 kredit gratis untuk memulai, tanpa kartu.',
       trustNoCard: 'Tidak diperlukan kartu kredit',
       trustCancelAnytime: 'Batalkan kapan saja',
       trustSupport: 'dukungan 24/7',

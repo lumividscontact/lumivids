@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 import { getReplicate, MODELS } from '../_shared/replicate.ts'
-import { getUserFromAuth, deductCredits, calculateCreditCost, refundCredits, ensureModelEnabled } from '../_shared/credits.ts'
+import { getUserFromAuth, deductCredits, calculateCreditCost, refundCredits, checkCredits, ensureModelEnabled } from '../_shared/credits.ts'
 import { validateImageUrl } from '../_shared/urlValidation.ts'
 import { enforceRateLimit } from '../_shared/rateLimit.ts'
 import { persistGenerationStart } from '../_shared/generations.ts'
@@ -111,11 +111,37 @@ serve(async (req) => {
     // Deduct credits BEFORE starting generation
     const deductResult = await deductCredits(userId, cost, `Image to Image: ${modelForCost}`)
     if (!deductResult.success) {
-      const isDailyLimit = deductResult.error === 'DAILY_LIMIT_REACHED'
+      if (deductResult.error === 'DAILY_LIMIT_REACHED') {
+        const balanceCheck = await checkCredits(userId, cost)
+        return new Response(JSON.stringify({
+          error: 'Daily limit reached',
+          code: 'DAILY_LIMIT_REACHED',
+          required: cost,
+          current: balanceCheck.currentBalance,
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const isInsufficient = deductResult.error === 'Insufficient credits' || !deductResult.error
+      if (!isInsufficient) {
+        return new Response(JSON.stringify({
+          error: deductResult.error || 'Failed to deduct credits',
+          code: 'CREDITS_DEDUCTION_FAILED',
+          required: cost,
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const balanceCheck = await checkCredits(userId, cost)
       return new Response(JSON.stringify({ 
-        error: isDailyLimit ? 'Daily free limit reached' : 'INSUFFICIENT_CREDITS',
-        code: isDailyLimit ? 'DAILY_LIMIT_REACHED' : 'INSUFFICIENT_CREDITS',
+        error: deductResult.error || 'INSUFFICIENT_CREDITS',
+        code: 'INSUFFICIENT_CREDITS',
         required: cost,
+        current: balanceCheck.currentBalance,
       }), {
         status: 402,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

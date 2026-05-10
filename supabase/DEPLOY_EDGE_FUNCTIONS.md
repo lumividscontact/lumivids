@@ -27,6 +27,7 @@ supabase login
 | `cleanup-stale-generations` | Finaliza gerações travadas e reembolsa créditos automaticamente |
 | `admin-rpc` | Proxy server-side para RPCs administrativas com validação de admin |
 | `send-welcome-email` | Envia e-mail de boas-vindas para novos usuários via Resend |
+| `send-lifecycle-emails` | Emails comportamentais: créditos baixos (≤3) e reengajamento (inativo 7 dias) |
 | `resend-webhook` | Recebe webhooks do Resend para auditoria e alertas de falha/bounce |
 
 ## Deploy
@@ -56,13 +57,14 @@ supabase functions deploy cancel-prediction
 supabase functions deploy cleanup-stale-generations
 supabase functions deploy admin-rpc
 supabase functions deploy send-welcome-email
+supabase functions deploy send-lifecycle-emails
 supabase functions deploy resend-webhook
 ```
 
 ### 4. Ou deploy em lote (PowerShell):
 
 ```powershell
-$functions = @("text-to-video", "text-to-image", "image-to-video", "image-to-image", "check-prediction", "cancel-prediction", "cleanup-stale-generations", "admin-rpc", "send-welcome-email", "resend-webhook")
+$functions = @("text-to-video", "text-to-image", "image-to-video", "image-to-image", "check-prediction", "cancel-prediction", "cleanup-stale-generations", "admin-rpc", "send-welcome-email", "send-lifecycle-emails", "resend-webhook")
 foreach ($fn in $functions) {
     Write-Host "Deploying $fn..."
     supabase functions deploy $fn
@@ -83,6 +85,7 @@ https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/cancel-prediction
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/cleanup-stale-generations
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/admin-rpc
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/send-welcome-email
+https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/send-lifecycle-emails
 https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/resend-webhook
 ```
 
@@ -106,6 +109,54 @@ Para evitar gerações travadas eternamente (`starting`/`processing`), agende a 
     "rateLimitCleanupBatch": 100000
 }
 ```
+
+## Agendar emails de ciclo de vida (send-lifecycle-emails)
+
+A função `send-lifecycle-emails` detecta automaticamente dois comportamentos e dispara emails via Resend:
+
+| Job | Gatilho | Evento Resend |
+|-----|---------|---------------|
+| `low_credits` | Freemium com ≤ 3 créditos restantes, email nunca enviado | `low_credits_upgrade` |
+| `reengagement` | Último vídeo gerado há ≥ 7 dias, email nunca enviado | `reengagement_7day` |
+
+### Agendar (a cada 1 hora)
+
+- Frequência: a cada hora (ex.: `0 * * * *`)
+- Método: `POST`
+- URL: `https://ixaxkwfmxmsftnirtkqi.supabase.co/functions/v1/send-lifecycle-emails`
+- Header: `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`
+- Body JSON (opcional — roda ambos os jobs por padrão):
+
+```json
+{ "jobs": ["low_credits", "reengagement"] }
+```
+
+### Secrets necessários
+
+```bash
+supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxx
+supabase secrets set RESEND_LOW_CREDITS_EVENT=low_credits_upgrade
+supabase secrets set RESEND_REENGAGEMENT_EVENT=reengagement_7day
+supabase secrets set APP_URL=https://lumivids.com
+```
+
+### Templates Resend
+
+Crie dois **broadcast events** no dashboard do Resend com os nomes acima. Variáveis disponíveis no payload:
+
+**`low_credits_upgrade`**
+- `{{first_name}}` — primeiro nome
+- `{{credits_left}}` — créditos restantes (0–3)
+- `{{thumbnail_url}}` — URL do último vídeo gerado (pode ser null)
+- `{{prompt}}` — prompt usado (truncado em 120 chars)
+- `{{pricing_url}}` — link direto para `/pricing`
+
+**`reengagement_7day`**
+- `{{first_name}}` — primeiro nome
+- `{{last_generation_at}}` — data da última geração (ISO 8601)
+- `{{thumbnail_url}}` — URL do último vídeo gerado (pode ser null)
+- `{{prompt}}` — prompt usado (truncado em 120 chars)
+- `{{create_url}}` — link direto para `/text-to-video`
 
 ## Verificar Secrets
 
