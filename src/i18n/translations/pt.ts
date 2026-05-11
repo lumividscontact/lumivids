@@ -654,7 +654,7 @@ export const pt = {
     },
     credits: {
       title: 'Créditos Disponíveis',
-      remaining: '{current} de {max} créditos restantes',
+      remaining: '{current} créditos restantes',
       buyMore: 'Comprar Mais Créditos',
       lowCreditsWarning: 'Créditos baixos! Considere fazer upgrade.',
       freemiumBonusDays: '{used} de {max} créditos grátis usados',
@@ -942,6 +942,19 @@ export const pt = {
     upgradeToContinue: 'Fazer upgrade',
     bonusDaysInfo: '{used} de {max} créditos grátis usados',
     bonusCapReachedHint: 'Você usou todos os {max} créditos grátis. Faça upgrade para continuar.',
+    notEnoughCreditsHint: 'Você precisa de {needed} créditos para gerar. Faça upgrade para continuar.',
+    contextualPaywall: {
+      badge: 'Recomendado para esta geração',
+      title: 'Continue agora com o plano ideal',
+      subtitle: 'Esta geração exige {required} créditos e você tem {current}.',
+      requiredLabel: 'Créditos necessários',
+      missingLabel: 'Faltam agora',
+      recommended: 'Plano recomendado',
+      creditsPerMonth: '{credits} créditos por mês',
+      generationEstimate: 'Aprox. {count} gerações/mês com este perfil de custo.',
+      cta: 'Começar {plan} por US${price}/mês',
+      openCta: 'Ver oferta contextual',
+    },
   },
 
   // Status messages

@@ -47,7 +47,7 @@ export function CreditsCard({
       <div className="w-full h-2 rounded-full bg-dark-800 overflow-hidden">
         <div
           className={`h-full rounded-full ${isLowCredits ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-primary-500 to-accent-500'}`}
-          style={{ width: `${Math.min(creditsPercentage, 100)}%` }}
+          style={{ width: `${creditsPercentage}%` }}
         />
       </div>
       <button onClick={onBuyMore} className="btn-primary w-full mt-4 flex items-center justify-center gap-2">

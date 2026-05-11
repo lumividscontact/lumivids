@@ -9,6 +9,7 @@ import { useGenerations } from '@/contexts/GenerationsContext'
 import { useToast } from '@/components/Toast'
 import { addFavorite, fetchFavoriteIds, removeFavorite } from '@/services/favorites'
 import AuthModal from '@/components/AuthModal'
+import ContextualPaywall from '@/components/ContextualPaywall'
 import ModelLogo from '@/components/ModelLogo'
 import { 
   IMAGE_TO_IMAGE_MODELS, 
@@ -19,12 +20,14 @@ import {
 import ImageUpload from '@/components/ImageUpload'
 import { supabase } from '@/lib/supabase'
 import { downloadFile, getGenerationFilename } from '@/utils/download'
+import { trackConversionEvent } from '@/services/conversionEvents'
+import { getIntentPaywallVariant } from '@/services/intentPaywallExperiment'
 
 export default function ImageToImagePage() {
   const { t } = useLanguage()
   const { isAuthenticated, user } = useAuth()
   const [searchParams] = useSearchParams()
-  const { getCost } = useCredits()
+  const { getCost, credits } = useCredits()
   const { generations, removeGeneration } = useGenerations()
   const toast = useToast()
   
@@ -79,8 +82,12 @@ export default function ImageToImagePage() {
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false)
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
+  const [showContextualPaywall, setShowContextualPaywall] = useState(false)
+  const [paywallOpenReason, setPaywallOpenReason] = useState('manual_generate_click')
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const autoPaywallSignatureRef = useRef<string | null>(null)
+  const paywallVariant = useMemo(() => getIntentPaywallVariant(user?.id), [user?.id])
 
   const selectedStyle = useMemo(
     () => STYLE_PRESETS.find((style) => style.id === selectedStyleId) ?? STYLE_PRESETS[0],
@@ -199,6 +206,19 @@ export default function ImageToImagePage() {
       return
     }
     if (!uploadedImageUrl) return
+    if (credits < currentCost) {
+      setPaywallOpenReason('manual_generate_click')
+      setShowContextualPaywall(true)
+      trackConversionEvent('intent_paywall_view', {
+        source: 'image-to-image',
+        reason: 'manual_generate_click',
+        experiment_variant: paywallVariant,
+        required_credits: currentCost,
+        current_credits: credits,
+        credits_deficit: currentCost - credits,
+      })
+      return
+    }
     
     try {
       await generate({
@@ -295,6 +315,43 @@ export default function ImageToImagePage() {
       default: return t.common.generating
     }
   }
+
+  useEffect(() => {
+    const deficit = currentCost - credits
+    const shouldAutoOpen = paywallVariant === 'treatment_auto'
+      && isAuthenticated
+      && !showContextualPaywall
+      && !isGenerating
+      && deficit > 0
+      && deficit <= 3
+
+    if (deficit <= 0) {
+      autoPaywallSignatureRef.current = null
+      return
+    }
+
+    if (!shouldAutoOpen) {
+      return
+    }
+
+    const signature = `${currentCost}:${credits}`
+    if (autoPaywallSignatureRef.current === signature) {
+      return
+    }
+
+    autoPaywallSignatureRef.current = signature
+    setPaywallOpenReason('auto_low_deficit')
+    setShowContextualPaywall(true)
+
+    trackConversionEvent('intent_paywall_view', {
+      source: 'image-to-image',
+      reason: 'auto_low_deficit',
+      experiment_variant: paywallVariant,
+      required_credits: currentCost,
+      current_credits: credits,
+      credits_deficit: deficit,
+    })
+  }, [credits, currentCost, isAuthenticated, isGenerating, paywallVariant, showContextualPaywall])
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -512,6 +569,18 @@ export default function ImageToImagePage() {
             onClose={() => setShowAuthPrompt(false)}
           />
 
+          <ContextualPaywall
+            isOpen={showContextualPaywall}
+            onClose={() => setShowContextualPaywall(false)}
+            requiredCredits={currentCost}
+            currentCredits={credits}
+            source="image-to-image"
+            openReason={paywallOpenReason}
+            experimentVariant={paywallVariant}
+            isAuthenticated={isAuthenticated}
+            onRequireAuth={() => setShowAuthPrompt(true)}
+          />
+
           {/* Cost & Generate Button */}
           <div className="card space-y-4">
             <div className="flex items-center justify-between">
@@ -556,6 +625,28 @@ export default function ImageToImagePage() {
                 <Wand2 className="w-5 h-5" />
                 {t.imageToImage.generateButton} | {currentCost} {t.ui.creditsLabel}
               </button>
+            )}
+
+            {isAuthenticated && credits < currentCost && !isGenerating && (
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    setPaywallOpenReason('manual_inline_cta')
+                    setShowContextualPaywall(true)
+                    trackConversionEvent('intent_paywall_view', {
+                      source: 'image-to-image',
+                      reason: 'manual_inline_cta',
+                      experiment_variant: paywallVariant,
+                      required_credits: currentCost,
+                      current_credits: credits,
+                      credits_deficit: currentCost - credits,
+                    })
+                  }}
+                  className="text-sm text-purple-300 hover:text-purple-200 underline"
+                >
+                  {t.freemium.contextualPaywall.openCta}
+                </button>
+              </div>
             )}
           </div>
         </div>

@@ -1,15 +1,18 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Video, ChevronDown, X, Volume2, VolumeX, Monitor, Smartphone, Square, Zap } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { Video, ChevronDown, X, Volume2, VolumeX, Monitor, Smartphone, Square } from 'lucide-react'
 import { useTextToVideo, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCredits } from '@/contexts/CreditsContext'
 import { FREE_DAILY_CREDITS } from '@/config/constants'
 import AuthModal from '@/components/AuthModal'
+import ContextualPaywall from '@/components/ContextualPaywall'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
 import GenerationVideoPreview from '@/components/GenerationVideoPreview'
+import { trackConversionEvent } from '@/services/conversionEvents'
+import { getIntentPaywallVariant } from '@/services/intentPaywallExperiment'
 import ModelLogo from '@/components/ModelLogo'
 import { 
   TEXT_TO_VIDEO_MODELS, 
@@ -65,9 +68,8 @@ const MAX_PROMPT_CHARS = 2000
 
 export default function TextToVideoPage() {
   const { t } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { plan } = useCredits()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const examplePrompts = t.textToVideo.examplePrompts
   
@@ -153,10 +155,14 @@ export default function TextToVideoPage() {
   const [stylePresetId, setStylePresetId] = useState<string | null>(null)
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
+  const [showContextualPaywall, setShowContextualPaywall] = useState(false)
+  const [paywallOpenReason, setPaywallOpenReason] = useState('manual_generate_click')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const autoPaywallSignatureRef = useRef<string | null>(null)
 
   const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useTextToVideo()
   const isFreemium = plan === null
+  const paywallVariant = useMemo(() => getIntentPaywallVariant(user?.id), [user?.id])
 
   useEffect(() => {
     return () => {
@@ -235,6 +241,19 @@ export default function TextToVideoPage() {
       return
     }
     if (!prompt.trim() || isFinalPromptTooLong) return
+    if (credits < currentCost) {
+      setPaywallOpenReason('manual_generate_click')
+      setShowContextualPaywall(true)
+      trackConversionEvent('intent_paywall_view', {
+        source: 'text-to-video',
+        reason: 'manual_generate_click',
+        experiment_variant: paywallVariant,
+        required_credits: currentCost,
+        current_credits: credits,
+        credits_deficit: currentCost - credits,
+      })
+      return
+    }
     
     try {
       await generate({
@@ -270,6 +289,43 @@ export default function TextToVideoPage() {
   }
 
   const isVerticalPreview = aspectRatio === '9:16' || aspectRatio === '3:4'
+
+  useEffect(() => {
+    const deficit = currentCost - credits
+    const shouldAutoOpen = paywallVariant === 'treatment_auto'
+      && isAuthenticated
+      && !showContextualPaywall
+      && !isGenerating
+      && deficit > 0
+      && deficit <= 3
+
+    if (deficit <= 0) {
+      autoPaywallSignatureRef.current = null
+      return
+    }
+
+    if (!shouldAutoOpen) {
+      return
+    }
+
+    const signature = `${currentCost}:${credits}`
+    if (autoPaywallSignatureRef.current === signature) {
+      return
+    }
+
+    autoPaywallSignatureRef.current = signature
+    setPaywallOpenReason('auto_low_deficit')
+    setShowContextualPaywall(true)
+
+    trackConversionEvent('intent_paywall_view', {
+      source: 'text-to-video',
+      reason: 'auto_low_deficit',
+      experiment_variant: paywallVariant,
+      required_credits: currentCost,
+      current_credits: credits,
+      credits_deficit: deficit,
+    })
+  }, [credits, currentCost, isAuthenticated, isGenerating, paywallVariant, showContextualPaywall])
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -544,6 +600,18 @@ export default function TextToVideoPage() {
             onClose={() => setShowAuthPrompt(false)}
           />
 
+          <ContextualPaywall
+            isOpen={showContextualPaywall}
+            onClose={() => setShowContextualPaywall(false)}
+            requiredCredits={currentCost}
+            currentCredits={credits}
+            source="text-to-video"
+            openReason={paywallOpenReason}
+            experimentVariant={paywallVariant}
+            isAuthenticated={isAuthenticated}
+            onRequireAuth={() => setShowAuthPrompt(true)}
+          />
+
           {/* Cost & Generate Button */}
           <div className="card space-y-4">
             <GenerationCostProgress
@@ -560,34 +628,46 @@ export default function TextToVideoPage() {
               creditsAfterLabel={t.myAccount.subscription.creditsRemaining}
             />
 
-            {isFreemium && credits < currentCost && !isGenerating ? (
-              <div className="rounded-xl bg-gradient-to-br from-primary-500/10 to-accent-500/10 border border-primary-500/30 p-4 space-y-3 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <Zap className="w-4 h-4 text-orange-400" />
-                  <p className="text-sm text-dark-200 font-medium">
-                    {t.freemium.bonusCapReachedHint.replace('{max}', String(FREE_DAILY_CREDITS))}
-                  </p>
-                </div>
+            {isAuthenticated && credits < currentCost && !isGenerating && (
+              <div className="rounded-xl bg-gradient-to-br from-primary-500/10 to-accent-500/10 border border-primary-500/30 p-3.5 space-y-2 text-center">
+                <p className="text-sm text-dark-200 font-medium">
+                  {isFreemium
+                    ? credits === 0
+                      ? t.freemium.bonusCapReachedHint.replace('{max}', String(FREE_DAILY_CREDITS))
+                      : t.freemium.notEnoughCreditsHint.replace('{needed}', String(currentCost - credits))
+                    : t.errors.insufficientCredits}
+                </p>
                 <button
-                  onClick={() => navigate('/pricing')}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold hover:from-primary-600 hover:to-accent-600 transition-all"
+                  onClick={() => {
+                    setPaywallOpenReason('manual_inline_cta')
+                    setShowContextualPaywall(true)
+                    trackConversionEvent('intent_paywall_view', {
+                      source: 'text-to-video',
+                      reason: 'manual_inline_cta',
+                      experiment_variant: paywallVariant,
+                      required_credits: currentCost,
+                      current_credits: credits,
+                      credits_deficit: currentCost - credits,
+                    })
+                  }}
+                  className="text-sm text-primary-300 hover:text-primary-200 underline"
                 >
-                  {t.freemium.upgradeToContinue} →
+                  {t.freemium.contextualPaywall.openCta}
                 </button>
               </div>
-            ) : (
-              <GenerationActionButtons
-                isGenerating={isGenerating}
-                onGenerate={handleGenerate}
-                onCancel={cancel}
-                generateDisabled={!prompt.trim() || isFinalPromptTooLong || isGenerating}
-                generateLabel={`${t.ui.createButton} | ${currentCost} ${t.ui.creditsLabel}`}
-                generatingLabel={t.common.generating}
-                cancelLabel={t.common.cancel}
-                generateIcon={<Video className="w-5 h-5" />}
-                generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium flex items-center justify-center gap-2 hover:from-primary-600 hover:to-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
             )}
+
+            <GenerationActionButtons
+              isGenerating={isGenerating}
+              onGenerate={handleGenerate}
+              onCancel={cancel}
+              generateDisabled={!prompt.trim() || isFinalPromptTooLong || isGenerating}
+              generateLabel={`${t.ui.createButton} | ${currentCost} ${t.ui.creditsLabel}`}
+              generatingLabel={t.common.generating}
+              cancelLabel={t.common.cancel}
+              generateIcon={<Video className="w-5 h-5" />}
+              generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium flex items-center justify-center gap-2 hover:from-primary-600 hover:to-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            />
           </div>
         </div>
 

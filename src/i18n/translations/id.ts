@@ -654,7 +654,7 @@
     },
     credits: {
       title: 'Kredit yang Tersedia',
-      remaining: '{current} dari {max} kredit tersisa',
+      remaining: '{current} kredit tersisa',
       buyMore: 'Beli Lebih Banyak Kredit',
       lowCreditsWarning: 'Kredit rendah! Pertimbangkan untuk meningkatkan versi.',
       freemiumBonusDays: '{used} dari {max} kredit gratis digunakan',
@@ -942,6 +942,19 @@
     upgradeToContinue: 'Upgrade',
     bonusDaysInfo: '{used} dari {max} kredit gratis digunakan',
     bonusCapReachedHint: 'Anda telah menggunakan semua {max} kredit gratis. Upgrade untuk melanjutkan.',
+    notEnoughCreditsHint: 'Anda butuh {needed} kredit lagi untuk membuat. Upgrade untuk melanjutkan.',
+    contextualPaywall: {
+      badge: 'Direkomendasikan untuk generasi ini',
+      title: 'Lanjutkan sekarang dengan paket yang tepat',
+      subtitle: 'Generasi ini membutuhkan {required} kredit dan Anda punya {current}.',
+      requiredLabel: 'Kredit yang dibutuhkan',
+      missingLabel: 'Kekurangan saat ini',
+      recommended: 'Paket rekomendasi',
+      creditsPerMonth: '{credits} kredit per bulan',
+      generationEstimate: 'Sekitar {count} generasi/bulan dengan profil biaya ini.',
+      cta: 'Mulai {plan} seharga US${price}/bulan',
+      openCta: 'Lihat penawaran kontekstual',
+    },
   },
 
   // Status messages

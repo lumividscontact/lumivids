@@ -654,7 +654,7 @@ export const en = {
     },
     credits: {
       title: 'Available Credits',
-      remaining: '{current} of {max} credits remaining',
+      remaining: '{current} credits remaining',
       buyMore: 'Buy More Credits',
       lowCreditsWarning: 'Low credits! Consider upgrading.',
       freemiumBonusDays: '{used} of {max} free credits used',
@@ -942,6 +942,19 @@ export const en = {
     upgradeToContinue: 'Upgrade',
     bonusDaysInfo: '{used} of {max} free credits used',
     bonusCapReachedHint: 'You used all {max} free credits. Upgrade to keep generating.',
+    notEnoughCreditsHint: 'You need {needed} more credits to generate. Upgrade to continue.',
+    contextualPaywall: {
+      badge: 'Recommended for this generation',
+      title: 'Continue now with the right plan',
+      subtitle: 'This generation needs {required} credits and you currently have {current}.',
+      requiredLabel: 'Required credits',
+      missingLabel: 'Missing now',
+      recommended: 'Recommended plan',
+      creditsPerMonth: '{credits} credits per month',
+      generationEstimate: 'Approx. {count} generations/month with this cost profile.',
+      cta: 'Start {plan} for ${price}/month',
+      openCta: 'See contextual offer',
+    },
   },
 
   // Status messages

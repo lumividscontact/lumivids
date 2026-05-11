@@ -5,9 +5,12 @@ import { useTextToImage, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
 import AuthModal from '@/components/AuthModal'
+import ContextualPaywall from '@/components/ContextualPaywall'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
 import ModelLogo from '@/components/ModelLogo'
+import { trackConversionEvent } from '@/services/conversionEvents'
+import { getIntentPaywallVariant } from '@/services/intentPaywallExperiment'
 import { 
   TEXT_TO_IMAGE_MODELS, 
   ModelConfig, 
@@ -242,7 +245,7 @@ function ImageGallery({ images, onReset, newGenerationLabel }: { images: string[
 
 export default function TextToImagePage() {
   const { t } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const [searchParams] = useSearchParams()
   
   // SEO meta tags
@@ -279,7 +282,11 @@ export default function TextToImagePage() {
   const [numImages, setNumImages] = useState(1)
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
+  const [showContextualPaywall, setShowContextualPaywall] = useState(false)
+  const [paywallOpenReason, setPaywallOpenReason] = useState('manual_generate_click')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const autoPaywallSignatureRef = useRef<string | null>(null)
+  const paywallVariant = useMemo(() => getIntentPaywallVariant(user?.id), [user?.id])
 
   const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useTextToImage()
 
@@ -340,6 +347,19 @@ export default function TextToImagePage() {
       return
     }
     if (!prompt.trim() || isPromptTooLong) return
+    if (credits < currentCost) {
+      setPaywallOpenReason('manual_generate_click')
+      setShowContextualPaywall(true)
+      trackConversionEvent('intent_paywall_view', {
+        source: 'text-to-image',
+        reason: 'manual_generate_click',
+        experiment_variant: paywallVariant,
+        required_credits: currentCost,
+        current_credits: credits,
+        credits_deficit: currentCost - credits,
+      })
+      return
+    }
 
     try {
       const requestModel = selectedModel.id === 'gpt-image-2'
@@ -384,6 +404,43 @@ export default function TextToImagePage() {
       default: return t.common.generating
     }
   }
+
+  useEffect(() => {
+    const deficit = currentCost - credits
+    const shouldAutoOpen = paywallVariant === 'treatment_auto'
+      && isAuthenticated
+      && !showContextualPaywall
+      && !isGenerating
+      && deficit > 0
+      && deficit <= 3
+
+    if (deficit <= 0) {
+      autoPaywallSignatureRef.current = null
+      return
+    }
+
+    if (!shouldAutoOpen) {
+      return
+    }
+
+    const signature = `${currentCost}:${credits}`
+    if (autoPaywallSignatureRef.current === signature) {
+      return
+    }
+
+    autoPaywallSignatureRef.current = signature
+    setPaywallOpenReason('auto_low_deficit')
+    setShowContextualPaywall(true)
+
+    trackConversionEvent('intent_paywall_view', {
+      source: 'text-to-image',
+      reason: 'auto_low_deficit',
+      experiment_variant: paywallVariant,
+      required_credits: currentCost,
+      current_credits: credits,
+      credits_deficit: deficit,
+    })
+  }, [credits, currentCost, isAuthenticated, isGenerating, paywallVariant, showContextualPaywall])
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -595,6 +652,18 @@ export default function TextToImagePage() {
             onClose={() => setShowAuthPrompt(false)}
           />
 
+          <ContextualPaywall
+            isOpen={showContextualPaywall}
+            onClose={() => setShowContextualPaywall(false)}
+            requiredCredits={currentCost}
+            currentCredits={credits}
+            source="text-to-image"
+            openReason={paywallOpenReason}
+            experimentVariant={paywallVariant}
+            isAuthenticated={isAuthenticated}
+            onRequireAuth={() => setShowAuthPrompt(true)}
+          />
+
           {/* Cost & Generate Button */}
           <div className="card space-y-4">
             <GenerationCostProgress
@@ -620,6 +689,28 @@ export default function TextToImagePage() {
               generateIcon={<Sparkles className="w-5 h-5" />}
               generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
+
+            {isAuthenticated && credits < currentCost && !isGenerating && (
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    setPaywallOpenReason('manual_inline_cta')
+                    setShowContextualPaywall(true)
+                    trackConversionEvent('intent_paywall_view', {
+                      source: 'text-to-image',
+                      reason: 'manual_inline_cta',
+                      experiment_variant: paywallVariant,
+                      required_credits: currentCost,
+                      current_credits: credits,
+                      credits_deficit: currentCost - credits,
+                    })
+                  }}
+                  className="text-sm text-purple-300 hover:text-purple-200 underline"
+                >
+                  {t.freemium.contextualPaywall.openCta}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

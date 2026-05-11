@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Layers, ChevronDown, X, Volume2, VolumeX, Zap } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { Layers, ChevronDown, X, Volume2, VolumeX } from 'lucide-react'
 import { useImageToVideo, useSEO, getSeoPages } from '@/hooks'
 import { useLanguage } from '@/i18n'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCredits } from '@/contexts/CreditsContext'
 import { FREE_DAILY_CREDITS } from '@/config/constants'
 import AuthModal from '@/components/AuthModal'
+import ContextualPaywall from '@/components/ContextualPaywall'
 import GenerationActionButtons from '@/components/GenerationActionButtons'
 import GenerationCostProgress from '@/components/GenerationCostProgress'
 import GenerationVideoPreview from '@/components/GenerationVideoPreview'
+import { trackConversionEvent } from '@/services/conversionEvents'
+import { getIntentPaywallVariant } from '@/services/intentPaywallExperiment'
 import ModelLogo from '@/components/ModelLogo'
 import { 
   IMAGE_TO_VIDEO_MODELS, 
@@ -27,9 +30,8 @@ const MAX_PROMPT_CHARS = 2000
 
 export default function ImageToVideoPage() {
   const { t } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { plan } = useCredits()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const examplePrompts = t.imageToVideo.examplePrompts
   
@@ -150,9 +152,13 @@ export default function ImageToVideoPage() {
   const [withAudio, setWithAudio] = useState(false)
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
+  const [showContextualPaywall, setShowContextualPaywall] = useState(false)
+  const [paywallOpenReason, setPaywallOpenReason] = useState('manual_generate_click')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const autoPaywallSignatureRef = useRef<string | null>(null)
 
   const { isGenerating, status, output, error, progress, generate, cancel, reset, credits } = useImageToVideo()
+  const paywallVariant = useMemo(() => getIntentPaywallVariant(user?.id), [user?.id])
 
   useEffect(() => {
     return () => {
@@ -255,6 +261,19 @@ export default function ImageToVideoPage() {
       return
     }
     if (!uploadedImageUrl || isPromptTooLong) return
+    if (credits < currentCost) {
+      setPaywallOpenReason('manual_generate_click')
+      setShowContextualPaywall(true)
+      trackConversionEvent('intent_paywall_view', {
+        source: 'image-to-video',
+        reason: 'manual_generate_click',
+        experiment_variant: paywallVariant,
+        required_credits: currentCost,
+        current_credits: credits,
+        credits_deficit: currentCost - credits,
+      })
+      return
+    }
     
     try {
       await generate({
@@ -284,6 +303,43 @@ export default function ImageToVideoPage() {
   }
 
   const isVerticalPreview = aspectRatio === '9:16' || aspectRatio === '3:4'
+
+  useEffect(() => {
+    const deficit = currentCost - credits
+    const shouldAutoOpen = paywallVariant === 'treatment_auto'
+      && isAuthenticated
+      && !showContextualPaywall
+      && !isGenerating
+      && deficit > 0
+      && deficit <= 3
+
+    if (deficit <= 0) {
+      autoPaywallSignatureRef.current = null
+      return
+    }
+
+    if (!shouldAutoOpen) {
+      return
+    }
+
+    const signature = `${currentCost}:${credits}`
+    if (autoPaywallSignatureRef.current === signature) {
+      return
+    }
+
+    autoPaywallSignatureRef.current = signature
+    setPaywallOpenReason('auto_low_deficit')
+    setShowContextualPaywall(true)
+
+    trackConversionEvent('intent_paywall_view', {
+      source: 'image-to-video',
+      reason: 'auto_low_deficit',
+      experiment_variant: paywallVariant,
+      required_credits: currentCost,
+      current_credits: credits,
+      credits_deficit: deficit,
+    })
+  }, [credits, currentCost, isAuthenticated, isGenerating, paywallVariant, showContextualPaywall])
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -569,6 +625,18 @@ export default function ImageToVideoPage() {
             onClose={() => setShowAuthPrompt(false)}
           />
 
+          <ContextualPaywall
+            isOpen={showContextualPaywall}
+            onClose={() => setShowContextualPaywall(false)}
+            requiredCredits={currentCost}
+            currentCredits={credits}
+            source="image-to-video"
+            openReason={paywallOpenReason}
+            experimentVariant={paywallVariant}
+            isAuthenticated={isAuthenticated}
+            onRequireAuth={() => setShowAuthPrompt(true)}
+          />
+
           {/* Cost & Generate Button */}
           <div className="card space-y-4">
             <GenerationCostProgress
@@ -585,34 +653,46 @@ export default function ImageToVideoPage() {
               creditsAfterLabel={t.myAccount.subscription.creditsRemaining}
             />
 
-            {isFreemium && credits < currentCost && !isGenerating ? (
-              <div className="rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 p-4 space-y-3 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <Zap className="w-4 h-4 text-orange-400" />
-                  <p className="text-sm text-dark-200 font-medium">
-                    {t.freemium.bonusCapReachedHint.replace('{max}', String(FREE_DAILY_CREDITS))}
-                  </p>
-                </div>
+            {isAuthenticated && credits < currentCost && !isGenerating && (
+              <div className="rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 p-3.5 space-y-2 text-center">
+                <p className="text-sm text-dark-200 font-medium">
+                  {isFreemium
+                    ? credits === 0
+                      ? t.freemium.bonusCapReachedHint.replace('{max}', String(FREE_DAILY_CREDITS))
+                      : t.freemium.notEnoughCreditsHint.replace('{needed}', String(currentCost - credits))
+                    : t.errors.insufficientCredits}
+                </p>
                 <button
-                  onClick={() => navigate('/pricing')}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-all"
+                  onClick={() => {
+                    setPaywallOpenReason('manual_inline_cta')
+                    setShowContextualPaywall(true)
+                    trackConversionEvent('intent_paywall_view', {
+                      source: 'image-to-video',
+                      reason: 'manual_inline_cta',
+                      experiment_variant: paywallVariant,
+                      required_credits: currentCost,
+                      current_credits: credits,
+                      credits_deficit: currentCost - credits,
+                    })
+                  }}
+                  className="text-sm text-purple-300 hover:text-purple-200 underline"
                 >
-                  {t.freemium.upgradeToContinue} →
+                  {t.freemium.contextualPaywall.openCta}
                 </button>
               </div>
-            ) : (
-              <GenerationActionButtons
-                isGenerating={isGenerating}
-                onGenerate={handleGenerate}
-                onCancel={cancel}
-                generateDisabled={!uploadedImageUrl || isPromptTooLong || isGenerating}
-                generateLabel={`${t.imageToVideo.generateButton} | ${currentCost} ${t.ui.creditsLabel}`}
-                generatingLabel={t.common.generating}
-                cancelLabel={t.common.cancel}
-                generateIcon={<Layers className="w-5 h-5" />}
-                generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
             )}
+
+            <GenerationActionButtons
+              isGenerating={isGenerating}
+              onGenerate={handleGenerate}
+              onCancel={cancel}
+              generateDisabled={!uploadedImageUrl || isPromptTooLong || isGenerating}
+              generateLabel={`${t.imageToVideo.generateButton} | ${currentCost} ${t.ui.creditsLabel}`}
+              generatingLabel={t.common.generating}
+              cancelLabel={t.common.cancel}
+              generateIcon={<Layers className="w-5 h-5" />}
+              generateButtonClassName="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            />
           </div>
         </div>
 

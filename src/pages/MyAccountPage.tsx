@@ -49,9 +49,8 @@ export default function MyAccountPage() {
   const currentCredits = contextCredits
   const creditsRemainingLabel = t.myAccount.credits.remaining
     .replace('{current}', String(currentCredits))
-    .replace('{max}', String(maxCredits))
-  const creditsPercentage = maxCredits > 0 ? (currentCredits / maxCredits) * 100 : 0
-  const isLowCredits = creditsPercentage < LOW_CREDITS_THRESHOLD_PERCENT && creditsPercentage > 0
+  const creditsPercentage = maxCredits > 0 ? Math.min((currentCredits / maxCredits) * 100, 100) : 0
+  const isLowCredits = creditsPercentage <= LOW_CREDITS_THRESHOLD_PERCENT && creditsPercentage > 0
 
   const locale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : 'en-US'
 
